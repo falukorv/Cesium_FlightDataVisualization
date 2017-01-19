@@ -92,11 +92,12 @@
 
         // Setup EventSource
         var czmlEventSource = new EventSource(czmlStreamUrl);
-
         // Listen for EventSource data coming
+        window.alert('Tjo');
         czmlEventSource.onmessage = function(e) {
-        czmlStream.process(JSON.parse(e.data));
-  }
+            
+            czmlStream.process(JSON.parse(e.data));
+        }
 
   // Put the datasource into Cesium
   viewer.dataSources.add(czmlStream);
