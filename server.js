@@ -8,6 +8,7 @@
     var url = require('url');
     var request = require('request');
     var Chance = require('chance');
+    var fs = require("fs");
 
     var yargs = require('yargs').options({
         'port' : {
@@ -61,7 +62,7 @@
     
     //TEST --------------------------------------
     
-    var openConnections = [];
+//    var openConnections = [];
     var chance = new Chance();
     
     var testdata = 'Hi, I am data!';
@@ -79,7 +80,7 @@
         resp.write('\n');
         
         // push this res object to our global variable
-        openConnections.push(resp);
+//        openConnections.push(resp);
         
         // send document packet
         var d = new Date();
@@ -90,29 +91,30 @@
         // is closed. We search through the open connections
         // array and remove this connection.
         
-        req.on("close", function() {
-            var toRemove;
-            for (var j =0 ; j < openConnections.length ; j++) {
-                if (openConnections[j] == resp) {
-                    toRemove =j;
-                    break;
-                }
-            }
-            openConnections.splice(j,1);
-        });
+//        req.on("close", function() {
+//            var toRemove;
+//            for (var j =0 ; j < openConnections.length ; j++) {
+//                if (openConnections[j] == resp) {
+//                    toRemove =j;
+//                    break;
+//                }
+//            }
+//            openConnections.splice(j,1);
+//        });
+
         setInterval(function() {
         // we walk through each connection
         
-            openConnections.forEach(function(resp) {
+//            openConnections.forEach(function(resp) {
             
             
                 // send doc
                 var d = new Date();
                 resp.write('id: ' + 50 + '\n');
                 resp.write('data:' + createMsg() +   '\n\n'); // Note the extra newline
-        });
+//        });
 
-    }, 1000);
+    }, 100);
     });
 
     function createMsg() {
@@ -135,8 +137,7 @@
                 }
             }
         };
-
-        return JSON.stringify(entity);;
+        return JSON.stringify(entity);; 
     }
 
 //--------------------------------------
