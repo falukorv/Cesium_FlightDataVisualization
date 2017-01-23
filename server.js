@@ -3,10 +3,12 @@
     /*jshint node:true*/
 
     var express = require('express');
+    var http = require('http');
     var compression = require('compression');
     var url = require('url');
     var request = require('request');
     var Chance = require('chance');
+    var fs = require("fs");
 
     var yargs = require('yargs').options({
         'port' : {
@@ -29,11 +31,14 @@
             'description' : 'Show this help.'
         }
     });
+    
     var argv = yargs.argv;
 
     if (argv.help) {
         return yargs.showHelp();
     }
+    
+    // argv.public = true;
 
     // eventually this mime type configuration will need to change
     // https://github.com/visionmedia/send/commit/d2cb54658ce65948b0ed6e5fb5de69d022bef941
@@ -47,85 +52,93 @@
     });
     
     var app = express();
-    app.use(compression());
+    app.use(function(req, resp, next) {
+        resp.header("Access-Control-Allow-Origin", "*");
+        resp.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        next();
+    });
+//    app.use(compression()); [FOR SOME REASON, THIS OPTION BREAKS THE STREAMING]
     app.use(express.static(__dirname));
     
     //TEST --------------------------------------
     
-    var openConnections = [];
+//    var openConnections = [];
     var chance = new Chance();
     
+    var testdata = 'Hi, I am data!';
+    
     app.get('/czml', function(req, resp) {
-
-    req.socket.setTimeout(2 * 60 * 1000);
-
+        req.socket.setTimeout(2 * 60 * 1000);
+        
     // send headers for event-stream connection
     // see spec for more information
-    resp.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-    });
-    resp.write('\n');
-
-    // push this res object to our global variable
-    openConnections.push(resp);
-
-    // send document packet
-    var d = new Date();
-    resp.write('id: ' + d.getMilliseconds() + '\n');
-    resp.write('data:' + JSON.stringify({ "id":"document", "version":"1.0" })+   '\n\n'); // Note the extra newline
-
-    // When the request is closed, e.g. the browser window
-    // is closed. We search through the open connections
-    // array and remove this connection.
-    req.on("close", function() {
-        var toRemove;
-        for (var j =0 ; j < openConnections.length ; j++) {
-            if (openConnections[j] == resp) {
-                toRemove =j;
-                break;
-            }
-        }
-        openConnections.splice(j,1);
-    });
-});
-
-setInterval(function() {
-    // we walk through each connection
-    openConnections.forEach(function(resp) {
-
-        // send doc
+        resp.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive'
+        });
+        resp.write('\n');
+        
+        // push this res object to our global variable
+//        openConnections.push(resp);
+        
+        // send document packet
         var d = new Date();
-        resp.write('id: ' + d.getMilliseconds() + '\n');
-        resp.write('data:' + createMsg() +   '\n\n'); // Note the extra newline
+        resp.write('id: ' + 1 + '\n');
+        resp.write('data:' + JSON.stringify({ "id":"document", "version":"1.0" })+   '\n\n'); // Note the extra newline
+
+        // When the request is closed, e.g. the browser window
+        // is closed. We search through the open connections
+        // array and remove this connection.
+        
+//        req.on("close", function() {
+//            var toRemove;
+//            for (var j =0 ; j < openConnections.length ; j++) {
+//                if (openConnections[j] == resp) {
+//                    toRemove =j;
+//                    break;
+//                }
+//            }
+//            openConnections.splice(j,1);
+//        });
+
+        setInterval(function() {
+        // we walk through each connection
+        
+//            openConnections.forEach(function(resp) {
+            
+            
+                // send doc
+                var d = new Date();
+                resp.write('id: ' + 50 + '\n');
+                resp.write('data:' + createMsg() +   '\n\n'); // Note the extra newline
+//        });
+
+    }, 100);
     });
 
-}, 1000);
-
-function createMsg() {
-    var d = new Date();
-    var entity = {
-        "id": d.getMilliseconds(),
-        "polyline": {
-            "positions": {
-                "cartographicDegrees": [
-                  chance.latitude(), chance.longitude(), 0
-                  ,chance.latitude(), chance.longitude(), 0
-              ]
-        },
-        "width": 2,
-        "material":
-            { "solidColor":
-                { "color" :
-                    {"rgba": [0,0,255,255]}
+    function createMsg() {
+        var d = new Date();
+        var entity = {
+            "id": 60,
+            "polyline": {
+                "positions": {
+                    "cartographicDegrees": [
+                      chance.latitude(), chance.longitude(), 0
+                      ,chance.latitude(), chance.longitude(), 0
+                  ]
+            },
+            "width": 2,
+            "material":
+                { "solidColor":
+                    { "color" :
+                        {"rgba": [0,0,255,255]}
+                    }
                 }
             }
-        }
-    };
-
-    return JSON.stringify(entity);;
-}
+        };
+        return JSON.stringify(entity);; 
+    }
 
 //--------------------------------------
 

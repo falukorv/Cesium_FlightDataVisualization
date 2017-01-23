@@ -7,20 +7,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
     <title>Flight data visualization</title>
     <script src="../Build/Cesium/Cesium.js"></script>
+    <script src="../Build/EventSource.js"></script>
     
     <style>
         @import url(../Build/Cesium/Widgets/widgets.css);
         html, body, #cesiumContainer {
             width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
       }
-      #controlPanel {
-        position: absolute;
-        top: 5px;
-        left: 5px;
-        background: rgba(42, 42, 42, 0.8);
-        padding: 5px 8px;
-        border-radius: 5px;
+        #controlPanel {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(42, 42, 42, 0.8);
+            padding: 5px 8px;
+            border-radius: 5px;
         }
+        #parameterVis {
+            position: absolute;
+            top: 80px;
+            left: 5px;
+            background: rgba(42, 42, 42, 0.8);
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-family: "digital-7"; 
+            width: 100px;
+            text-align: center;
+        }
+        @font-face{
+            font-family:"digital-7";
+            src: url("../Build/Fonts/digital-7.ttf");
+            
+        }
+        
     </style>
     
 </head>
@@ -30,76 +48,113 @@
     <div id="controlPanel">
         <p>
             <button class="cesium-button" onclick="showAttitude()">Show attitude</button>
-            <button class="cesium-button">Show trajectory</button>
+            <button class="cesium-button" onclick="showTrajectory()">Show trajectory</button>
         </p>
+    </div>
+    <div id="parameterVis">
+        <p>
+            <h1 style="color:#FFFFFF" id="velocity">Velocity</h1>
+        </p> 
     </div>
     
     <script>
         var viewer = new Cesium.Viewer('cesiumContainer');
+        var scene = viewer.scene;
+        
+        // Get the camera
+        var camera = viewer.camera;
         
         // Model used for the rocket, placeholder at the moment.
-        var modelURL = '../Apps/SampleData/models/CesiumAir/Cesium_Air.glb';
+        var modelURL = '../Build/3Dmodels/rocket.glb';
         
         // The position of Esrange, which will be the initial position of the rocket.
-        var esrangePos = Cesium.Cartesian3.fromDegrees(21.064292,67.893228,100);
+        esrangeLong = 21.064292;
+        esrangeLat = 67.893228;
+        
         var height = 100;
+        var position = Cesium.Cartesian3.fromDegrees(esrangeLong,esrangeLat,height);
         var heading = 0;
-        var pitch =  Cesium.Math.toRadians(90);
+        var pitch =  Cesium.Math.toRadians(0);
         var roll = 0;
         
         var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
-        var orientation = Cesium.Transforms.headingPitchRollQuaternion(esrangePos, hpr);
+        var orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
         
         // Defining the model properties and adding it to the viewer
         var rocket = viewer.entities.add({
             name : 'Rocket',
-            position: esrangePos,
+            position: position,
             orientation: orientation,
             show : true,
             model: {
                 uri : modelURL,
-                minimumPixelSize : 64,
+                minimumPixelSize : 16,
                 maximumScale : 20000
             }
         });
        
+        bbBackgroundPos = Cesium.Cartesian3.fromDegrees(esrangeLong+0.001,esrangeLat,height);
         var bbBackground = viewer.entities.add({
             name : 'Billboard',
-            position: esrangePos,
-            
+            position: bbBackgroundPos,
             billboard : {
                 image : '../Source/Assets/Textures/bb-background.png', // default: undefined
                 show : false, // default
-                pixelOffset : new Cesium.Cartesian2(0, 0), // default: (0, 0)
-                eyeOffset : new Cesium.Cartesian3(0.0, 0.0, 0.0), // default
                 horizontalOrigin : Cesium.HorizontalOrigin.CENTER, // default
                 verticalOrigin : Cesium.VerticalOrigin.CENTER, // default: CENTER
-                scale : 20, // default: 1.0
+                scale : 1, // default: 1.0
                 alignedAxis : Cesium.Cartesian3.ZERO, // default
-                width : 100, // default: undefined
-                height : 50 // default: undefined
+//                width : 50*16, // default: undefined
+//                height : 50*9 // default: undefined
             }
         });
        
+        viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 100));
         viewer.trackedEntity = rocket;
+        
       
         function showAttitude(){
+            camera.cancelFlight();
+            scene.screenSpaceCameraController.enableInputs = false;
             bbBackground.billboard.show = true;
+            viewer.camera.setView({
+                destination : new Cesium.Cartesian3.fromDegrees(esrangeLong-0.002,esrangeLat,height),
+                orientation: {
+                    heading : Cesium.Math.toRadians(90.0), // east, default value is 0.0 (north)
+                    pitch : Cesium.Math.toRadians(0),    // default value (looking down)
+                    roll : 0.0                             // default value
+                }
+            });
         }
         
-        var czmlStream = new Cesium.CzmlDataSource();
-        var czmlStreamUrl = 'http://localhost:8080/czml';
+        function showTrajectory(){
+            viewer.trackedEntity = rocket;
+            scene.screenSpaceCameraController.enableInputs = true;
+            bbBackground.billboard.show = false;
+//            viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 200));
+        }
+        
+        setInterval(function(){
+            document.getElementById("velocity").innerHTML = Math.floor(100*Math.random()).toString();
+        },100)
+        
+//        // STREAMING CODE
+        var streaming = false;
+        if(streaming){
+            var czmlStream = new Cesium.CzmlDataSource();
+            var czmlStreamUrl = 'http://localhost:8080/czml';
 
-        // Setup EventSource
-        var czmlEventSource = new EventSource(czmlStreamUrl);
-
-        // Listen for EventSource data coming
-        czmlEventSource.onmessage = function(e) {
-        czmlStream.process(JSON.parse(e.data));
-  }
-
-  // Put the datasource into Cesium
-  viewer.dataSources.add(czmlStream);
+            // Setup EventSource
+            var czmlEventSource = new EventSource(czmlStreamUrl);
+            
+            // Listen for EventSource data coming
+            czmlEventSource.onmessage = function(e) {
+                czmlStream.process(JSON.parse(e.data));            
+            }
+        
+            // Put the datasource into Cesium
+            viewer.dataSources.add(czmlStream);
+        }
         
     </script>
     
