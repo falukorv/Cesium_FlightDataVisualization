@@ -114,7 +114,7 @@
                 resp.write('data:' + createMsg() +   '\n\n'); // Note the extra newline
 //        });
 
-    }, 100);
+    }, 200);
     });
 
     function createMsg() {

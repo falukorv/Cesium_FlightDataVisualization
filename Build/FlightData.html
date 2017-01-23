@@ -8,8 +8,12 @@
     <title>Flight data visualization</title>
     <script src="../Build/Cesium/Cesium.js"></script>
     <script src="../Build/EventSource.js"></script>
-    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="../ThirdParty/jquery/dist/jquery.min.js"></script>
+    <script src="../ThirdParty/jqueryui/jquery-ui.min.js"></script>
     <style>
+        @import url(../ThirdParty/jqueryui/jquery-ui.css);
+        @import url(../Build/d3chart.css);
         @import url(../Build/Cesium/Widgets/widgets.css);
         html, body, #cesiumContainer {
             width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
@@ -30,13 +34,12 @@
             padding: 5px 8px;
             border-radius: 5px;
             font-family: "digital-7"; 
-            width: 100px;
+            width: 140px;
             text-align: center;
         }
         @font-face{
             font-family:"digital-7";
             src: url("../Build/Fonts/digital-7.ttf");
-            
         }
         
     </style>
@@ -53,12 +56,20 @@
     </div>
     <div id="parameterVis">
         <p>
-            <h1 style="color:#FFFFFF" id="velocity">Velocity</h1>
+            <h1 style="color:#FFFFFF">Velocity</h1>
+            <h1 style="color:#FFFFFF" id="velocity"></h1>
         </p> 
     </div>
+    <div id="chart"></div>
     
     <script>
-        var viewer = new Cesium.Viewer('cesiumContainer');
+        Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            timeline : false,
+            animation : false,
+            selectionIndicator : false,
+            infoBox: false
+        });
         var scene = viewer.scene;
         
         // Get the camera
@@ -157,7 +168,7 @@
         }
         
     </script>
-    
+    <script type="text/javascript" src="d3chartAltPlot.js"></script>
 </body>
 
 </html>
