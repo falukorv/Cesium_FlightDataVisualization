@@ -11,6 +11,7 @@
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="../ThirdParty/jquery/dist/jquery.min.js"></script>
     <script src="../ThirdParty/jqueryui/jquery-ui.min.js"></script>
+    <script src="../ThirdParty/togeojson/togeojson.js"></script>
     <style>
         @import url(../ThirdParty/jqueryui/jquery-ui.css);
         @import url(../Build/d3chart.css);
@@ -68,7 +69,13 @@
             timeline : false,
             animation : false,
             selectionIndicator : false,
-            infoBox: false
+            infoBox: false,
+            homeButton: false,
+            sceneModePicker: false,
+            navigationHelpButton: false,
+            geocoder: false,
+            navigationInstructionsInitiallyVisible: false,
+            baseLayerPicker: false
         });
         var scene = viewer.scene;
         
@@ -79,8 +86,8 @@
         var modelURL = '../Build/3Dmodels/rocket.glb';
         
         // The position of Esrange, which will be the initial position of the rocket.
-        esrangeLong = 21.064292;
-        esrangeLat = 67.893228;
+        esrangeLong = 21.1068944441480;
+        esrangeLat = 67.8932469830635;
         
         var height = 100;
         var position = Cesium.Cartesian3.fromDegrees(esrangeLong,esrangeLat,height);
@@ -103,7 +110,8 @@
                 maximumScale : 20000
             }
         });
-       
+        
+        // Create a billbord that will serve as background if it is desirable to only view the attitude
         bbBackgroundPos = Cesium.Cartesian3.fromDegrees(esrangeLong+0.001,esrangeLat,height);
         var bbBackground = viewer.entities.add({
             name : 'Billboard',
@@ -166,6 +174,12 @@
             // Put the datasource into Cesium
             viewer.dataSources.add(czmlStream);
         }
+        
+//        var kmlDataSource = new Cesium.KmlDataSource();
+//        kmlDataSource.load('../sampleData/MASER13-trajectory.kml');
+//        viewer.dataSources.add(kmlDataSource);
+//        while(!viewer.dataSources.get(0).isLoading){};
+//        console.log(kmlDataSource.entities.values);
         
     </script>
     <script type="text/javascript" src="d3chartAltPlot.js"></script>

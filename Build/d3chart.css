@@ -34,7 +34,7 @@
 }
 
 .label, .tick {
-	fill: #eee;
+	fill: #fff;
 }
 
 .altitude {
@@ -46,6 +46,12 @@
 }
 
 .domain {
-	fill: none;
-	stroke: #eee;
+    fill: none;
+    stroke: #eee;
+}
+
+.axis{
+    stroke: #fff;
+    fill: #fff;
+    font-size: 15px;
 }

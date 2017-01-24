@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://www.opengis.net/kml/2.2" uri="schemas.opengis.net/kml/2.2.0/ogckml22.xsd"/>
+    <system systemId="http://schemas.opengis.net/kml/2.2.0/atom-author-link.xsd" uri="schemas.opengis.net/kml/2.2.0/atom-author-link.xsd"/>
+    <system systemId="http://docs.oasis-open.org/election/external/xAL.xsd" uri="docs.oasis-open.org/election/external/xAL.xsd"/>
+</catalog>
