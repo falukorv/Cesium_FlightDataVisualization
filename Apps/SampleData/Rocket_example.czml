@@ -1,0 +1,24 @@
+
+[
+  {
+    "id":"document",
+    "version":"1.0"
+  },
+  {
+    "id":"Rocket",
+    "model": {
+        "gltf" : "modelURL",
+        "scale" : 2.0,
+        "minimumPixelSize": 128
+    },
+    "position":{
+      "interpolationAlgorithm":"LAGRANGE",
+      "interpolationDegree":1,
+      "epoch":"2017-04-02T16:00:00Z",
+      "cartesian":[
+        0.0,21.1068944441480,67.8932469830635,362813,
+        10.0,21.1068945441480,67.8932469830635,3629182
+      ]
+    }
+  }
+]

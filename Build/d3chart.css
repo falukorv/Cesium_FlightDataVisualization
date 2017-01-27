@@ -45,6 +45,39 @@
     font-size: 40px;
 }
 
+.latitude{
+    color: #fff;
+    font-size: 40px;
+    position: absolute;
+    bottom: 2px;
+    left: 15px;
+}
+
+.latitudeValue{
+    color: #fff;
+    font-size: 40px;
+    position: absolute;
+    bottom: 2px;
+    left: 250px;
+}
+
+.longitude{
+    color: #fff;
+    font-size: 40px;
+    position: absolute;
+    bottom: 45px;
+    left: 15px;
+}
+
+.longitudeValue{
+    color: #fff;
+    font-size: 40px;
+    position: absolute;
+    bottom: 45px;
+    left: 250px;
+}
+
+
 .domain {
     fill: none;
     stroke: #eee;
@@ -54,4 +87,60 @@
     stroke: #fff;
     fill: #fff;
     font-size: 15px;
+}
+
+#controlPanel {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: rgba(42, 42, 42, 0.8);
+    padding: 5px 8px;
+    border-radius: 5px;
+}
+#parameterVis {
+    position: absolute;
+    top: 80px;
+    left: 5px;
+    background: rgba(42, 42, 42, 0.8);
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-family: "digital-7"; 
+    width: 140px;
+    text-align: center;
+}
+@font-face{
+    font-family:"digital-7";
+    src: url("../Build/Fonts/digital-7.ttf");
+}
+        
+#cesiumContainerGroundTrack{
+    display: block;
+    position: absolute;
+    width: 960px;
+    height: 500px;
+    padding: 10px 10px 100px 10px;
+    border-radius: 7px;
+    bottom: 50px;
+    right: 5px;
+    background: rgba(42, 42, 42, 0.8);
+    -webkit-transform: scale(0.4);
+    -webkit-transform-origin: right bottom;
+    -webkit-transition-property: -webkit-transform;
+    -webkit-transition-duration: 1s;
+    -moz-transform: scale(0.4);
+    -moz-transform-origin: right bottom;
+    -moz-transition-property: -moz-transform;
+    -moz-transition-duration: 1s;
+    transform: scale(0.3);
+    transform-origin: right bottom;
+    transition-property: transform;
+    transition-duration: 1s;  
+} 
+
+        
+
+#cesiumContainerGroundTrack:hover {
+    -webkit-transform: scale(0.75);
+    -moz-transform: scale(0.75);
+    transform: scale(0.75);
 }

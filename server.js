@@ -9,6 +9,8 @@
     var request = require('request');
     var Chance = require('chance');
     var fs = require("fs");
+    var sse = require("sse");
+    var EventSource = require("eventsource");
 
     var yargs = require('yargs').options({
         'port' : {
@@ -38,7 +40,7 @@
         return yargs.showHelp();
     }
     
-    // argv.public = true;
+     argv.public = true;
 
     // eventually this mime type configuration will need to change
     // https://github.com/visionmedia/send/commit/d2cb54658ce65948b0ed6e5fb5de69d022bef941
@@ -116,6 +118,7 @@
 
     }, 200);
     });
+    
 
     function createMsg() {
         var d = new Date();

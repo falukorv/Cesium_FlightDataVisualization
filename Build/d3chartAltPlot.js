@@ -29,9 +29,9 @@
         altitude[i] = jsonData.features[0].geometry.coordinates[i][2];
         distance[i] = jsonData.features[0].geometry.coordinates[i][1];
     }
-        console.log(jsonData)
+    
     // Various scales.
-    var xScale = d3.scaleLinear().range([0,width]),
+    var xScale = d3.scaleLinear().range([20,width]),
         yScale = d3.scaleLinear().range([height,0]);
         
     xScale.domain([0,altitude.length]);
