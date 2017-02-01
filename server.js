@@ -6,15 +6,21 @@
     var http = require('http');
     var compression = require('compression');
     var url = require('url');
+    var queryString = require( "querystring" );
     var request = require('request');
     var Chance = require('chance');
     var fs = require("fs");
-    var sse = require("sse");
-    var EventSource = require("eventsource");
+    var bodyParser = require("body-parser");
+    
+//    Variables in which to store imortant information:
+    var streaming = true;
+    var CZMLHeader; // This is the first packet in the CZML stream, which should be sent first in every GET-request
+    var CZMLRocket; // The packet containing graphical information about the rocket
+    var CZMLSpeed; // Packet containing information to be stated in text
 
     var yargs = require('yargs').options({
         'port' : {
-            'default' : 8080,
+            'default' : process.env.PORT || 8080,
             'description' : 'Port to listen on.'
         },
         'public' : {
@@ -62,15 +68,28 @@
 //    app.use(compression()); [FOR SOME REASON, THIS OPTION BREAKS THE STREAMING]
     app.use(express.static(__dirname));
     
+    app.use(bodyParser.urlencoded({ extended: true }));
+    app.use(bodyParser.json());
+    
     //TEST --------------------------------------
     
-//    var openConnections = [];
+    app.post('/postTest', function(req, res){
+        if (req.body[0].id == "document"){
+            CZMLHeader = req.body;
+        } else{
+            CZMLRocket = req.body;
+            console.log(JSON.stringify(CZMLRocket));
+        }
+//    console.log(req.body[0].position);
+ 
+    res.send('POST request successful');
+    });
+    
+    var openConnections = [];
     var chance = new Chance();
     
-    var testdata = 'Hi, I am data!';
-    
     app.get('/czml', function(req, resp) {
-        req.socket.setTimeout(2 * 60 * 1000);
+//        req.socket.setTimeout(2 * 60 * 1000);
         
     // send headers for event-stream connection
     // see spec for more information
@@ -82,66 +101,72 @@
         resp.write('\n');
         
         // push this res object to our global variable
-//        openConnections.push(resp);
+        openConnections.push(resp);
         
         // send document packet
-        var d = new Date();
-        resp.write('id: ' + 1 + '\n');
-        resp.write('data:' + JSON.stringify({ "id":"document", "version":"1.0" })+   '\n\n'); // Note the extra newline
-
+//        resp.write('id: ' + 1 + '\n');
+        resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
+//        resp.flushHeaders();
+//        
         // When the request is closed, e.g. the browser window
         // is closed. We search through the open connections
         // array and remove this connection.
         
-//        req.on("close", function() {
-//            var toRemove;
-//            for (var j =0 ; j < openConnections.length ; j++) {
-//                if (openConnections[j] == resp) {
-//                    toRemove =j;
-//                    break;
-//                }
-//            }
-//            openConnections.splice(j,1);
-//        });
+        req.on("close", function() {
+            var toRemove;
+            for (var j =0 ; j < openConnections.length ; j++) {
+                if (openConnections[j] == resp) {
+                    toRemove =j;
+                    break;
+                }
+            }
+            openConnections.splice(j,1);
+        });
+        
+        
+        var CZMLRocket_temp = CZMLRocket;
 
         setInterval(function() {
-        // we walk through each connection
-        
+//         we walk through each connection
 //            openConnections.forEach(function(resp) {
-            
-            
-                // send doc
-                var d = new Date();
-                resp.write('id: ' + 50 + '\n');
-                resp.write('data:' + createMsg() +   '\n\n'); // Note the extra newline
-//        });
+//                if (CZMLRocket !== CZMLRocket_temp){
+//                    resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
+////                    resp.flushHeaders();
+//                };
+//            });
 
-    }, 200);
+        if (CZMLRocket !== CZMLRocket_temp){
+//            resp.write('id: ' + 2 + '\n');
+            resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
+//          resp.flushHeaders();
+        };
+
+        },100);
     });
     
 
-    function createMsg() {
-        var d = new Date();
-        var entity = {
-            "id": 60,
-            "polyline": {
-                "positions": {
-                    "cartographicDegrees": [
-                      chance.latitude(), chance.longitude(), 0
-                      ,chance.latitude(), chance.longitude(), 0
-                  ]
-            },
-            "width": 2,
-            "material":
-                { "solidColor":
-                    { "color" :
-                        {"rgba": [0,0,255,255]}
-                    }
-                }
-            }
-        };
-        return JSON.stringify(entity);; 
-    }
+//    function createMsg() {
+//        var d = new Date();
+//        var entity = {
+//            "id": 60,
+//            "polyline": {
+//                "positions": {
+//                    "cartographicDegrees": [
+//                      chance.latitude(), chance.longitude(), 0
+//                      ,chance.latitude(), chance.longitude(), 0
+//                  ]
+//            },
+//            "width": 2,
+//            "material":
+//                { "solidColor":
+//                    { "color" :
+//                        {"rgba": [0,0,255,255]}
+//                    }
+//                }
+//            }
+//        };
+//        return JSON.stringify(entity);; 
+//    }
 
 //--------------------------------------
 

@@ -5,27 +5,27 @@
 	right: 5px;
 	background: rgba(42, 42, 42, 0.8);
 	border-radius: 7px;
-	-webkit-transform: scale(0.4);
+	-webkit-transform: scale(0.5);
 	-webkit-transform-origin: right top;
 	-webkit-transition-property: -webkit-transform;
 	-webkit-transition-duration: 1s;
-	-moz-transform: scale(0.4);
+	-moz-transform: scale(0.5);
 	-moz-transform-origin: right top;
 	-moz-transition-property: -moz-transform;
 	-moz-transition-duration: 1s;
-	transform: scale(0.3);
+	transform: scale(0.4);
 	transform-origin: right top;
 	transition-property: transform;
 	transition-duration: 1s;
 }
 
-@media only screen and (min-width: 1920px) {
+/*@media only screen and (min-width: 1920px) {
     #chart {
         -webkit-transform: scale(0.75);
         -moz-transform: scale(0.75);
         transform: scale(0.75);
     }
-}
+}*/
 
 #chart:hover {
 	-webkit-transform: scale(0.75);
@@ -41,7 +41,15 @@
     font-size: 40px;
 }
 
+.altitudeValue {
+    font-size: 40px;
+}
+
 .apogee {
+    font-size: 40px;
+}
+
+.apogeeValue {
     font-size: 40px;
 }
 
@@ -64,6 +72,7 @@
 .longitude{
     color: #fff;
     font-size: 40px;
+    /*font-family: "dense-regular";*/
     position: absolute;
     bottom: 45px;
     left: 15px;
@@ -71,6 +80,7 @@
 
 .longitudeValue{
     color: #fff;
+    /*font-family: "dense-regular";*/
     font-size: 40px;
     position: absolute;
     bottom: 45px;
@@ -112,6 +122,11 @@
     font-family:"digital-7";
     src: url("../Build/Fonts/digital-7.ttf");
 }
+
+@font-face{
+    font-family:"dense-regular";
+    src: url("../Build/Fonts/ADAM_CG.otf");
+}
         
 #cesiumContainerGroundTrack{
     display: block;
@@ -123,15 +138,15 @@
     bottom: 50px;
     right: 5px;
     background: rgba(42, 42, 42, 0.8);
-    -webkit-transform: scale(0.4);
+    -webkit-transform: scale(0.5);
     -webkit-transform-origin: right bottom;
     -webkit-transition-property: -webkit-transform;
     -webkit-transition-duration: 1s;
-    -moz-transform: scale(0.4);
+    -moz-transform: scale(0.5);
     -moz-transform-origin: right bottom;
     -moz-transition-property: -moz-transform;
     -moz-transition-duration: 1s;
-    transform: scale(0.3);
+    transform: scale(0.4);
     transform-origin: right bottom;
     transition-property: transform;
     transition-duration: 1s;  
