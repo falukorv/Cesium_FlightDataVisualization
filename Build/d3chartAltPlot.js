@@ -11,7 +11,10 @@
             width = 960 - margin.right,
             height = 500 - margin.top - margin.bottom;
 
-
+    width = d3.select("body").node().getBoundingClientRect().width*0.5 - margin.right;
+    height = d3.select("body").node().getBoundingClientRect().height*0.5 - margin.top - margin.bottom;
+    width = height*2;
+    
     // Importing example flight data from a previous flight
     var jsonData;
     $.ajax({
@@ -40,7 +43,9 @@
     // The x & y axes.
     var xAxis = d3.axisBottom(xScale);
     var yAxis = d3.axisLeft(yScale);
+    
 
+    
     // Create the SVG container and set the origin.
     var svg = d3.select("#chart").append("svg")
             .attr("width", width + margin.left + margin.right)

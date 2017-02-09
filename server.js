@@ -1,4 +1,4 @@
-(function() {
+(function () {
     'use strict';
     /*jshint node:true*/
 
@@ -6,12 +6,12 @@
     var http = require('http');
     var compression = require('compression');
     var url = require('url');
-    var queryString = require( "querystring" );
+    var queryString = require("querystring");
     var request = require('request');
     var Chance = require('chance');
     var fs = require("fs");
     var bodyParser = require("body-parser");
-    
+
 //    Variables in which to store imortant information:
     var streaming = true;
     var CZMLHeader; // This is the first packet in the CZML stream, which should be sent first in every GET-request
@@ -19,131 +19,289 @@
     var CZMLSpeed; // Packet containing information to be stated in text
 
     var yargs = require('yargs').options({
-        'port' : {
-            'default' : process.env.PORT || 8080,
-            'description' : 'Port to listen on.'
+        'port': {
+            'default': process.env.PORT || 8080,
+            'description': 'Port to listen on.'
         },
-        'public' : {
-            'type' : 'boolean',
-            'description' : 'Run a public server that listens on all interfaces.'
+        'public': {
+            'type': 'boolean',
+            'description': 'Run a public server that listens on all interfaces.'
         },
-        'upstream-proxy' : {
-            'description' : 'A standard proxy server that will be used to retrieve data.  Specify a URL including port, e.g. "http://proxy:8000".'
+        'upstream-proxy': {
+            'description': 'A standard proxy server that will be used to retrieve data.  Specify a URL including port, e.g. "http://proxy:8000".'
         },
-        'bypass-upstream-proxy-hosts' : {
-            'description' : 'A comma separated list of hosts that will bypass the specified upstream_proxy, e.g. "lanhost1,lanhost2"'
+        'bypass-upstream-proxy-hosts': {
+            'description': 'A comma separated list of hosts that will bypass the specified upstream_proxy, e.g. "lanhost1,lanhost2"'
         },
-        'help' : {
-            'alias' : 'h',
-            'type' : 'boolean',
-            'description' : 'Show this help.'
+        'help': {
+            'alias': 'h',
+            'type': 'boolean',
+            'description': 'Show this help.'
         }
     });
-    
+
     var argv = yargs.argv;
 
     if (argv.help) {
         return yargs.showHelp();
     }
-    
-     argv.public = true;
+
+    argv.public = true;
 
     // eventually this mime type configuration will need to change
     // https://github.com/visionmedia/send/commit/d2cb54658ce65948b0ed6e5fb5de69d022bef941
     // *NOTE* Any changes you make here must be mirrored in web.config.
     var mime = express.static.mime;
     mime.define({
-        'application/json' : ['czml', 'json', 'geojson', 'topojson'],
-        'model/vnd.gltf+json' : ['gltf'],
-        'model/vnd.gltf.binary' : ['bgltf', 'glb'],
-        'text/plain' : ['glsl']
+        'application/json': ['czml', 'json', 'geojson', 'topojson'],
+        'model/vnd.gltf+json': ['gltf'],
+        'model/vnd.gltf.binary': ['bgltf', 'glb'],
+        'text/plain': ['glsl']
     });
-    
+
     var app = express();
-    app.use(function(req, resp, next) {
+    app.use(function (req, resp, next) {
         resp.header("Access-Control-Allow-Origin", "*");
         resp.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
     });
-//    app.use(compression()); [FOR SOME REASON, THIS OPTION BREAKS THE STREAMING]
+//    app.use(compression()); // [FOR SOME REASON, THIS OPTION BREAKS THE STREAMING]
     app.use(express.static(__dirname));
-    
-    app.use(bodyParser.urlencoded({ extended: true }));
+
+    app.use(bodyParser.urlencoded({extended: true}));
     app.use(bodyParser.json());
-    
-    //TEST --------------------------------------
-    
-    app.post('/postTest', function(req, res){
-        if (req.body[0].id == "document"){
-            CZMLHeader = req.body;
-        } else{
-            CZMLRocket = req.body;
-            console.log(JSON.stringify(CZMLRocket));
-        }
-//    console.log(req.body[0].position);
- 
-    res.send('POST request successful');
-    });
-    
-    var openConnections = [];
-    var chance = new Chance();
-    
-    app.get('/czml', function(req, resp) {
-//        req.socket.setTimeout(2 * 60 * 1000);
-        
-    // send headers for event-stream connection
-    // see spec for more information
-        resp.writeHead(200, {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive'
-        });
-        resp.write('\n');
-        
-        // push this res object to our global variable
-        openConnections.push(resp);
-        
-        // send document packet
-//        resp.write('id: ' + 1 + '\n');
-        resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
-//        resp.flushHeaders();
-//        
-        // When the request is closed, e.g. the browser window
-        // is closed. We search through the open connections
-        // array and remove this connection.
-        
-        req.on("close", function() {
-            var toRemove;
-            for (var j =0 ; j < openConnections.length ; j++) {
-                if (openConnections[j] == resp) {
-                    toRemove =j;
-                    break;
-                }
-            }
-            openConnections.splice(j,1);
-        });
-        
-        
-        var CZMLRocket_temp = CZMLRocket;
 
-        setInterval(function() {
-//         we walk through each connection
-//            openConnections.forEach(function(resp) {
-//                if (CZMLRocket !== CZMLRocket_temp){
-//                    resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
-////                    resp.flushHeaders();
-//                };
+    var stream;
+    var streaming = false;
+    var date = new Date();
+    var now = date.getTime();
+    var then = date.getTime();
+
+//    // POST: This is where the data is recieved from the C# application
+//    app.post('/czml', function (req, res) {
+//        if (req.body[0].id === "document") {
+//            // This is the first packet arriving
+//            CZMLHeader = req.body;
+//            stream = fs.createWriteStream("back_log.czml");
+//            stream.write('[' + JSON.stringify(CZMLHeader) + '\n');
+//            // Noting that we are currently streaming
+//            streaming = true;
+//            console.log("Connection open, currently streaming");
+//
+//            // Attaching listener, on closed connection: set "streaming" to false
+//            req.connection.once("close", function () {
+//                stream.close();
+//                streaming = false;
+//                console.log("Connection closed, stream closed");
+//                CZMLHeader = undefined;
+//                CZMLRocket = undefined;
 //            });
+//        } else {
+//            CZMLRocket = req.body;
+//            stream.write(JSON.stringify(CZMLRocket) + '\n\n');
+////            console.log(JSON.stringify(CZMLRocket));
+//        }
+//        ;
+////        passData();
+//
+//
+//
+////    console.log(req.body[0].position);
+////        res.set("connection", "close");
+//        res.send('POST request successful');
+//    });
 
-        if (CZMLRocket !== CZMLRocket_temp){
-//            resp.write('id: ' + 2 + '\n');
-            resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
-//          resp.flushHeaders();
-        };
 
-        },100);
+    var chance = new Chance();
+
+//    app.get('/czml', function (req, resp) {
+////        req.socket.setTimeout(2 * 60 * 1000);
+//
+//        // send headers for event-stream connection
+//        // see spec for more information
+//        resp.writeHead(200, {
+//            'Content-Type': 'text/event-stream',
+//            'Cache-Control': 'no-cache',
+//            'Connection': 'keep-alive'
+//        });
+////        resp.write('\n');
+//
+//        // push this res object to our global variable
+////        openConnections.push(resp);
+//
+//        // send document packet
+////        resp.write('id: ' + 1 + '\n');
+////        console.log('data: {\"id\": streamStatus, \n' + 'data: ' +'\"status\":' + streaming.toString() + '} \n\n');
+////        resp.write('data: {\"id\":  "\streamStatus\", \"status\":' + streaming.toString() + '} \n\n');
+//
+//
+//        // When the request is closed, e.g. the browser window
+//        // is closed. We search through the open connections
+//        // array and remove this connection.
+//        resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
+////        resp.flushHeaders();
+//
+////        req.connection.on("close", function () {
+////            var toRemove;
+////            for (var j = 0; j < openConnections.length; j++) {
+////                if (openConnections[j] === resp) {
+////                    toRemove = j;
+////                    break;
+////                }
+////            }
+////            openConnections.splice(j, 1);
+////        });
+//
+//        var CZMLHeader_temp;
+//        var CZMLRocket_temp;
+//
+//        if (streaming) {
+//            CZMLRocket_temp = CZMLRocket;
+//            CZMLHeader_temp = CZMLRocket;
+//        }
+//
+////        function passData(){
+////            if (CZMLRocket !== CZMLRocket_temp) {
+////                resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
+////                CZMLHeader_temp = CZMLHeader;
+////            }
+////            if (CZMLRocket !== CZMLRocket_temp) {
+//////            resp.write('id: ' + 2 + '\n');
+////                resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
+////                CZMLRocket = CZMLRocket_temp;
+////                now = new Date().getTime();
+////        var diffTime = now-then;
+////        console.log('Time between POST requests: ' + diffTime.toString() + ' ms');
+////        then = now;
+//////          resp.flushHeaders();
+////            }
+////            ;
+////        }
+//
+//        setInterval(function () {
+////         we walk through each connection
+////            openConnections.forEach(function(resp) {
+////                if (CZMLRocket !== CZMLRocket_temp){
+////                    resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
+//////                    resp.flushHeaders();
+////                };
+////            });
+////            if (CZMLRocket !== CZMLRocket_temp) {
+////                resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
+////                CZMLHeader_temp = CZMLHeader;
+////            }
+//            if (CZMLRocket !== CZMLRocket_temp) {
+//                console.log("sending!");
+//                resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
+//                CZMLRocket = CZMLRocket_temp;
+//                now = new Date().getTime();
+//                var diffTime = now - then;
+//                console.log('Time between POST requests: ' + diffTime.toString() + ' ms');
+//                then = now;
+//
+//                // Flushing headers, very important since it won't stream correctly otherwise!
+//                resp.flushHeaders();
+//            }
+//            ;
+//
+//        }, 1);
+//    });
+
+    var openConnections = [];
+
+    var postReq;
+    var postResp;
+
+    app.all("/czml", function (req, resp) {
+        var getReq;
+        var getResp;
+
+        if (req.method === "POST") {
+            postReq = req;
+//            console.log(postReq);
+            postResp = resp;
+
+            if (postReq.body[0].id === "document") {
+                // This is the first packet arriving
+                CZMLHeader = postReq.body;
+                stream = fs.createWriteStream("back_log.czml");
+                stream.write('[' + JSON.stringify(CZMLHeader) + '\n');
+                // Noting that we are currently streaming
+                streaming = true;
+                console.log("Connection open, currently streaming");
+
+                openConnections.forEach(function (resp) {
+                    resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
+                });
+
+//                if (!(getResp == null)) {
+//                    console.log(getResp);
+//                    getResp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
+//                }
+
+                // Attaching listener, on closed connection: set "streaming" to false
+                postReq.connection.once("close", function () {
+                    stream.close();
+                    streaming = false;
+                    console.log("Connection closed, stream closed");
+                    CZMLHeader = undefined;
+                    CZMLRocket = undefined;
+                    postReq = undefined;
+                    postResp = undefined;
+                });
+            } else {
+                CZMLRocket = postReq.body;
+                stream.write(JSON.stringify(CZMLRocket) + '\n\n');
+
+                openConnections.forEach(function (getResp) {
+                    console.log('Sending rocket data');
+                    getResp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
+                });
+
+//                if (!(getResp == null)) {
+//                    getResp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
+//                }
+
+            }
+            postResp.send('POST request successful');
+        } else if (req.method === "GET") {
+            getReq = req;
+            getResp = resp;
+
+            openConnections.push(getResp);
+
+            getResp.writeHead(200, {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive'
+            });
+
+            if (!(postReq == null)) {
+                getResp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
+            }
+
+            req.connection.on("close", function () {
+                var toRemove;
+                for (var j = 0; j < openConnections.length; j++) {
+                    if (openConnections[j] === resp) {
+                        toRemove = j;
+                        break;
+                    }
+                }
+                openConnections.splice(j, 1);
+                console.log(openConnections.length.toString());
+            });
+
+        } else {
+            req.close();
+        }
+
+
+
+
+
     });
-    
+
 
 //    function createMsg() {
 //        var d = new Date();
@@ -189,7 +347,7 @@
     function filterHeaders(req, headers) {
         var result = {};
         // filter out headers that are listed in the regex above
-        Object.keys(headers).forEach(function(name) {
+        Object.keys(headers).forEach(function (name) {
             if (!dontProxyHeaderRegex.test(name)) {
                 result[name] = headers[name];
             }
@@ -200,12 +358,12 @@
     var upstreamProxy = argv['upstream-proxy'];
     var bypassUpstreamProxyHosts = {};
     if (argv['bypass-upstream-proxy-hosts']) {
-        argv['bypass-upstream-proxy-hosts'].split(',').forEach(function(host) {
+        argv['bypass-upstream-proxy-hosts'].split(',').forEach(function (host) {
             bypassUpstreamProxyHosts[host.toLowerCase()] = true;
         });
     }
 
-    app.get('/proxy/*', function(req, res, next) {
+    app.get('/proxy/*', function (req, res, next) {
         // look for request like http://localhost:8080/proxy/http://example.com/file?query=1
         var remoteUrl = getRemoteUrlFromParam(req);
         if (!remoteUrl) {
@@ -232,11 +390,11 @@
         // encoding : null means "body" passed to the callback will be raw bytes
 
         request.get({
-            url : url.format(remoteUrl),
-            headers : filterHeaders(req, req.headers),
-            encoding : null,
-            proxy : proxy
-        }, function(error, response, body) {
+            url: url.format(remoteUrl),
+            headers: filterHeaders(req, req.headers),
+            encoding: null,
+            proxy: proxy
+        }, function (error, response, body) {
             var code = 500;
 
             if (response) {
@@ -248,7 +406,7 @@
         });
     });
 
-    var server = app.listen(argv.port, argv.public ? undefined : 'localhost', function() {
+    var server = app.listen(argv.port, argv.public ? undefined : 'localhost', function () {
         if (argv.public) {
             console.log('Cesium development server running publicly.  Connect to http://localhost:%d/', server.address().port);
         } else {
@@ -270,16 +428,16 @@
         process.exit(1);
     });
 
-    server.on('close', function() {
+    server.on('close', function () {
         console.log('Cesium development server stopped.');
     });
 
     var isFirstSig = true;
-    process.on('SIGINT', function() {
+    process.on('SIGINT', function () {
         if (isFirstSig) {
             console.log('Cesium development server shutting down.');
-            server.close(function() {
-              process.exit(0);
+            server.close(function () {
+                process.exit(0);
             });
             isFirstSig = false;
         } else {

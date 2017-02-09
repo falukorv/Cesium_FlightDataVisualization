@@ -107,6 +107,7 @@
     padding: 5px 8px;
     border-radius: 5px;
 }
+
 #parameterVis {
     position: absolute;
     top: 80px;
@@ -118,6 +119,19 @@
     width: 140px;
     text-align: center;
 }
+
+#dashboard {
+    position: absolute;
+    bottom: 0px;
+    left: 5px;
+    right: 5px;
+    background: rgba(42, 42, 42, 1);
+    padding: 10px 8px;
+    border-radius: 5px;
+    height: 33px;
+    text-align: center;
+}
+
 @font-face{
     font-family:"digital-7";
     src: url("../Build/Fonts/digital-7.ttf");
@@ -131,8 +145,6 @@
 #cesiumContainerGroundTrack{
     display: block;
     position: absolute;
-    width: 960px;
-    height: 500px;
     padding: 10px 10px 100px 10px;
     border-radius: 7px;
     bottom: 50px;

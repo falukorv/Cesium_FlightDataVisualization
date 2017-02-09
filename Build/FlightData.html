@@ -40,12 +40,10 @@
                 <button class="cesium-button" onclick="showTrajectory()">Show trajectory</button>
             </p>
         </div>
-        <div id="parameterVis">
-            <p>
-            <h1 style="color:#FFFFFF">Velocity</h1>
-            <h1 style="color:#FFFFFF" id="velocity"></h1>
-        </p> 
-    </div>
+        <div id="dashboard">
+            <span class="latitude">Speed:</span>
+            <span class="latitudeValue">Tusen miljoner m/s</span>
+        </div>
     <div id="chart"></div>
 
     <script>
@@ -76,6 +74,7 @@
             geocoder: false,
             navigationInstructionsInitiallyVisible: false,
             baseLayerPicker: false,
+//            automaticallyTrackDataSourceClocks: true,
             sceneMode: Cesium.SceneMode.SCENE2D,
             imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
                 url: 'https://a.tile.openstreetmap.org'
@@ -83,11 +82,12 @@
         });
         var viewer = new Cesium.Viewer('cesiumContainer', {
             timeline: false,
-//            animation : false,
+            animation: false,
             selectionIndicator: false,
             infoBox: false,
             homeButton: false,
             sceneModePicker: false,
+            automaticallyTrackDataSourceClocks: false,
             navigationHelpButton: false,
             geocoder: false,
             navigationInstructionsInitiallyVisible: false,
@@ -186,12 +186,24 @@
 ////            viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 200));
 //        }
 
+        var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
+
+        var miniWidth = d3.select("body").node().getBoundingClientRect().width * 0.5 - margin.right;
+        var miniHeight = d3.select("body").node().getBoundingClientRect().height * 0.5 - margin.top - margin.bottom;
+        miniWidth = miniHeight * 2;
+
+        $(document).ready(function () {
+            var divHeight = $('#cesiumContainerGroundTrack').height();
+            $('#cesiumContainerGroundTrack').css('height', miniHeight + 'px');
+            $('#cesiumContainerGroundTrack').css('width', miniWidth + 'px');
+        });
+
         // Set latitude and longitude labels
-        var miniCesium = d3.select("cesiumContainerGroundTrack");
+        var miniCesium = d3.select("cesiumContainerGroundTrack")
+                .attr("width", miniWidth)
+                .attr("height", miniHeight);
 //        console.log(miniCesium)
 
-        miniCesium.attr("width", 1000)
-                .attr("height", 500);
 
         miniCesium.append("text")
                 .attr("class", "altitude label")
@@ -208,6 +220,16 @@
         var w1;
         var w2;
         var w3;
+        
+//        var miniCesium = d3.select("dashboard");
+//        
+//        miniCesium.append("text")
+//                .attr("class", "altitude label")
+//                .attr("text-anchor", "start")
+//                .attr("y", 28)
+//                .attr("x", 30)
+//                .attr("transform", "translate(20," + 0 + ")")
+//                .text('Velocity');
 
 //        setInterval(function(){
 ////            w1 = Math.random()*0.1;
@@ -224,10 +246,17 @@
 
 //        // STREAMING CODE
         var czmlStream = new Cesium.CzmlDataSource();
+        var czmlBackLog = new Cesium.CzmlDataSource();
+
         var czmlStreamUrl = "http://localhost:8080/czml";
+        var czmlBackLogSource = "/../back_log.czml";
 
         // Setup EventSource
         var czmlEventSource = new EventSource(czmlStreamUrl);
+
+        // Put the datasource into Cesium
+        viewer.dataSources.add(czmlStream);
+        viewer.dataSources.add(czmlBackLog);
 
         czmlEventSource.onopen = function () {
             console.log('Connection open');
@@ -236,16 +265,74 @@
         czmlEventSource.onerror = function (event) {
             console.log(event.error);
         };
-
+        var then = new Date().getTime();
         var czmlData;
         // Listen for EventSource data coming
         czmlEventSource.onmessage = function () {
+            // First data packet is the status of the stream, true if streaming, otherwise false
+//            if (JSON.parse(event.data).id === "streamStatus") {
+//                // If streaming, load backlog
+//                streamStatus = JSON.parse(event.data);
+////                if (JSON.parse(event.data).status === true) {
+//if (true) {
+//                    console.log("streaming")
+////                    czmlBackLog.process(czmlBackLogSource);
+//                }
+//                ;
+//            } else {
+//            
+//            var now = new Date().getTime();
+//            var diffTime = now-then;
+//            console.log('Time between messages: ' + diffTime.toString() + ' ms');
+//            then = now;
+
+            czmlData = JSON.parse(event.data);
+            czmlStream.process(czmlData);
+            viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
+
+            if (czmlData[0].id === "document") {
+                console.log("setting time!");
+//                viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(czmlData[0].clock.currentTime);
+            }
+
+            if (czmlData.id === "rocket") {
+                console.log("setting time!");
+
+            }
+            var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+            Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+            viewer.clock.currentTime = startTime;
+
+            var position = czmlData[0].position.cartographicDegrees;
+//////            console.log(czmlData[0].position.cartographicDegrees);
+////
+            var speed = czmlData[1].point.pixelSize.number[1];
+////
+            var longitude = position[1];
+            var latitude = position[2];
+            var altitude = position[position.length - 1];
+////
+            document.getElementById("chart").getElementsByTagName("text")[23].innerHTML = Math.round(altitude) + "m";
+            document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
+            document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
+            document.getElementById("velocity").innerHTML = Math.round(speed) + " m/s";
+
+
+
+//            }
+//            ;
+
+
+//            console.log(data);
+        };
+
+        function processStream(event) {
             czmlData = JSON.parse(event.data);
             czmlStream.process(czmlData);
             viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
 
             var position = czmlData[0].position.cartographicDegrees;
-            
+
             var speed = czmlData[1].point.pixelSize.number[1];
 
             var longitude = position[1];
@@ -254,22 +341,21 @@
 
             document.getElementById("chart").getElementsByTagName("text")[23].innerHTML = Math.round(altitude) + "m";
             document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
-            document.getElementsByClassName("latitudeValue")[0].innerHTML =  parseFloat(latitude).toFixed(4);
+            document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
             document.getElementById("velocity").innerHTML = Math.round(speed) + " m/s";
-//            console.log(data);
-        };
+        }
+        ;
 
-        // Put the datasource into Cesium
-        viewer.dataSources.add(czmlStream);
 
-        var clockStarted = false;
 
-        var clockstarter = setInterval(function () {
-            if (clockStarted = false) {
-                viewer.clock.startTime = viewer.dataSources.get(0).entities.getById("rocket").position._property._times[0].addSeconds(-0.5);
-                clearInterval(clockStarter);
-            }
-        }, 10);
+//        var clockStarted = false;
+//
+//        var clockstarter = setInterval(function () {
+//            if (clockStarted = false) {
+//                viewer.clock.startTime = viewer.dataSources.get(0).entities.getById("rocket").position._property._times[0].addSeconds(-0.5);
+//                clearInterval(clockStarter);
+//            }
+//        }, 10);
 
 
 
