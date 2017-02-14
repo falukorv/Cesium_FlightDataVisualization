@@ -21,354 +21,381 @@
                 width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
             }
 
-
         </style>
 
     </head>
 
     <body>
         <div id="cesiumContainer"></div>
+        <div id="creditDiv"></div>
+        <!--        <div id="controlPanel">
+                    <p>
+                        <button class="cesium-button" onclick="showAttitude()">Show attitude</button>
+                        <button class="cesium-button" onclick="showTrajectory()">Show trajectory</button>
+                    </p>
+                </div>-->
+        <div id="dashboard">
+            <div id="separationLine1"></div>
+            <div id="missionTimeContainer">
+                <span class="missionTimeLabel">Mission time</span>
+                <span class="missionTimeValue">T- 0s</span>
+            </div>
+            <div id="separationLine2"></div>
+            <div id="speedContainer">
+                <span class="speedLabel">Speed</span>
+                <span class="speedValue">0 m/s</span>
+            </div>
+            <div id="separationLine3"></div>
+            <div id="gForceContainer">
+                <span class="gForceLabel">G-loads</span>
+                <span class="gForceValueX">G<sub>X</sub>: 0g</span>
+                <span class="gForceValueY">G<sub>Y</sub>: 0g</span>
+                <span class="gForceValueZ">G<sub>Z</sub>: 0g</span>
+            </div>
+            <!--<span class="speed">Speed [m/s]</span>-->
+        </div>
+
+        <!--        <div id="speedValueBox">
+                    <span class="speedValue">1000</span>
+                </div>-->
+        <div id="chart"></div>
+        <div id="gaugeBase"></div>
         <div id="cesiumContainerGroundTrack">
             <span class="latitude">Latitude:</span>
-            <span class="latitudeValue">67.8932469830635</span>
+            <span class="latitudeValue">0</span>
             <span class="longitude">Longitude:</span>
-            <span class="longitudeValue">21.1068944441480</span>
+            <span class="longitudeValue">0</span>
         </div>
-        <div id="controlPanel">
-            <p>
-                <button class="cesium-button" onclick="showAttitude()">Show attitude</button>
-                <button class="cesium-button" onclick="showTrajectory()">Show trajectory</button>
-            </p>
-        </div>
-        <div id="dashboard">
-            <span class="latitude">Speed:</span>
-            <span class="latitudeValue">Tusen miljoner m/s</span>
-        </div>
-    <div id="chart"></div>
 
-    <script>
-//        czml = [
-//  {
-//    "id":"document",
-//    "name":"simple",
-//    "version":"1.0",
-//  },
-//  {
-//    "id":"9927edc4-e87a-4e1f-9b8b-0bfb3b05b227",
-//    "name":"Accesses",
-//    "description":"List of Accesses"
-//  }
-//        ]
+
+        <script>
+            //        czml = [
+            //  {
+            //    "id":"document",
+            //    "name":"simple",
+            //    "version":"1.0",
+            //  },
+            //  {
+            //    "id":"9927edc4-e87a-4e1f-9b8b-0bfb3b05b227",
+            //    "name":"Accesses",
+            //    "description":"List of Accesses"
+            //  }
+            //        ]
 
 
 
-        Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
-        var viewerGroundTrack = new Cesium.Viewer('cesiumContainerGroundTrack', {
-            timeline: false,
-            animation: false,
-            selectionIndicator: false,
-            infoBox: false,
-            homeButton: false,
-            sceneModePicker: false,
-            navigationHelpButton: false,
-            geocoder: false,
-            navigationInstructionsInitiallyVisible: false,
-            baseLayerPicker: false,
-//            automaticallyTrackDataSourceClocks: true,
-            sceneMode: Cesium.SceneMode.SCENE2D,
-            imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
-                url: 'https://a.tile.openstreetmap.org'
-            })
-        });
-        var viewer = new Cesium.Viewer('cesiumContainer', {
-            timeline: false,
-            animation: false,
-            selectionIndicator: false,
-            infoBox: false,
-            homeButton: false,
-            sceneModePicker: false,
-            automaticallyTrackDataSourceClocks: false,
-            navigationHelpButton: false,
-            geocoder: false,
-            navigationInstructionsInitiallyVisible: false,
-            baseLayerPicker: false
-        });
+            Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
+            var viewerGroundTrack = new Cesium.Viewer('cesiumContainerGroundTrack', {
+                timeline: false,
+                animation: false,
+                selectionIndicator: false,
+                infoBox: false,
+                homeButton: false,
+                sceneModePicker: false,
+                navigationHelpButton: false,
+                geocoder: false,
+                navigationInstructionsInitiallyVisible: false,
+//                baseLayerPicker: false,
+                //            automaticallyTrackDataSourceClocks: true,
+                sceneMode: Cesium.SceneMode.SCENE2D,
+//                imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
+//                    url: 'https://a.tile.openstreetmap.org'
+//                })
+            });
+            var viewer = new Cesium.Viewer('cesiumContainer', {
+                timeline: false,
+                animation: false,
+                selectionIndicator: false,
+                infoBox: false,
+                homeButton: false,
+                sceneModePicker: false,
+                automaticallyTrackDataSourceClocks: false,
+                navigationHelpButton: false,
+                geocoder: false,
+                navigationInstructionsInitiallyVisible: false,
+                baseLayerPicker: false
+            });
+            document.getElementsByClassName("cesium-viewer")[1].removeChild(viewerGroundTrack.bottomContainer);
+            document.getElementsByClassName("cesium-viewer")[1].removeChild(document.getElementsByClassName("cesium-viewer-fullscreenContainer")[1]);
+            
+            var scene = viewer.scene;
+            var groundTrackScene = viewerGroundTrack.scene;
+            scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
+            scene.globe.tileCacheSize = 1000;
+            groundTrackScene.globe.tileCacheSize = 1000;
+
+//            viewer.scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv).addDefaultCredit(Cesium.Credit('Cesium', '/Documentation/images/CesiumLogo.png', 'http://cesiumjs.org/'));
+
+            var scene = viewer.scene;
+
+            // Get the camera
+            var camera = viewer.camera;
+            var groundTrackCamera = viewerGroundTrack.scene.camera;
+
+            // Model used for the rocket, placeholder at the moment.
+            //        var modelURL = '../Build/3Dmodels/rocket.glb';
+            var modelURL = '../Build/3Dmodels/Cesium_Air.glb';
+
+            // The position of Esrange, which will be the initial position of the rocket.
+            esrangeLong = 21.1068944441480;
+            esrangeLat = 67.8932469830635;
 
 
+            var groundTrackMarker = viewerGroundTrack.entities.add({
+                "name": 'marker',
+                "position": Cesium.Cartesian3.fromDegrees(esrangeLong, esrangeLat, 0),
+                "show": false,
+                "point": {
+                    "pixelSize": 10,
+                    "color": Cesium.Color.BLUE,
+                    "outlineColor": Cesium.Color.BLUE
+                }
+            });
 
-        var scene = viewer.scene;
-
-        // Get the camera
-        var camera = viewer.camera;
-
-        // Model used for the rocket, placeholder at the moment.
-//        var modelURL = '../Build/3Dmodels/rocket.glb';
-        var modelURL = '../Build/3Dmodels/Cesium_Air.glb';
-
-        // The position of Esrange, which will be the initial position of the rocket.
-        esrangeLong = 21.1068944441480;
-        esrangeLat = 67.8932469830635;
-
-        var height = 100;
-        var position = Cesium.Cartesian3.fromDegrees(esrangeLong, esrangeLat, height);
-        var heading = Cesium.Math.toRadians(-90);
-        var pitch = Cesium.Math.toRadians(0);
-        var roll = 0;
-
-        var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
-        var orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
-
-
-//         Defining the model properties and adding it to the viewer
-//        var rocket = viewer.entities.add({
-//            name : 'Rocket',
-//            position: position,
-//            orientation: orientation,
-//            show : true,
-//            model: {
-//                uri : "https://flight-data-visualization.herokuapp.com/Build/3Dmodels/Cesium_Air.glb",
-//                minimumPixelSize : 128,
-//                maximumScale : 20000
-//            }
-//        });
-//        
-//        rocket2 = viewerGroundTrack.entities.add({
-//            name : 'Rocket2',
-//            position: rocket.position,
-//            orientation: rocket.orientation,
-//            show : rocket.show,
-//            model: rocket.model
-//        });
-
-//        viewerGroundTrack.trackedEntity = rocket2;
-//        viewerGroundTrack.flyTo(rocket2, {offset: new Cesium.HeadingPitchRange(0, 0, 750), duration: 10});
-//        
-        // Create a billbord that will serve as background if it is desirable to only view the attitude
-        bbBackgroundPos = Cesium.Cartesian3.fromDegrees(esrangeLong + 0.001, esrangeLat, height);
-        var bbBackground = viewer.entities.add({
-            name: 'Billboard',
-            position: bbBackgroundPos,
-            billboard: {
-                image: '../Source/Assets/Textures/bb-background.png', // default: undefined
-                show: false, // default
-                horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
-                verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
-                scale: 2, // default: 1.0
-                alignedAxis: Cesium.Cartesian3.ZERO, // default
-//                width : 50*16, // default: undefined
-//                height : 50*9 // default: undefined
-            }
-        });
-
-//        viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 100));
-//        viewer.trackedEntity = rocket;
-
-
-//        function showAttitude(){
-//            camera.cancelFlight();
-//            viewer.trackedEntity = undefined;
-//            scene.screenSpaceCameraController.enableInputs = false;
-//            bbBackground.billboard.show = true;
-//            viewer.camera.setView({
-//                destination : new Cesium.Cartesian3.fromDegrees(esrangeLong-0.002,esrangeLat,height),
-//                orientation: {
-//                    heading : Cesium.Math.toRadians(90.0), // east, default value is 0.0 (north)
-//                    pitch : Cesium.Math.toRadians(0),    // default value (looking down)
-//                    roll : 0.0                             // default value
+//            // Create a billbord that will serve as background if it is desirable to only view the attitude
+//            bbBackgroundPos = Cesium.Cartesian3.fromDegrees(esrangeLong + 0.001, esrangeLat, height);
+//            var bbBackground = viewer.entities.add({
+//                name: 'Billboard',
+//                position: bbBackgroundPos,
+//                billboard: {
+//                    image: '../Source/Assets/Textures/bb-background.png', // default: undefined
+//                    show: false, // default
+//                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
+//                    verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
+//                    scale: 2, // default: 1.0
+//                    alignedAxis: Cesium.Cartesian3.ZERO, // default
+//                    //                width : 50*16, // default: undefined
+//                    //                height : 50*9 // default: undefined
 //                }
 //            });
-//        }
 
-//        function showTrajectory(){
-//            viewer.trackedEntity = rocket;
-//            scene.screenSpaceCameraController.enableInputs = true;
-//            bbBackground.billboard.show = false;
-////            viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 200));
-//        }
-
-        var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
-
-        var miniWidth = d3.select("body").node().getBoundingClientRect().width * 0.5 - margin.right;
-        var miniHeight = d3.select("body").node().getBoundingClientRect().height * 0.5 - margin.top - margin.bottom;
-        miniWidth = miniHeight * 2;
-
-        $(document).ready(function () {
-            var divHeight = $('#cesiumContainerGroundTrack').height();
-            $('#cesiumContainerGroundTrack').css('height', miniHeight + 'px');
-            $('#cesiumContainerGroundTrack').css('width', miniWidth + 'px');
-        });
-
-        // Set latitude and longitude labels
-        var miniCesium = d3.select("cesiumContainerGroundTrack")
-                .attr("width", miniWidth)
-                .attr("height", miniHeight);
-//        console.log(miniCesium)
+            //        viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 100));
+            //        viewer.trackedEntity = rocket;
 
 
-        miniCesium.append("text")
-                .attr("class", "altitude label")
-                .attr("text-anchor", "start")
-                .attr("y", 28)
-                .attr("x", 30)
-                .attr("transform", "translate(20," + 0 + ")")
-                .text('Altitude: High as a kite');
+            //        function showAttitude(){
+            //            camera.cancelFlight();
+            //            viewer.trackedEntity = undefined;
+            //            scene.screenSpaceCameraController.enableInputs = false;
+            //            bbBackground.billboard.show = true;
+            //            viewer.camera.setView({
+            //                destination : new Cesium.Cartesian3.fromDegrees(esrangeLong-0.002,esrangeLat,height),
+            //                orientation: {
+            //                    heading : Cesium.Math.toRadians(90.0), // east, default value is 0.0 (north)
+            //                    pitch : Cesium.Math.toRadians(0),    // default value (looking down)
+            //                    roll : 0.0                             // default value
+            //                }
+            //            });
+            //        }
 
-//        var x;
-//        var y;
-//        var z;
-//        var w;
-        var w1;
-        var w2;
-        var w3;
-        
-//        var miniCesium = d3.select("dashboard");
-//        
-//        miniCesium.append("text")
-//                .attr("class", "altitude label")
-//                .attr("text-anchor", "start")
-//                .attr("y", 28)
-//                .attr("x", 30)
-//                .attr("transform", "translate(20," + 0 + ")")
-//                .text('Velocity');
+            //        function showTrajectory(){
+            //            viewer.trackedEntity = rocket;
+            //            scene.screenSpaceCameraController.enableInputs = true;
+            //            bbBackground.billboard.show = false;
+            ////            viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 200));
+            //        }
 
-//        setInterval(function(){
-////            w1 = Math.random()*0.1;
-////            w2 = Math.random()*0.1;
-////            w3 = Math.random()*0.1;
-//            w1 = 0.1;
-//            w2 = 0.1;
-//            w3 = 0.1;
-//            orientation = RK4(w1,w2,w3,orientation,0.1);
-//            rocket.orientation = orientation;
-////            document.getElementById("velocity").innerHTML = Math.floor(100*Math.random()).toString();
-//        },10)
+            var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
 
+            var miniWidth = d3.select("body").node().getBoundingClientRect().width * 0.5 - margin.right;
+            var miniHeight = d3.select("body").node().getBoundingClientRect().height * 0.5 - margin.top - margin.bottom;
+            miniWidth = miniHeight * 2;
 
-//        // STREAMING CODE
-        var czmlStream = new Cesium.CzmlDataSource();
-        var czmlBackLog = new Cesium.CzmlDataSource();
+            $(document).ready(function () {
+                var divHeight = $('#cesiumContainerGroundTrack').height();
+                $('#cesiumContainerGroundTrack').css('height', 50 + '%');
+                $('#cesiumContainerGroundTrack').css('width', 60 + '%');
+            });
 
-        var czmlStreamUrl = "http://localhost:8080/czml";
-        var czmlBackLogSource = "/../back_log.czml";
+            // Set latitude and longitude labels
+            var miniCesium = d3.select("cesiumContainerGroundTrack")
+                    .attr("width", miniWidth)
+                    .attr("height", miniHeight);
+            //        console.log(miniCesium)
 
-        // Setup EventSource
-        var czmlEventSource = new EventSource(czmlStreamUrl);
+            miniCesium.append("text")
+                    .attr("class", "altitude label")
+                    .attr("text-anchor", "start")
+                    .attr("y", 28)
+                    .attr("x", 30)
+                    .attr("transform", "translate(20," + 0 + ")")
+                    .text('Altitude: High as a kite');
 
-        // Put the datasource into Cesium
-        viewer.dataSources.add(czmlStream);
-        viewer.dataSources.add(czmlBackLog);
+            //        var x;
+            //        var y;
+            //        var z;
+            //        var w;
+            var w1;
+            var w2;
+            var w3;
 
-        czmlEventSource.onopen = function () {
-            console.log('Connection open');
-        };
+            //        var miniCesium = d3.select("dashboard");
+            //        
+            //        miniCesium.append("text")
+            //                .attr("class", "altitude label")
+            //                .attr("text-anchor", "start")
+            //                .attr("y", 28)
+            //                .attr("x", 30)
+            //                .attr("transform", "translate(20," + 0 + ")")
+            //                .text('Velocity');
 
-        czmlEventSource.onerror = function (event) {
-            console.log(event.error);
-        };
-        var then = new Date().getTime();
-        var czmlData;
-        // Listen for EventSource data coming
-        czmlEventSource.onmessage = function () {
-            // First data packet is the status of the stream, true if streaming, otherwise false
-//            if (JSON.parse(event.data).id === "streamStatus") {
-//                // If streaming, load backlog
-//                streamStatus = JSON.parse(event.data);
-////                if (JSON.parse(event.data).status === true) {
-//if (true) {
-//                    console.log("streaming")
-////                    czmlBackLog.process(czmlBackLogSource);
-//                }
-//                ;
-//            } else {
-//            
-//            var now = new Date().getTime();
-//            var diffTime = now-then;
-//            console.log('Time between messages: ' + diffTime.toString() + ' ms');
-//            then = now;
-
-            czmlData = JSON.parse(event.data);
-            czmlStream.process(czmlData);
-            viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
-
-            if (czmlData[0].id === "document") {
-                console.log("setting time!");
-//                viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(czmlData[0].clock.currentTime);
-            }
-
-            if (czmlData.id === "rocket") {
-                console.log("setting time!");
-
-            }
-            var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-            Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-            viewer.clock.currentTime = startTime;
-
-            var position = czmlData[0].position.cartographicDegrees;
-//////            console.log(czmlData[0].position.cartographicDegrees);
-////
-            var speed = czmlData[1].point.pixelSize.number[1];
-////
-            var longitude = position[1];
-            var latitude = position[2];
-            var altitude = position[position.length - 1];
-////
-            document.getElementById("chart").getElementsByTagName("text")[23].innerHTML = Math.round(altitude) + "m";
-            document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
-            document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
-            document.getElementById("velocity").innerHTML = Math.round(speed) + " m/s";
+            //        setInterval(function(){
+            ////            w1 = Math.random()*0.1;
+            ////            w2 = Math.random()*0.1;
+            ////            w3 = Math.random()*0.1;
+            //            w1 = 0.1;
+            //            w2 = 0.1;
+            //            w3 = 0.1;
+            //            orientation = RK4(w1,w2,w3,orientation,0.1);
+            //            rocket.orientation = orientation;
+            ////            document.getElementById("velocity").innerHTML = Math.floor(100*Math.random()).toString();
+            //        },10)
 
 
+            //        // STREAMING CODE
+            var czmlStream = new Cesium.CzmlDataSource();
+            var czmlBackLog = new Cesium.CzmlDataSource();
 
-//            }
-//            ;
+            var czmlStreamUrl = "/czml";
+//            var czmlStreamUrl = "https://flight-data-visualization.herokuapp.com/czml";
+
+            // Setup EventSource
+            var czmlEventSource = new EventSource(czmlStreamUrl);
+
+            // Put the datasource into Cesium
+            viewer.dataSources.add(czmlStream);
+            viewer.dataSources.add(czmlBackLog);
+
+            czmlEventSource.onopen = function () {
+                console.log('Connection open');
+            };
+
+            czmlEventSource.onerror = function (event) {
+                console.log(event.error);
+            };
+            var then = new Date().getTime();
+            var czmlData;
+            // Listen for EventSource data coming
+
+            // lastPos used to keep track on last position in order to draw a polyline that corresponds to the groundtrack
+            var lastPos;
+            var firstRocketDataRecieved = false;
+            var apogee = 0;
+            var tracked = false;
+            czmlEventSource.onmessage = function (event) {
+
+                czmlData = JSON.parse(event.data);
+                czmlStream.process(czmlData);
+                viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
+
+                if (czmlData[0].id === "document") {
+                    console.log("setting time!");
+                    //                viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(czmlData[0].clock.currentTime);
+                }
 
 
-//            console.log(data);
-        };
+                if (czmlData[0].id === "rocket") {
+                    var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                    Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                    viewer.clock.currentTime = startTime;
 
-        function processStream(event) {
-            czmlData = JSON.parse(event.data);
-            czmlStream.process(czmlData);
-            viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
+                    var position = czmlData[0].position.cartographicDegrees;
+                    //////            console.log(czmlData[0].position.cartographicDegrees);
+                    ////
+                    var speed = czmlData[1].point.pixelSize.number[1];
+                    var missionTime = Math.floor(czmlData[1].point.outlineWidth);
+                    var gForceX = czmlData[1].point.position.cartesian[0];
+                    var gForceY = czmlData[1].point.position.cartesian[1];
+                    var gForceZ = czmlData[1].point.position.cartesian[2];
+                    ////
+                    var longitude = position[1];
+                    var latitude = position[2];
+                    var altitude = position[position.length - 1];
 
-            var position = czmlData[0].position.cartographicDegrees;
+                    if (!firstRocketDataRecieved) {
+                        lastPos = [longitude, latitude];
+                        firstRocketDataRecieved = true;
+                        groundTrackMarker.show = true;
+//                        viewerGroundTrack.trackedEntity = groundTrackMarker;
 
-            var speed = czmlData[1].point.pixelSize.number[1];
+                        groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 5000));
+                    }
 
-            var longitude = position[1];
-            var latitude = position[2];
-            var altitude = position[position.length - 1];
+                    ////
+                    document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
+                    document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
+                    document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
+                    document.getElementsByClassName("speedValue")[0].innerHTML = Math.round(speed) + " m/s";
+                    document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T+ " + missionTime + "s";
+                    document.getElementsByClassName("gForceValueX")[0].innerHTML = "G_X: " + gForceX + "G";
+                    document.getElementsByClassName("gForceValueY")[0].innerHTML = "G_Y: " + gForceY + "G";
+                    document.getElementsByClassName("gForceValueZ")[0].innerHTML = "G_Z: " + gForceZ + "G";
 
-            document.getElementById("chart").getElementsByTagName("text")[23].innerHTML = Math.round(altitude) + "m";
-            document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
-            document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
-            document.getElementById("velocity").innerHTML = Math.round(speed) + " m/s";
-        }
-        ;
+                    
+                    setGaugeIndicatorLength(speed);
+//                    console.log(groundTrackMarker.position)
+                    groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
+
+                    viewerGroundTrack.entities.add({
+                        name: 'Glowing blue line on the surface',
+                        polyline: {
+                            positions: Cesium.Cartesian3.fromDegreesArray([longitude, latitude,
+                                lastPos[0], lastPos[1]]),
+                            width: 10,
+                            material: new Cesium.PolylineGlowMaterialProperty({
+                                glowPower: 0.2,
+                                color: Cesium.Color.BLUE
+                            })
+                        }
+                    });
+                    
+                    // Using lookAt in every call to track the marker. Could potentially use "viewer.trackedEntity", but that limits the choices of initial altitude of the camera.
+                    groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude,latitude,0), new Cesium.HeadingPitchRange(0,0,groundTrackCamera.positionCartographic.height));
+
+                    lastPos = [longitude, latitude];
+
+                    updateGraph();
+
+                }
 
 
 
-//        var clockStarted = false;
-//
-//        var clockstarter = setInterval(function () {
-//            if (clockStarted = false) {
-//                viewer.clock.startTime = viewer.dataSources.get(0).entities.getById("rocket").position._property._times[0].addSeconds(-0.5);
-//                clearInterval(clockStarter);
-//            }
-//        }, 10);
+
+
+
+//                graphUpdater();
+                //            }
+                //            ;
+
+
+                //            console.log(data);
+            };
+
+
+
+
+            //        var clockStarted = false;
+            //
+            //        var clockstarter = setInterval(function () {
+            //            if (clockStarted = false) {
+            //                viewer.clock.startTime = viewer.dataSources.get(0).entities.getById("rocket").position._property._times[0].addSeconds(-0.5);
+            //                clearInterval(clockStarter);
+            //            }
+            //        }, 10);
 
 
 
 
 
-//        var kmlDataSource = new Cesium.KmlDataSource();
-//        kmlDataSource.load('../sampleData/MASER13-trajectory.kml');
-//        viewer.dataSources.add(kmlDataSource);
-//        while(!viewer.dataSources.get(0).isLoading){};
-//        console.log(kmlDataSource.entities.values);
+            //        var kmlDataSource = new Cesium.KmlDataSource();
+            //        kmlDataSource.load('../sampleData/MASER13-trajectory.kml');
+            //        viewer.dataSources.add(kmlDataSource);
+            //        while(!viewer.dataSources.get(0).isLoading){};
+            //        console.log(kmlDataSource.entities.values);
 
-    </script>
-    <script type="text/javascript" src="d3chartAltPlot.js"></script>
-</body>
+        </script>
+        <script type="text/javascript" src="d3chartAltPlot.js"></script>
+        <script type="text/javascript" src="gauge.js"></script>
+    </body>
 
 </html>

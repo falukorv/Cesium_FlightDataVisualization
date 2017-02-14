@@ -77,136 +77,6 @@
     var now = date.getTime();
     var then = date.getTime();
 
-//    // POST: This is where the data is recieved from the C# application
-//    app.post('/czml', function (req, res) {
-//        if (req.body[0].id === "document") {
-//            // This is the first packet arriving
-//            CZMLHeader = req.body;
-//            stream = fs.createWriteStream("back_log.czml");
-//            stream.write('[' + JSON.stringify(CZMLHeader) + '\n');
-//            // Noting that we are currently streaming
-//            streaming = true;
-//            console.log("Connection open, currently streaming");
-//
-//            // Attaching listener, on closed connection: set "streaming" to false
-//            req.connection.once("close", function () {
-//                stream.close();
-//                streaming = false;
-//                console.log("Connection closed, stream closed");
-//                CZMLHeader = undefined;
-//                CZMLRocket = undefined;
-//            });
-//        } else {
-//            CZMLRocket = req.body;
-//            stream.write(JSON.stringify(CZMLRocket) + '\n\n');
-////            console.log(JSON.stringify(CZMLRocket));
-//        }
-//        ;
-////        passData();
-//
-//
-//
-////    console.log(req.body[0].position);
-////        res.set("connection", "close");
-//        res.send('POST request successful');
-//    });
-
-
-    var chance = new Chance();
-
-//    app.get('/czml', function (req, resp) {
-////        req.socket.setTimeout(2 * 60 * 1000);
-//
-//        // send headers for event-stream connection
-//        // see spec for more information
-//        resp.writeHead(200, {
-//            'Content-Type': 'text/event-stream',
-//            'Cache-Control': 'no-cache',
-//            'Connection': 'keep-alive'
-//        });
-////        resp.write('\n');
-//
-//        // push this res object to our global variable
-////        openConnections.push(resp);
-//
-//        // send document packet
-////        resp.write('id: ' + 1 + '\n');
-////        console.log('data: {\"id\": streamStatus, \n' + 'data: ' +'\"status\":' + streaming.toString() + '} \n\n');
-////        resp.write('data: {\"id\":  "\streamStatus\", \"status\":' + streaming.toString() + '} \n\n');
-//
-//
-//        // When the request is closed, e.g. the browser window
-//        // is closed. We search through the open connections
-//        // array and remove this connection.
-//        resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
-////        resp.flushHeaders();
-//
-////        req.connection.on("close", function () {
-////            var toRemove;
-////            for (var j = 0; j < openConnections.length; j++) {
-////                if (openConnections[j] === resp) {
-////                    toRemove = j;
-////                    break;
-////                }
-////            }
-////            openConnections.splice(j, 1);
-////        });
-//
-//        var CZMLHeader_temp;
-//        var CZMLRocket_temp;
-//
-//        if (streaming) {
-//            CZMLRocket_temp = CZMLRocket;
-//            CZMLHeader_temp = CZMLRocket;
-//        }
-//
-////        function passData(){
-////            if (CZMLRocket !== CZMLRocket_temp) {
-////                resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
-////                CZMLHeader_temp = CZMLHeader;
-////            }
-////            if (CZMLRocket !== CZMLRocket_temp) {
-//////            resp.write('id: ' + 2 + '\n');
-////                resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
-////                CZMLRocket = CZMLRocket_temp;
-////                now = new Date().getTime();
-////        var diffTime = now-then;
-////        console.log('Time between POST requests: ' + diffTime.toString() + ' ms');
-////        then = now;
-//////          resp.flushHeaders();
-////            }
-////            ;
-////        }
-//
-//        setInterval(function () {
-////         we walk through each connection
-////            openConnections.forEach(function(resp) {
-////                if (CZMLRocket !== CZMLRocket_temp){
-////                    resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
-//////                    resp.flushHeaders();
-////                };
-////            });
-////            if (CZMLRocket !== CZMLRocket_temp) {
-////                resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
-////                CZMLHeader_temp = CZMLHeader;
-////            }
-//            if (CZMLRocket !== CZMLRocket_temp) {
-//                console.log("sending!");
-//                resp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
-//                CZMLRocket = CZMLRocket_temp;
-//                now = new Date().getTime();
-//                var diffTime = now - then;
-//                console.log('Time between POST requests: ' + diffTime.toString() + ' ms');
-//                then = now;
-//
-//                // Flushing headers, very important since it won't stream correctly otherwise!
-//                resp.flushHeaders();
-//            }
-//            ;
-//
-//        }, 1);
-//    });
-
     var openConnections = [];
 
     var postReq;
@@ -224,11 +94,13 @@
             if (postReq.body[0].id === "document") {
                 // This is the first packet arriving
                 CZMLHeader = postReq.body;
-                stream = fs.createWriteStream("back_log.czml");
-                stream.write('[' + JSON.stringify(CZMLHeader) + '\n');
+                stream = fs.createWriteStream("back_log.csv");
+//                stream.write('[' + JSON.stringify(CZMLHeader) + '\n');
                 // Noting that we are currently streaming
                 streaming = true;
                 console.log("Connection open, currently streaming");
+                
+                stream.write('altitude,time' + '\n');
 
                 openConnections.forEach(function (resp) {
                     resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
@@ -251,10 +123,20 @@
                 });
             } else {
                 CZMLRocket = postReq.body;
-                stream.write(JSON.stringify(CZMLRocket) + '\n\n');
+//                console.log(CZMLRocket[0].position.cartographicDegrees);
+                var positions = CZMLRocket[0].position.cartographicDegrees;
+
+                var missionTimes = CZMLRocket[1].point.outlineWidth;
+                // Might have some optimization to do here, do we really need to plot all samples?
+                 stream.write(JSON.stringify(positions[3]) + ',' + JSON.stringify(missionTimes) + '\n');
+//                for (var j=0; j<positions.length/4; j++){
+//                    stream.write(JSON.stringify(positions[j*4+3]) + ',' + JSON.stringify(missionTimes[j*4+3]) + '\n');
+//                }
+//                console.log(CZMLRocket[0].position.cartographicDegrees);
+//                stream.write(JSON.stringify(CZMLRocket[0].position) + ';' +  + '\n');
 
                 openConnections.forEach(function (getResp) {
-                    console.log('Sending rocket data');
+//                    console.log('Sending rocket data');
                     getResp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
                 });
 
@@ -273,7 +155,7 @@
             getResp.writeHead(200, {
                 'Content-Type': 'text/event-stream',
                 'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive'
+                'Connection': 'keep-alive',
             });
 
             if (!(postReq == null)) {
