@@ -178,7 +178,7 @@ function updateGraph() {
 //    graphWidth = graphHeight * 2;
 
 //        d3.csv('https://flight-data-visualization.herokuapp.com/back_log.csv', function (error, data) {
-    d3.csv('../back_log.csv', function (error, data) {
+    d3.csv('../backlog.csv', function (error, data) {
         dataSet = data;
         dataSet.forEach(function (d) {
             d.altitude = parseFloat(d.altitude);

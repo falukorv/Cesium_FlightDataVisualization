@@ -251,10 +251,10 @@
             ////            document.getElementById("velocity").innerHTML = Math.floor(100*Math.random()).toString();
             //        },10)
 
-
+            var backlogLoaded = false;
             //        // STREAMING CODE
             var czmlStream = new Cesium.CzmlDataSource();
-            var czmlBackLog = new Cesium.CzmlDataSource();
+            viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
 
             var czmlStreamUrl = "/czml";
 //            var czmlStreamUrl = "https://flight-data-visualization.herokuapp.com/czml";
@@ -264,7 +264,7 @@
 
             // Put the datasource into Cesium
             viewer.dataSources.add(czmlStream);
-            viewer.dataSources.add(czmlBackLog);
+//            viewer.dataSources.add(czmlBackLog);
 
             czmlEventSource.onopen = function () {
                 console.log('Connection open');
@@ -283,11 +283,11 @@
             var apogee = 0;
             var tracked = false;
             czmlEventSource.onmessage = function (event) {
-
+//                console.log(event.data)
                 czmlData = JSON.parse(event.data);
                 czmlStream.process(czmlData);
                 viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
-
+                console.log(event.data);
                 if (czmlData[0].id === "document") {
                     console.log("setting time!");
                     //                viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(czmlData[0].clock.currentTime);
@@ -332,7 +332,7 @@
                     document.getElementsByClassName("gForceValueZ")[0].innerHTML = "G_Z: " + gForceZ + "G";
 
                     
-                    setGaugeIndicatorLength(speed);
+                    
 //                    console.log(groundTrackMarker.position)
                     groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
 
@@ -355,6 +355,7 @@
                     lastPos = [longitude, latitude];
 
                     updateGraph();
+                    setGaugeIndicatorLength(speed);
 
                 }
 
