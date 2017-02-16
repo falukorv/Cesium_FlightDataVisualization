@@ -9,6 +9,7 @@
         <script src="../Build/Cesium/Cesium.js"></script>
         <script src="../Build/EventSource.js"></script>
         <script src="../Build/AngleIntegrator.js"></script>
+        <script src="../Build/odometer.min.js"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="../ThirdParty/jquery/dist/jquery.min.js"></script>
         <script src="../ThirdParty/jqueryui/jquery-ui.min.js"></script>
@@ -16,6 +17,7 @@
         <style>
             @import url(../ThirdParty/jqueryui/jquery-ui.css);
             @import url(../Build/d3chart.css);
+            @import url(../Build/odometer-theme-car.css);
             @import url(../Build/Cesium/Widgets/widgets.css);
             html, body, #cesiumContainer {
                 width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
@@ -59,7 +61,7 @@
                     <span class="speedValue">1000</span>
                 </div>-->
         <div id="chart"></div>
-        <div id="gaugeBase"></div>
+        <div id="gaugeBase"><div id="odometer" class="odometer">1234</div></div>
         <div id="cesiumContainerGroundTrack">
             <span class="latitude">Latitude:</span>
             <span class="latitudeValue">0</span>
@@ -254,7 +256,6 @@
             var backlogLoaded = false;
             //        // STREAMING CODE
             var czmlStream = new Cesium.CzmlDataSource();
-            viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
 
             var czmlStreamUrl = "/czml";
 //            var czmlStreamUrl = "https://flight-data-visualization.herokuapp.com/czml";
@@ -283,12 +284,12 @@
             var apogee = 0;
             var tracked = false;
             czmlEventSource.onmessage = function (event) {
-//                console.log(event.data)
                 czmlData = JSON.parse(event.data);
                 czmlStream.process(czmlData);
                 viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
-                console.log(event.data);
                 if (czmlData[0].id === "document") {
+                    // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
+                    viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml")); 
                     console.log("setting time!");
                     //                viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(czmlData[0].clock.currentTime);
                 }
@@ -334,7 +335,6 @@
                     
                     
 //                    console.log(groundTrackMarker.position)
-                    groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
 
                     viewerGroundTrack.entities.add({
                         name: 'Glowing blue line on the surface',
@@ -348,6 +348,7 @@
                             })
                         }
                     });
+                    groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
                     
                     // Using lookAt in every call to track the marker. Could potentially use "viewer.trackedEntity", but that limits the choices of initial altitude of the camera.
                     groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude,latitude,0), new Cesium.HeadingPitchRange(0,0,groundTrackCamera.positionCartographic.height));
@@ -362,17 +363,7 @@
 
 
 
-
-
-//                graphUpdater();
-                //            }
-                //            ;
-
-
-                //            console.log(data);
             };
-
-
 
 
             //        var clockStarted = false;
@@ -384,15 +375,6 @@
             //            }
             //        }, 10);
 
-
-
-
-
-            //        var kmlDataSource = new Cesium.KmlDataSource();
-            //        kmlDataSource.load('../sampleData/MASER13-trajectory.kml');
-            //        viewer.dataSources.add(kmlDataSource);
-            //        while(!viewer.dataSources.get(0).isLoading){};
-            //        console.log(kmlDataSource.entities.values);
 
         </script>
         <script type="text/javascript" src="d3chartAltPlot.js"></script>

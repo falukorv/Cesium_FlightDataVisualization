@@ -56,8 +56,8 @@ var gaugeSvg = d3.select("#gaugeBase").append("svg")
 var gaugeRadius = gaugeWidth / 2;
 var gaugeStartAngle = -4 * Math.PI / 5;
 var gaugeEndAngle = 4 * Math.PI / 5;
-var NoOfGaugeTicks = 9;
-var tickLength = 20;
+var NoOfGaugeTicks = 13;
+var tickLength = gaugeWidth*0.03;
 var arcRadius = gaugeRadius * 0.8;
 var gaugeStartValue = 0;
 var gaugeMaxValue = 3000;
@@ -80,16 +80,32 @@ var gaugeArc = gaugeSvg.append("path")
 
 var gaugeTicksPath;
 
+// Drawing the ticks on the gauge arc, and adding the corresponding values
 for (var i = 0; i < NoOfGaugeTicks; i++) {
-    var theta;
+    var theta;      //Angle of which to place the tick at
+    var tickValue;  //Scale value of the position of the tick
+    var tickValueX; //X-placement of the tickvalue
+    var tickValueY; //Y-placement of the tickvalue
     if (i === 0) {
         theta = gaugeStartAngle;
+        tickValue = gaugeStartValue;
+        
         gaugeTicksPath = "M" + eval("Math.sin(theta)*(arcRadius-tickLength)") + "," + eval("-Math.cos(theta)*(arcRadius-tickLength)") + "L" + eval("Math.sin(theta)*(arcRadius)") + "," + eval("-Math.cos(theta)*(arcRadius)");
     } else if (i === NoOfGaugeTicks - 1) {
         gaugeTicksPath = gaugeTicksPath + "M" + eval("Math.sin(theta)*(arcRadius-tickLength)") + "," + eval("-Math.cos(theta)*(arcRadius-tickLength)") + "L" + eval("Math.sin(theta)*(arcRadius)") + "," + eval("-Math.cos(theta)*(arcRadius)");
     } else {
         gaugeTicksPath = gaugeTicksPath + "M" + eval("Math.sin(theta)*(arcRadius-tickLength/2)") + "," + eval("-Math.cos(theta)*(arcRadius-tickLength/2)") + "L" + eval("Math.sin(theta)*(arcRadius+tickLength/2)") + "," + eval("-Math.cos(theta)*(arcRadius+tickLength/2)");
     }
+    tickValueX = Math.sin(theta) * (arcRadius - tickLength * 3);
+    tickValueY = -Math.cos(theta) * (arcRadius - tickLength * 3);
+    gaugeSvg.append("text")
+            .attr("class", "tickValues")
+            .attr("text-anchor", "middle")
+            .attr("x", tickValueX)
+            .attr("y", tickValueY)
+            .text(Math.floor(tickValue).toString());
+
+    tickValue = tickValue + (gaugeMaxValue - gaugeStartValue) / (NoOfGaugeTicks - 1);
     theta = theta + (gaugeEndAngle - gaugeStartAngle) / (NoOfGaugeTicks - 1);
 }
 
@@ -103,11 +119,25 @@ var gaugeIndicatorArc = gaugeSvg.append("path")
 //        .attr("stroke-dasharray", 10)
 //        .attr("stroke-dashoffset", arcRadius * (gaugeEndAngle - gaugeStartAngle));
 
+//var gaugeValueText = gaugeSvg.append("text")
+//            .attr("class", "gaugeSpeedText")
+//            .attr("text-anchor", "middle")
+//            .attr("x", 0)
+//            .attr("y", 0)
+//            .text(Math.floor(0).toString());
 
-function setGaugeIndicatorLength(speedValue){
+var gaugeValueText = d3.select("#odometer")
+            .append("text")
+            .attr("text", "123");
+
+
+
+function setGaugeIndicatorLength(speedValue) {
+
     var indicatorEndAngle = gaugeStartAngle + speedValue/gaugeMaxValue*(gaugeEndAngle-gaugeStartAngle);
     indicator.endAngle(indicatorEndAngle);
     gaugeIndicatorArc.transition().attr("d", indicator).duration(500);
+    gaugeValueText.text(Math.round(speedValue));
 }
 
 //console.log(path)

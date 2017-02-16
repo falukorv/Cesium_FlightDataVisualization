@@ -333,6 +333,16 @@
     stroke: #fff;
 }
 
+.tickValues{
+    fill: #fff;
+	font-size: 1.5vw;
+}
+
+.gaugeSpeedText{
+    fill: #fff;
+	font-size: 2vw;
+}
+
 
 
 

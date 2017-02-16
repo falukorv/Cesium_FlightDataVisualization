@@ -101,7 +101,7 @@
             postReq = req;
 //            console.log(postReq);
             postResp = resp;
-//            czmlString = [];
+            czmlString = []; //Resetting the czmlString every call POST request, otherwise we get a memory leak due to the string just appending the same thing over and over.
 
             if (postReq.body[0].id === "document") {
                 // This is the first packet arriving
@@ -111,9 +111,6 @@
                 streamCSV = fs.createWriteStream("backlog.csv");
                 streamCZML = fs.createWriteStream("backlog.czml");
 
-//                czmlString.push(CZMLHeader[0]);
-
-//                stream.write('[' + JSON.stringify(CZMLHeader) + '\n');
                 // Noting that we are currently streaming
                 streaming = true;
                 console.log("Connection open, currently streaming");
@@ -129,7 +126,7 @@
 //                    getResp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
 //                }
 
-                // Attaching listener, on closed connection: set "streaming" to false
+                // Attaching listener, on closed connection: set "streaming" to false and reset all variables associated with the stream
                 postReq.connection.once("close", function () {
                     streamCSV.close();
                     streamCZML.close();
