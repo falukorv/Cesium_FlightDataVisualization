@@ -74,9 +74,17 @@
     stroke-width: 0;
 }
 
-.apogeeValue, .apogee, .altitudeValue, .altitude {
+.apogeeValue, .apogee, .altitudeValue, .altitude{
     font-size: 40px;
     font-size: 2.2vw;
+}
+
+.altitudeValue, .apogeeValue, .longitudeValue, .latituveValue, .gForceValueX, .gForceValueY, .gForceValueZ, .speedValue, .missionTimeValue {
+	font-family: "futura_maxi";
+}
+
+.altitudeValue, .apogeeValue{
+	font-size: 1.9vw;
 }
 
 .longitude, .latitude{
@@ -92,7 +100,8 @@
     font-size: 40px;
     font-size: 3.7vh;
     position: absolute;
-    left: 25%;
+    left: 35%;
+	font-family: "futura_maxi";
 }
 
 .longitude, .longitudeValue{
@@ -145,6 +154,7 @@
 .xaxis, .yaxis{
     stroke: #fff;
     fill: #fff;
+	color: #fff;
 }
 
 .xaxis{
@@ -152,7 +162,7 @@
 }
 
 .yaxis{
-	font-size: 1vw;
+	font-size: 0.85vw;
 }
 
 #controlPanel {
@@ -250,7 +260,7 @@
 .missionTimeLabel, .speedLabel, .gForceLabel{
     position: absolute;
     text-decoration: underline;
-    top: 5%;
+    top: 0%;
     left: 0%;
     right: 0%;
     color: #fff;
@@ -343,11 +353,11 @@
 .tickValues{
     fill: #fff;
 	font-size: 1.5vw;
+	font-family: "futura_maxi";
 }
 
-.gaugeSpeedLabel, gaugeUnitLabel{
+.gaugeSpeedLabel, .gaugeUnitLabel{
 	color: #fff;
-	font-size: 2vw;
 	text-align: center;
 	position: absolute;
 	left: 0;
@@ -358,14 +368,14 @@
 
 .gaugeSpeedLabel{
 	top: 80%;
+	font-size: 2vw;
 }
 
 .gaugeUnitLabel{
-	top: 80%;
-
+	top: 55%;
+	font-family:"futura_maxi";
+	font-size: 1.5vw;
 }
-
-
 
 
 
@@ -384,6 +394,14 @@
     src: url("../Build/Fonts/Sackers-Gothic-Medium.ttf");
 }
 
+@font-face{
+    font-family:"futura_maxi";
+    src: url("../Build/Fonts/futura_maxi.otf");
+}
+
+* {
+    font-family: "sackers-gothic";
+  }
 
 
 

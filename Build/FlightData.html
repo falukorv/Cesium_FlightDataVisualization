@@ -10,13 +10,15 @@
         <script src="../Build/EventSource.js"></script>
         <script src="../Build/AngleIntegrator.js"></script>
         <script src="../Build/odometer.min.js"></script>
+        <script src="../Build/ElementQueries.js"></script>
+        <script src="../Build/ResizeSensor.js"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="../ThirdParty/jquery/dist/jquery.min.js"></script>
         <script src="../ThirdParty/jqueryui/jquery-ui.min.js"></script>
         <script src="../ThirdParty/togeojson/togeojson.js"></script>
         <style>
             @import url(../ThirdParty/jqueryui/jquery-ui.css);
-            @import url(../Build/d3chart.css);
+            @import url(../Build/d3chart_alt_font.css);
             @import url(../Build/odometer-theme-car.css);
             @import url(../Build/Cesium/Widgets/widgets.css);
             html, body, #cesiumContainer {
@@ -61,7 +63,11 @@
                     <span class="speedValue">1000</span>
                 </div>-->
         <div id="chart"></div>
-        <div id="gaugeBase"><div id="odometer" class="odometer">1234</div></div>
+        <div id="gaugeBase">
+            <div id="odometer" class="odometer">10000</div>
+            <span class="gaugeUnitLabel">[m/s]</span>
+            <span class="gaugeSpeedLabel">Speed</span>
+        </div>
         <div id="cesiumContainerGroundTrack">
             <span class="latitude">Latitude:</span>
             <span class="latitudeValue">0</span>
@@ -331,6 +337,7 @@
                     document.getElementsByClassName("gForceValueX")[0].innerHTML = "G_X: " + gForceX + "G";
                     document.getElementsByClassName("gForceValueY")[0].innerHTML = "G_Y: " + gForceY + "G";
                     document.getElementsByClassName("gForceValueZ")[0].innerHTML = "G_Z: " + gForceZ + "G";
+                    document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000+speed);
 
                     
                     
