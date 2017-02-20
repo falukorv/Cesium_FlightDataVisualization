@@ -23,8 +23,8 @@ var dataSet = [];
 var xScale = d3.scaleLinear().range([0.1 * graphWidth, 0.95*graphWidth]),
          yScale = d3.scaleLinear().range([graphHeight * 0.90, 0.05*graphHeight]);
 
-xScale.domain([0, 10]);
-yScale.domain([0, 10]);
+xScale.domain([0, 0]);
+yScale.domain([0, 0]);
 
 // The x & y axes.
 var xAxis = d3.axisBottom(xScale);
