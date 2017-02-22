@@ -74,11 +74,6 @@ $(document).ready(function () {
     pathYNorth = (0.65 - 0.05) * gForceMeterHeight;
     pathYUp = (0.9 - 0.05) * gForceMeterHeight;
 
-    pathEndPositiveX = pathStartPositiveX + (gUp / maxGForce) * (pathMaximumX - pathStartPositiveX);
-    gForceEastPath = "M" + pathStartPositiveX + "," + pathYEast + "L" + pathEndPositiveX + "," + pathYEast;
-    gForceNorthPath;
-    gForceUpPath;
-
     pathWidth = 0.1 * gForceMeterHeight;
 
 //
@@ -134,6 +129,25 @@ new ResizeSensor(document.getElementById("gForceMeter"), function () {
     gForceMeterWidth = document.getElementById("gForceMeter").offsetWidth;
     gForceMeterHeight = document.getElementById("gForceMeter").offsetHeight;
     
+    gForceSvgBase.attr("width", gForceMeterWidth)
+            .attr("height", gForceMeterHeight);
+    
+    pathYEast = (0.4 - 0.05) * gForceMeterHeight;
+    pathYNorth = (0.65 - 0.05) * gForceMeterHeight;
+    pathYUp = (0.9 - 0.05) * gForceMeterHeight;
+    
+    pathMaximumX = 0.95 * gForceMeterWidth;
+    pathMinimumX = 0.05 * gForceMeterWidth;
+    
+    pathWidth = 0.1 * gForceMeterHeight;
+    
+    gForcePathEast.attr("stroke-width", pathWidth);
+
+    gForcePathNorth.attr("stroke-width", pathWidth);
+
+    gForcePathUp.attr("stroke-width", pathWidth);
+
+    
     pathStartPositiveX = (0.5 + 0.25 * 0.9 / 2) * gForceMeterWidth; //Start x-position if G>0
     pathStartNegativeX = (0.5 - 0.25 * 0.9 / 2) * gForceMeterWidth; //Start x-position if G<0
     
@@ -142,13 +156,17 @@ new ResizeSensor(document.getElementById("gForceMeter"), function () {
     
     positiveEastScale.range([pathStartPositiveX, pathMaximumX]);
     negativeEastScale.range([pathMinimumX, pathStartNegativeX]);
-    console.log("resize")
 
     positiveEastAxis = d3.axisBottom(positiveEastScale).ticks(4);
     negativeEastAxis = d3.axisBottom(negativeEastScale).ticks(4);
 
     positiveEastAxisElement.attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.90 + ")").call(positiveEastAxis);
     negativeEastAxisElement.attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.90 + ")").call(negativeEastAxis);
+    
+    gForcePathEast.attr("d", gForceEastPath);
+    gForcePathNorth.attr("d", gForceNorthPath);
+    gForcePathUp.attr("d", gForceUpPath);
+    
     });
 });
 

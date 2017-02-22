@@ -202,4 +202,4 @@ new ResizeSensor(document.getElementById("gaugeBase"), function () {
 
     odometerWidth = gaugeOdometer.outerWidth();
     gaugeOdometer.css({left: gaugeWidth / 2 - odometerWidth});
-})
+});

@@ -13,10 +13,10 @@
     var gForce = $('#gForceMeter');
 
     // Weights that decides the space each div can hold. The sum of these weights should amount to, or at least be less than 1.
-    var groundTrackFactor = 3 / 12;
-    var chartFactor = 3 / 12;
-    var gaugeFactor = 4 / 12;
-    var gForceFactor = 2 / 12;
+    var groundTrackFactor = 3 / 13;
+    var chartFactor = 3 / 13;
+    var gaugeFactor = 4 / 13;
+    var gForceFactor = 3 / 13;
 
     // Distance to the top of the window for each div
     var chartTop;
