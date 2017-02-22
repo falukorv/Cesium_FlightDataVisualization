@@ -36,6 +36,8 @@ var yAxis = d3.axisLeft(yScale);
 var svgBase = d3.select("#chart").append("svg")
         .attr("width", graphWidth)
         .attr("height", graphHeight);
+//
+//$(svgBase).css({position:'absolute'});
 
 var svg = svgBase
         .append("g")
