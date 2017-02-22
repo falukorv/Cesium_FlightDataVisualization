@@ -18,61 +18,85 @@
         <script src="../ThirdParty/togeojson/togeojson.js"></script>
         <style>
             @import url(../ThirdParty/jqueryui/jquery-ui.css);
-            @import url(../Build/MainCSS_alternative_font.css);
+            @import url(../Build/MainCSS.css);
             @import url(../Build/Cesium/Widgets/widgets.css);
-            html, body, #cesiumContainer {
-                width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
-            }
-
         </style>
 
     </head>
 
     <body>
         <div id="cesiumContainer"></div>
-        <div id="creditDiv"></div>
+        <div id="orientation-warning">
+            Some data can only be visualized in landscape orientation. Please change the orientation of your device in order to see all data.
+        </div>
+        <div id="sideContainer">
+            <span class="missionTimeLabel">Mission time</span>
+            <span class="missionTimeValue">T- 0s</span>
+
+            <div id="groundTrackDiv">
+                <div id="cesiumContainerGroundTrack"></div>
+                <span class="latitude">Latitude:</span>
+                <span class="latitudeValue">0</span>
+                <span class="longitude">Longitude:</span>
+                <span class="longitudeValue">0</span>
+            </div>
+
+
+            <div id="chart"></div>
+            <div id="gaugeBase">
+                <span class="gaugeUnitLabel">[m/s]</span>
+                <span class="gaugeSpeedLabel">Speed</span>
+                <div id="odometer" class="odometer gaugeOdometer">10000</div> <!-- The first number in the odometer is hidden in order to always showing four digits -->
+            </div>
+            <div id="gForceMeter">
+                <div id="gForceMeterEast">
+                    
+                </div>
+                <div id="gForceMeterEastValue">0</div>
+                <div id="gForceMeterNorth">
+                </div>
+                <div id="gForceMeterNorthValue">0</div>
+                <div id="gForceMeterUp">
+                </div>
+                <div id="gForceMeterUpValue">0</div>
+                <span class="gForceMainLabel">G-Loads [G]</span>
+                <span class="gForceMeterEastLabel">G<sub>east</sub></span>
+                <span class="gForceMeterNorthLabel">G<sub>north</sub></span>
+                <span class="gForceMeterUpLabel">G<sub>up</sub></span>
+            </div>
+
+        </div>
         <!--        <div id="controlPanel">
                     <p>
                         <button class="cesium-button" onclick="showAttitude()">Show attitude</button>
                         <button class="cesium-button" onclick="showTrajectory()">Show trajectory</button>
                     </p>
                 </div>-->
-        <div id="dashboard">
-            <div id="separationLine1"></div>
-            <div id="missionTimeContainer">
-                <span class="missionTimeLabel">Mission time</span>
-                <span class="missionTimeValue">T- 0s</span>
-            </div>
-            <div id="separationLine2"></div>
-            <div id="speedContainer">
-                <span class="speedLabel">Speed</span>
-                <span class="speedValue">0 m/s</span>
-            </div>
-            <div id="separationLine3"></div>
-            <div id="gForceContainer">
-                <span class="gForceLabel">G-loads</span>
-                <span class="gForceValueX">G<sub>X</sub>: 0g</span>
-                <span class="gForceValueY">G<sub>Y</sub>: 0g</span>
-                <span class="gForceValueZ">G<sub>Z</sub>: 0g</span>
-            </div>
-            <!--<span class="speed">Speed [m/s]</span>-->
-        </div>
+        <!--        <div id="dashboard">
+                    <div id="separationLine1"></div>
+                    <div id="missionTimeContainer">
+                        <span class="missionTimeLabel">Mission time</span>
+                        <span class="missionTimeValue">T- 0s</span>
+                    </div>
+                    <div id="separationLine2"></div>
+                    <div id="speedContainer">
+                        <span class="speedLabel">Speed</span>
+                        <span class="speedValue">0 m/s</span>
+                    </div>
+                    <div id="separationLine3"></div>
+                    <div id="gForceContainer">
+                        <span class="gForceLabel">G-loads</span>
+                        <span class="gForceValueX">G<sub>X</sub>: 0g</span>
+                        <span class="gForceValueY">G<sub>Y</sub>: 0g</span>
+                        <span class="gForceValueZ">G<sub>Z</sub>: 0g</span>
+                    </div>
+                    <span class="speed">Speed [m/s]</span>
+                </div>-->
 
         <!--        <div id="speedValueBox">
                     <span class="speedValue">1000</span>
                 </div>-->
-        <div id="chart"></div>
-        <div id="gaugeBase">
-            <span class="gaugeUnitLabel">[m/s]</span>
-            <span class="gaugeSpeedLabel">Speed</span>
-            <div id="odometer" class="odometer">10000</div> <!-- The first number in the odometer is hidden in order to always showing four digits -->
-        </div>
-        <div id="cesiumContainerGroundTrack">
-            <span class="latitude">Latitude:</span>
-            <span class="latitudeValue">0</span>
-            <span class="longitude">Longitude:</span>
-            <span class="longitudeValue">0</span>
-        </div>
+
 
 
         <script>
@@ -89,7 +113,9 @@
             //  }
             //        ]
 
-
+            if ($('#cesiumContainer').width() < $('#cesiumContainer').height()) {
+                alert("This application is optimized for landscapce view. If you see this message, portrait view is detected, please turn your ")
+            }
 
             Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
             var viewerGroundTrack = new Cesium.Viewer('cesiumContainerGroundTrack', {
@@ -102,12 +128,12 @@
                 navigationHelpButton: false,
                 geocoder: false,
                 navigationInstructionsInitiallyVisible: false,
-//                baseLayerPicker: false,
+                //                baseLayerPicker: false,
                 //            automaticallyTrackDataSourceClocks: true,
                 sceneMode: Cesium.SceneMode.SCENE2D,
-//                imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
-//                    url: 'https://a.tile.openstreetmap.org'
-//                })
+                //                imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
+                //                    url: 'https://a.tile.openstreetmap.org'
+                //                })
             });
             var viewer = new Cesium.Viewer('cesiumContainer', {
                 timeline: false,
@@ -124,14 +150,14 @@
             });
             document.getElementsByClassName("cesium-viewer")[1].removeChild(viewerGroundTrack.bottomContainer);
             document.getElementsByClassName("cesium-viewer")[1].removeChild(document.getElementsByClassName("cesium-viewer-fullscreenContainer")[1]);
-            
+
             var scene = viewer.scene;
             var groundTrackScene = viewerGroundTrack.scene;
-            scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
+            //            scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
             scene.globe.tileCacheSize = 1000;
             groundTrackScene.globe.tileCacheSize = 1000;
 
-//            viewer.scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv).addDefaultCredit(Cesium.Credit('Cesium', '/Documentation/images/CesiumLogo.png', 'http://cesiumjs.org/'));
+            //            viewer.scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv).addDefaultCredit(Cesium.Credit('Cesium', '/Documentation/images/CesiumLogo.png', 'http://cesiumjs.org/'));
 
             var scene = viewer.scene;
 
@@ -159,22 +185,22 @@
                 }
             });
 
-//            // Create a billbord that will serve as background if it is desirable to only view the attitude
-//            bbBackgroundPos = Cesium.Cartesian3.fromDegrees(esrangeLong + 0.001, esrangeLat, height);
-//            var bbBackground = viewer.entities.add({
-//                name: 'Billboard',
-//                position: bbBackgroundPos,
-//                billboard: {
-//                    image: '../Source/Assets/Textures/bb-background.png', // default: undefined
-//                    show: false, // default
-//                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
-//                    verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
-//                    scale: 2, // default: 1.0
-//                    alignedAxis: Cesium.Cartesian3.ZERO, // default
-//                    //                width : 50*16, // default: undefined
-//                    //                height : 50*9 // default: undefined
-//                }
-//            });
+            //            // Create a billbord that will serve as background if it is desirable to only view the attitude
+            //            bbBackgroundPos = Cesium.Cartesian3.fromDegrees(esrangeLong + 0.001, esrangeLat, height);
+            //            var bbBackground = viewer.entities.add({
+            //                name: 'Billboard',
+            //                position: bbBackgroundPos,
+            //                billboard: {
+            //                    image: '../Source/Assets/Textures/bb-background.png', // default: undefined
+            //                    show: false, // default
+            //                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
+            //                    verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
+            //                    scale: 2, // default: 1.0
+            //                    alignedAxis: Cesium.Cartesian3.ZERO, // default
+            //                    //                width : 50*16, // default: undefined
+            //                    //                height : 50*9 // default: undefined
+            //                }
+            //            });
 
             //        viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 100));
             //        viewer.trackedEntity = rocket;
@@ -208,11 +234,11 @@
             var miniHeight = d3.select("body").node().getBoundingClientRect().height * 0.5 - margin.top - margin.bottom;
             miniWidth = miniHeight * 2;
 
-            $(document).ready(function () {
-                var divHeight = $('#cesiumContainerGroundTrack').height();
-                $('#cesiumContainerGroundTrack').css('height', 50 + '%');
-                $('#cesiumContainerGroundTrack').css('width', 60 + '%');
-            });
+//                $(document).ready(function () {
+//                    var divHeight = $('#cesiumContainerGroundTrack').height();
+//                    $('#cesiumContainerGroundTrack').css('height', 50 + '%');
+//                    $('#cesiumContainerGroundTrack').css('width', 60 + '%');
+//                });
 
             // Set latitude and longitude labels
             var miniCesium = d3.select("cesiumContainerGroundTrack")
@@ -263,14 +289,14 @@
             var czmlStream = new Cesium.CzmlDataSource();
 
             var czmlStreamUrl = "/czml";
-//            var czmlStreamUrl = "https://flight-data-visualization.herokuapp.com/czml";
+            //            var czmlStreamUrl = "https://flight-data-visualization.herokuapp.com/czml";
 
             // Setup EventSource
             var czmlEventSource = new EventSource(czmlStreamUrl);
 
             // Put the datasource into Cesium
             viewer.dataSources.add(czmlStream);
-//            viewer.dataSources.add(czmlBackLog);
+            //            viewer.dataSources.add(czmlBackLog);
 
             czmlEventSource.onopen = function () {
                 console.log('Connection open');
@@ -294,7 +320,7 @@
                 viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
                 if (czmlData[0].id === "document") {
                     // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
-                    viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml")); 
+                    viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
                     console.log("setting time!");
                     //                viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(czmlData[0].clock.currentTime);
                 }
@@ -322,7 +348,7 @@
                         lastPos = [longitude, latitude];
                         firstRocketDataRecieved = true;
                         groundTrackMarker.show = true;
-//                        viewerGroundTrack.trackedEntity = groundTrackMarker;
+                        //                        viewerGroundTrack.trackedEntity = groundTrackMarker;
 
                         groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 10000));
                     }
@@ -331,16 +357,16 @@
                     document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
                     document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
                     document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
-                    document.getElementsByClassName("speedValue")[0].innerHTML = Math.round(speed) + " m/s";
+                    //                    document.getElementsByClassName("speedValue")[0].innerHTML = Math.round(speed) + " m/s";
                     document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T+ " + missionTime + "s";
-                    document.getElementsByClassName("gForceValueX")[0].innerHTML = "G_X: " + gForceX + "G";
-                    document.getElementsByClassName("gForceValueY")[0].innerHTML = "G_Y: " + gForceY + "G";
-                    document.getElementsByClassName("gForceValueZ")[0].innerHTML = "G_Z: " + gForceZ + "G";
-                    document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000+speed);
+                    document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed);
+                    document.getElementById("gForceMeterEastValue").innerHTML = gForceX;
+                    document.getElementById("gForceMeterNorthValue").innerHTML = gForceY;
+                    document.getElementById("gForceMeterUpValue").innerHTML = gForceZ;
 
-                    
-                    
-//                    console.log(groundTrackMarker.position)
+
+
+                    //                    console.log(groundTrackMarker.position)
 
                     viewerGroundTrack.entities.add({
                         name: 'Glowing blue line on the surface',
@@ -355,14 +381,15 @@
                         }
                     });
                     groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
-                    
+
                     // Using lookAt in every call to track the marker. Could potentially use "viewer.trackedEntity", but that limits the choices of initial altitude of the camera.
-                    groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude,latitude,0), new Cesium.HeadingPitchRange(0,0,groundTrackCamera.positionCartographic.height));
+                    groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, groundTrackCamera.positionCartographic.height));
 
                     lastPos = [longitude, latitude];
 
                     updateGraph();
                     setGaugeIndicatorLength(speed);
+                    setgForceIndicatorLength(gForceX, gForceY, gForceZ);
 
                 }
 
@@ -383,8 +410,10 @@
 
 
         </script>
+        <script type="text/javascript" src="SideDiv.js"></script>
         <script type="text/javascript" src="d3chartAltPlot.js"></script>
         <script type="text/javascript" src="gauge.js"></script>
+        <script type="text/javascript" src="gForceMeter.js"></script>
     </body>
 
 </html>

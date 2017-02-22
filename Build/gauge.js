@@ -13,49 +13,21 @@
 //    // use it when you're looking for something more subtle.
 //};
 
-// Various accessors that specify the four dimensions of data to visualize.
-//    function x(d) { return distance[d]; }
-//    function y(d) { return altitude[d]; }
-
 // Chart dimensions.
-var gaugeWidth = document.getElementById("cesiumContainer").offsetWidth * 0.4;
+
+var windowWidth = document.getElementById("cesiumContainer").offsetWidth;
+var windowHeight = document.getElementById("cesiumContainer").offsetHeight;
+
+var gaugeWidth = document.getElementById("gaugeBase").offsetWidth;
 var gaugeHeight = gaugeWidth;
-//console.log(divWidth);
-//console.log(divHeight);
-//var graphWidth = divWidth - 0.05 * divWidth;
-////    graphWidth = d3.select("body").node().getBoundingClientRect().width - margin.right;
-////    graphHeight = d3.select("body").node().getBoundingClientRect().height - margin.top - margin.bottom;
-//var graphHeight = divHeight - 0.05 * divHeight;
 
-// Importing example flight data from a previous flight
-//var jsonData;
-//$.ajax({
-//    url: '../SampleData/SPIDER_subsampled_trajectory.kml',
-////        url: '../SampleData/MASER13-trajectory.kml',
-//    async: false
-//}).done(function (xml) {
-//    jsonData = toGeoJSON.kml(xml);
-//});
-
+var gaugeOdometer = $('.odometer');
 
 
 // Adding the data into new arrays, since the converted ones are quite messy
 var gaugeAltitude = [];
 var gaugeCoords = [];
-//
-//// Various scales.
-//var xScale = d3.scaleLinear().range([0.019 * graphWidth, graphWidth]),
-//        yScale = d3.scaleLinear().range([graphHeight * 0.95, 0]);
-//
-//xScale.domain([0, 0]);
-//yScale.domain([0, 0]);
-//
-//// The x & y axes.
-//var xAxis = d3.axisBottom(xScale);
-//var yAxis = d3.axisLeft(yScale);
-//
-//
-//
+
 // Create the SVG container and set the origin.
 var gaugeSvgBase = d3.select("#gaugeBase").append("svg")
         .attr("width", gaugeWidth)
@@ -69,7 +41,7 @@ var gaugeRadius = gaugeWidth / 2;
 var gaugeStartAngle = -4 * Math.PI / 5;
 var gaugeEndAngle = 4 * Math.PI / 5;
 var NoOfGaugeTicks = 13;
-var tickLength = gaugeWidth*0.03;
+var tickLength = gaugeWidth * 0.03;
 var arcRadius = gaugeRadius * 0.8;
 var gaugeStartValue = 0;
 var gaugeMaxValue = 3000;
@@ -108,32 +80,32 @@ function drawGaugeSvg() {
 
         gaugeArc.attr("d", arc);
 
-    var theta;      //Angle of which to place the tick at
-    var tickValue;  //Scale value of the position of the tick
-    var tickValueX; //X-placement of the tickvalue
-    var tickValueY; //Y-placement of the tickvalue
-    if (i === 0) {
-        theta = gaugeStartAngle;
-        tickValue = gaugeStartValue;
-        
-        gaugeTicksPath = "M" + eval("Math.sin(theta)*(arcRadius-tickLength)") + "," + eval("-Math.cos(theta)*(arcRadius-tickLength)") + "L" + eval("Math.sin(theta)*(arcRadius)") + "," + eval("-Math.cos(theta)*(arcRadius)");
-    } else if (i === NoOfGaugeTicks - 1) {
-        gaugeTicksPath = gaugeTicksPath + "M" + eval("Math.sin(theta)*(arcRadius-tickLength)") + "," + eval("-Math.cos(theta)*(arcRadius-tickLength)") + "L" + eval("Math.sin(theta)*(arcRadius)") + "," + eval("-Math.cos(theta)*(arcRadius)");
-    } else {
-        gaugeTicksPath = gaugeTicksPath + "M" + eval("Math.sin(theta)*(arcRadius-tickLength/2)") + "," + eval("-Math.cos(theta)*(arcRadius-tickLength/2)") + "L" + eval("Math.sin(theta)*(arcRadius+tickLength/2)") + "," + eval("-Math.cos(theta)*(arcRadius+tickLength/2)");
-    }
-    tickValueX = Math.sin(theta) * (arcRadius - tickLength * 3);
-    tickValueY = -Math.cos(theta) * (arcRadius - tickLength * 3);
-    tickLabels[i] = gaugeSvg.append("text")
-            .attr("class", "tickValues")
-            .attr("text-anchor", "middle")
-            .attr("x", tickValueX)
-            .attr("y", tickValueY)
-            .text(Math.floor(tickValue).toString());
+        var theta;      //Angle of which to place the tick at
+        var tickValue;  //Scale value of the position of the tick
+        var tickValueX; //X-placement of the tickvalue
+        var tickValueY; //Y-placement of the tickvalue
+        if (i === 0) {
+            theta = gaugeStartAngle;
+            tickValue = gaugeStartValue;
 
-    tickValue = tickValue + (gaugeMaxValue - gaugeStartValue) / (NoOfGaugeTicks - 1); // Calculate the next tickValue
-    theta = theta + (gaugeEndAngle - gaugeStartAngle) / (NoOfGaugeTicks - 1); // Calculate the next angle
-}
+            gaugeTicksPath = "M" + eval("Math.sin(theta)*(arcRadius-tickLength)") + "," + eval("-Math.cos(theta)*(arcRadius-tickLength)") + "L" + eval("Math.sin(theta)*(arcRadius)") + "," + eval("-Math.cos(theta)*(arcRadius)");
+        } else if (i === NoOfGaugeTicks - 1) {
+            gaugeTicksPath = gaugeTicksPath + "M" + eval("Math.sin(theta)*(arcRadius-tickLength)") + "," + eval("-Math.cos(theta)*(arcRadius-tickLength)") + "L" + eval("Math.sin(theta)*(arcRadius)") + "," + eval("-Math.cos(theta)*(arcRadius)");
+        } else {
+            gaugeTicksPath = gaugeTicksPath + "M" + eval("Math.sin(theta)*(arcRadius-tickLength/2)") + "," + eval("-Math.cos(theta)*(arcRadius-tickLength/2)") + "L" + eval("Math.sin(theta)*(arcRadius+tickLength/2)") + "," + eval("-Math.cos(theta)*(arcRadius+tickLength/2)");
+        }
+        tickValueX = Math.sin(theta) * (arcRadius - tickLength * 3);
+        tickValueY = -Math.cos(theta) * (arcRadius - tickLength * 3);
+        tickLabels[i] = gaugeSvg.append("text")
+                .attr("class", "tickValues")
+                .attr("text-anchor", "middle")
+                .attr("x", tickValueX)
+                .attr("y", tickValueY)
+                .text(Math.floor(tickValue).toString());
+
+        tickValue = tickValue + (gaugeMaxValue - gaugeStartValue) / (NoOfGaugeTicks - 1); // Calculate the next tickValue
+        theta = theta + (gaugeEndAngle - gaugeStartAngle) / (NoOfGaugeTicks - 1); // Calculate the next angle
+    }
 }
 
 var gaugeTicks = gaugeSvg.append("path")
@@ -144,6 +116,25 @@ var gaugeIndicatorArc = gaugeSvg.append("path")
         .datum(gaugeStartAngle)
         .attr("class", "arcDynamic")
         .attr("d", indicator);
+
+var odometerWidth;
+
+$(document).ready(function () {
+    if (windowWidth < windowHeight) {
+        $('.tickValues').css({'font-size': '2.2vw'});
+        $('.gaugeSpeedLabel').css({'font-size': '4vw'});
+        $('.odometer').css({'font-size': '3vw'});
+        $('.gaugeUnitLabel').css({'font-size': '2vw'});
+    } else {
+        $('.tickValues').css({'font-size': '2.2vh'});
+        $('.gaugeSpeedLabel').css({'font-size': '4vh'});
+        $('.odometer').css({'font-size': '3vh'});
+        $('.gaugeUnitLabel').css({'font-size': '3vh'});
+    }
+
+    odometerWidth = gaugeOdometer.outerWidth();
+    gaugeOdometer.css({left: gaugeWidth / 2 - odometerWidth});
+});
 
 
 // Store the displayed angles in _current.
@@ -158,12 +149,13 @@ function arcTween(d) {
     return function (t) {
         return indicator(i(t));
     };
-};
+}
+;
 
 
 function setGaugeIndicatorLength(speedValue) {
 
-    var indicatorEndAngle = gaugeStartAngle + speedValue/gaugeMaxValue*(gaugeEndAngle-gaugeStartAngle);
+    var indicatorEndAngle = gaugeStartAngle + speedValue / gaugeMaxValue * (gaugeEndAngle - gaugeStartAngle);
     //indicator.endAngle(indicatorEndAngle);
     //console.log(indicator.toString())
     gaugeIndicatorArc.datum(indicatorEndAngle);
@@ -171,28 +163,43 @@ function setGaugeIndicatorLength(speedValue) {
     //gaugeValueText.text(Math.round(10000 + speedValue));
 }
 
-console.log(document.getElementById("gaugeBase"));
 new ResizeSensor(document.getElementById("gaugeBase"), function () {
-
-    gaugeWidth = document.getElementById("cesiumContainer").offsetWidth * 0.4;
+    windowWidth = document.getElementById("cesiumContainer").offsetWidth;
+    windowHeight = document.getElementById("cesiumContainer").offsetHeight;
+    var gaugeWidth = document.getElementById("gaugeBase").offsetWidth;
     gaugeHeight = gaugeWidth;
     gaugeRadius = gaugeWidth / 2;
     tickLength = gaugeWidth * 0.03;
     arcRadius = gaugeRadius * 0.8;
 
     gaugeSvgBase.attr("width", gaugeWidth)
-        .attr("height", gaugeHeight);
+            .attr("height", gaugeHeight);
 
     gaugeSvg.attr("transform", "translate(" + gaugeWidth / 2 + "," + gaugeWidth / 2 + ")");
 
     arc.innerRadius(arcRadius - 1)
-       .outerRadius(arcRadius + 1);
+            .outerRadius(arcRadius + 1);
 
     indicator.innerRadius(arcRadius + 1)
-        .outerRadius(arcRadius * 1.1);
+            .outerRadius(arcRadius * 1.1);
 
     drawGaugeSvg();
     gaugeArc.attr("d", arc);
     gaugeTicks.attr("d", gaugeTicksPath);
     gaugeIndicatorArc.attr("d", indicator);
+
+    if (windowWidth < windowHeight) {
+        $('.tickValues').css({'font-size': '2.2vw'});
+        $('.gaugeSpeedLabel').css({'font-size': '4vw'});
+        $('.odometer').css({'font-size': '3vw'});
+        $('.gaugeUnitLabel').css({'font-size': '2vw'});
+    } else {
+        $('.tickValues').css({'font-size': '2.2vh'});
+        $('.gaugeSpeedLabel').css({'font-size': '4vh'});
+        $('.odometer').css({'font-size': '3vh'});
+        $('.gaugeUnitLabel').css({'font-size': '3vh'});
+    }
+
+    odometerWidth = gaugeOdometer.outerWidth();
+    gaugeOdometer.css({left: gaugeWidth / 2 - odometerWidth});
 })
