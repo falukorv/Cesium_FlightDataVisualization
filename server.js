@@ -125,9 +125,9 @@
 //                    console.log(getResp);
 //                    getResp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
 //                }
-
+//                console.log(postReq)
                 // Attaching listener, on closed connection: set "streaming" to false and reset all variables associated with the stream
-                postReq.connection.once("close", function () {
+                postResp.connection.on("close", function () {
                     streamCSV.close();
                     streamCZML.close();
                     streaming = false;

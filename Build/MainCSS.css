@@ -12,7 +12,10 @@
 }
 @media only screen and (orientation:portrait){
     #sideContainer { width: 0;
-    overflow: hidden;}
+                     overflow: hidden;}
+    #statusDiodesContainer{
+        display: none;
+    }
     #orientation-warning { display:block; }
 }
 @media only screen and (orientation:landscape){
@@ -186,6 +189,82 @@
     width: 140px;
     text-align: center;
 }
+
+/*------------Status diodes-------------*/
+
+#statusDiodesContainer{
+    position: absolute;
+    background: rgba(42,42,42,0.8);
+    border-radius: 1%;
+    top:0;
+    right:0;
+    width: 15%;
+    height: 5%;
+/*    width: 270px;
+    height: 60px;*/
+}
+
+#syncContainer, #tmContainer, #gpsContainer{
+    position:absolute;
+    top:0;
+    bottom:0;
+    height: 60%;
+    width: 20%;
+/*height: 35px;
+    width: 60px;*/
+    margin-top:auto;
+    margin-bottom: auto;
+    background: rgba(30,30,30,1);
+    box-shadow: rgba(0, 0, 0, 1) 0 -1px 7px 1px
+}
+
+#syncContainer{
+    left: 10%;
+}
+
+#tmContainer{
+    left: 40%;
+}
+
+#gpsContainer{
+    left: 70%;
+}
+
+.diodeText{
+    text-align: center;
+    font-size: 0.7vw;
+/*font-size: 16px;*/
+    color: #fff;
+}
+
+.diode{
+    bottom: 8%;
+/*    width: 8px;
+    height:8px;*/
+    width: 0.8vh;
+    height: 0.8vh;
+    border-radius: 50%;
+}
+
+.diode, .diodeText{
+    position: absolute;
+    left:0;
+    right:0;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.led-green {
+    background-color: #ABFF00;
+    box-shadow: rgba(0, 255, 0, 1) 0 -1px 7px 1px, inset rgba(255, 255, 255, 0.5) 0 -1px 9px, #89FF00 0 2px 12px;
+}
+
+.led-red {
+    background-color: #F00;
+    box-shadow: rgba(255, 0, 0, 1) 0 -1px 7px 1px, inset rgba(255, 255, 255, 0.5) 0 -1px 9px, rgba(255, 0, 0, 0.5) 0 2px 12px;
+}
+
+/*------------------------------------*/
 
 #dashboard {
     position: absolute;
@@ -483,12 +562,16 @@
 }*/
 
 #creditDiv{
+    vertical-align: bottom;
     position: absolute;
-    top: 0px;
-    left: 0px;
+    bottom: 0px;
+    left: 20%;
     color: #fff;
-    height: 5%;
     font-size: 1vh
+}
+
+#bottomContainer{
+    left:20%
 }
 
 

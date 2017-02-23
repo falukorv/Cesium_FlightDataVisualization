@@ -66,6 +66,21 @@
             </div>
 
         </div>
+        <div id="creditDiv"></div>
+        <div id="statusDiodesContainer">
+            <div id="syncContainer">
+                <span class="diodeText">SYNC</span>
+                <div id="syncDiode" class="led-red diode"></div>
+            </div>
+            <div id="tmContainer">
+                <span class="diodeText">TM</span>
+                <div id="tmDiode" class="led-red diode"></div>
+            </div>
+            <div id="gpsContainer">
+                <span class="diodeText">GPS</span>
+                <div id="gpsDiode" class="led-red diode"></div>
+            </div>
+        </div>
         <!--        <div id="controlPanel">
                     <p>
                         <button class="cesium-button" onclick="showAttitude()">Show attitude</button>
@@ -132,15 +147,18 @@
                 baseLayerPicker: false
             });
             document.getElementsByClassName("cesium-viewer")[1].removeChild(viewerGroundTrack.bottomContainer);
+            document.getElementsByClassName("cesium-viewer")[0].removeChild(viewer.bottomContainer);
             document.getElementsByClassName("cesium-viewer")[1].removeChild(document.getElementsByClassName("cesium-viewer-fullscreenContainer")[1]);
+
+            var creditDiv = document.getElementById('creditDiv')
 
             var scene = viewer.scene;
             var groundTrackScene = viewerGroundTrack.scene;
-            //            scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
+            scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
             scene.globe.tileCacheSize = 1000;
             groundTrackScene.globe.tileCacheSize = 1000;
 
-            //            viewer.scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv).addDefaultCredit(Cesium.Credit('Cesium', '/Documentation/images/CesiumLogo.png', 'http://cesiumjs.org/'));
+            viewer.scene.frameState.creditDisplay.addDefaultCredit(new Cesium.Credit('Cesium', 'Documentation/images/cesium_logo.png', 'http://cesiumjs.org/'));
 
             var scene = viewer.scene;
 
@@ -267,7 +285,19 @@
             ////            document.getElementById("velocity").innerHTML = Math.floor(100*Math.random()).toString();
             //        },10)
 
+            // Accessing the status diodes, used in order to change them.
+            var syncDiode = $('#syncDiode');
+            var syncStatus = false;
+            var tmDiode = $('#tmDiode');
+            var tmStatus = false;
+            var gpsDiode = $('#gpsDiode');
+            var gpsStatus = false;
+
+            // Check when the messages are recieved
+            var timeOfLastMessage;
+
             var backlogLoaded = false;
+
             //        // STREAMING CODE
             var czmlStream = new Cesium.CzmlDataSource();
 
@@ -288,7 +318,7 @@
             czmlEventSource.onerror = function (event) {
                 console.log(event.error);
             };
-            var then = new Date().getTime();
+
             var czmlData;
             // Listen for EventSource data coming
 
@@ -302,6 +332,9 @@
                 czmlStream.process(czmlData);
                 viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
                 if (czmlData[0].id === "document") {
+                    timeOfLastMessage = new Date().getTime();
+                    syncDiode.toggleClass('led-red led-green');
+                    syncStatus = True;
                     // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
                     viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
                     console.log("setting time!");
@@ -310,9 +343,17 @@
 
 
                 if (czmlData[0].id === "rocket") {
+                    timeOfLastMessage = new Date().getTime();
                     var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
                     Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
                     viewer.clock.currentTime = startTime;
+
+                    // If stream has been interupted, but now is resumed, set
+                    // SYNC to green
+                    if (!syncStatus) {
+                        syncDiode.toggleClass('led-red led-green');
+                        syncStatus = true;
+                    }
 
                     var position = czmlData[0].position.cartographicDegrees;
                     //////            console.log(czmlData[0].position.cartographicDegrees);
@@ -336,13 +377,35 @@
                         groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 10000));
                     }
 
-                    ////
-                    document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
-                    document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
-                    document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
+                    // Checking if the position data is recieved correctly
+                    if ((altitude !== undefined) && (longitude !== undefined) && (latitude !== undefined)) {
+                        // If the gps diode is not already green, make it so
+                        if (!gpsStatus) {
+                            gpsDiode.toggleClass('led-red led-green');
+                            gpsStatus = true;
+                        }
+                        document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
+                        document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
+                        document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
+                    } else {
+                        // Setting the gps diode to red
+                        if (gpsStatus) {
+                            gpsDiode.toggleClass('led-red led-green');
+                            gpsStatus = false;
+                        }
+                    }
                     //                    document.getElementsByClassName("speedValue")[0].innerHTML = Math.round(speed) + " m/s";
                     document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T+ " + missionTime + "s";
-                    document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed);
+                    
+                    // If the speed value isn't recieved, but gps data is, 
+                    // calculate the speed from that
+                    if (speed === undefined) {
+                        if(gpsStatus){
+                            
+                        }
+                    } else {
+                        document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed);
+                    }
                     document.getElementById("gForceMeterEastValue").innerHTML = gForceX;
                     document.getElementById("gForceMeterNorthValue").innerHTML = gForceY;
                     document.getElementById("gForceMeterUpValue").innerHTML = gForceZ;
@@ -375,11 +438,26 @@
                     setgForceIndicatorLength(gForceX, gForceY, gForceZ);
 
                 }
-
-
-
-
             };
+
+            // Checking if the stream is interrupted for some reason, then set 
+            // the sync diode to red.
+
+            setInterval(function () {
+                // If the streaming is ongoing, but the time since last message 
+                // is above a certain threshold, assume that streaming is 
+                // interrupted and set SYNC to red.
+                if ((new Date().getTime() - timeOfLastMessage > 2500)) {
+                    if (syncStatus) {
+                        syncDiode.toggleClass('led-green led-red');
+                        syncStatus = false;
+                    }
+                    if (gpsStatus) {
+                        gpsDiode.toggleClass('led-green led-red');
+                        gpsStatus = false;
+                    }
+                }
+            }, 5000);
 
 
             //        var clockStarted = false;
