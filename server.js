@@ -3,12 +3,8 @@
     /*jshint node:true*/
 
     var express = require('express');
-    var http = require('http');
-    var compression = require('compression');
     var url = require('url');
-    var queryString = require("querystring");
     var request = require('request');
-    var Chance = require('chance');
     var fs = require("fs");
     var bodyParser = require("body-parser");
     
@@ -99,7 +95,7 @@
 
         if (req.method === "POST") {
             postReq = req;
-//            console.log(postReq);
+//            console.log(postReq.body);
             postResp = resp;
             czmlString = []; //Resetting the czmlString every call POST request, otherwise we get a memory leak due to the string just appending the same thing over and over.
 
@@ -127,7 +123,7 @@
 //                }
 //                console.log(postReq)
                 // Attaching listener, on closed connection: set "streaming" to false and reset all variables associated with the stream
-                postResp.connection.on("close", function () {
+                postResp.connection.addListener("close", function () {
                     streamCSV.close();
                     streamCZML.close();
                     streaming = false;
@@ -261,8 +257,6 @@
                 console.log(openConnections.length.toString());
             });
 
-        } else {
-            req.close();
         }
 
 
@@ -270,30 +264,6 @@
 
 
     });
-
-
-//    function createMsg() {
-//        var d = new Date();
-//        var entity = {
-//            "id": 60,
-//            "polyline": {
-//                "positions": {
-//                    "cartographicDegrees": [
-//                      chance.latitude(), chance.longitude(), 0
-//                      ,chance.latitude(), chance.longitude(), 0
-//                  ]
-//            },
-//            "width": 2,
-//            "material":
-//                { "solidColor":
-//                    { "color" :
-//                        {"rgba": [0,0,255,255]}
-//                    }
-//                }
-//            }
-//        };
-//        return JSON.stringify(entity);; 
-//    }
 
 //--------------------------------------
 
