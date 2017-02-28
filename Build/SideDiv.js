@@ -38,7 +38,7 @@
         sideDivWidth = document.getElementById("sideContainer").offsetWidth;
         sideDivHeight = document.getElementById("sideContainer").offsetHeight;
 
-        verticalSpace = 2 * 0.90 * sideDivHeight;
+        verticalSpace = 2 * 0.92 * sideDivHeight;
         
         groundTrack.height(groundTrackFactor * verticalSpace);
         chart.height(chartFactor * verticalSpace);

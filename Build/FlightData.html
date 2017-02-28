@@ -52,13 +52,19 @@
                 <div id="gForceMeterEast">
 
                 </div>
-                <div id="gForceMeterEastValue">0</div>
+                <div id="gForceMeterEastValue">
+                    <span class ="gForceMeterEastValueInner">0</span>
+                </div>
                 <div id="gForceMeterNorth">
                 </div>
-                <div id="gForceMeterNorthValue">0</div>
+                <div id="gForceMeterNorthValue">
+                    <span class ="gForceMeterNorthValueInner">0</span>
+                </div>
                 <div id="gForceMeterUp">
                 </div>
-                <div id="gForceMeterUpValue">0</div>
+                <div id="gForceMeterUpValue">
+                    <span class ="gForceMeterUpValueInner">0</span>
+                </div>
                 <span class="gForceMainLabel">G-Loads [G]</span>
                 <span class="gForceMeterEastLabel">G<sub>east</sub></span>
                 <span class="gForceMeterNorthLabel">G<sub>north</sub></span>
@@ -81,400 +87,400 @@
                 <div id="gpsDiode" class="led-red diode"></div>
             </div>
         </div>
-        <!--        <div id="controlPanel">
-                    <p>
-                        <button class="cesium-button" onclick="showAttitude()">Show attitude</button>
-                        <button class="cesium-button" onclick="showTrajectory()">Show trajectory</button>
-                    </p>
-                </div>-->
-        <!--        <div id="dashboard">
-                    <div id="separationLine1"></div>
-                    <div id="missionTimeContainer">
-                        <span class="missionTimeLabel">Mission time</span>
-                        <span class="missionTimeValue">T- 0s</span>
-                    </div>
-                    <div id="separationLine2"></div>
-                    <div id="speedContainer">
-                        <span class="speedLabel">Speed</span>
-                        <span class="speedValue">0 m/s</span>
-                    </div>
-                    <div id="separationLine3"></div>
-                    <div id="gForceContainer">
-                        <span class="gForceLabel">G-loads</span>
-                        <span class="gForceValueX">G<sub>X</sub>: 0g</span>
-                        <span class="gForceValueY">G<sub>Y</sub>: 0g</span>
-                        <span class="gForceValueZ">G<sub>Z</sub>: 0g</span>
-                    </div>
-                    <span class="speed">Speed [m/s]</span>
-                </div>-->
+        <div id="eventMessages"></div>
+            <!--        <div id="controlPanel">
+                        <p>
+                            <button class="cesium-button" onclick="showAttitude()">Show attitude</button>
+                            <button class="cesium-button" onclick="showTrajectory()">Show trajectory</button>
+                        </p>
+                    </div>-->
+            <!--        <div id="dashboard">
+                        <div id="separationLine1"></div>
+                        <div id="missionTimeContainer">
+                            <span class="missionTimeLabel">Mission time</span>
+                            <span class="missionTimeValue">T- 0s</span>
+                        </div>
+                        <div id="separationLine2"></div>
+                        <div id="speedContainer">
+                            <span class="speedLabel">Speed</span>
+                            <span class="speedValue">0 m/s</span>
+                        </div>
+                        <div id="separationLine3"></div>
+                        <div id="gForceContainer">
+                            <span class="gForceLabel">G-loads</span>
+                            <span class="gForceValueX">G<sub>X</sub>: 0g</span>
+                            <span class="gForceValueY">G<sub>Y</sub>: 0g</span>
+                            <span class="gForceValueZ">G<sub>Z</sub>: 0g</span>
+                        </div>
+                        <span class="speed">Speed [m/s]</span>
+                    </div>-->
 
-        <!--        <div id="speedValueBox">
-                    <span class="speedValue">1000</span>
-                </div>-->
-
-
-
-        <script>
-            Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
-            var viewerGroundTrack = new Cesium.Viewer('cesiumContainerGroundTrack', {
-                timeline: false,
-                animation: false,
-                selectionIndicator: false,
-                infoBox: false,
-                homeButton: false,
-                sceneModePicker: false,
-                navigationHelpButton: false,
-                geocoder: false,
-                navigationInstructionsInitiallyVisible: false,
-                //                baseLayerPicker: false,
-                //            automaticallyTrackDataSourceClocks: true,
-                sceneMode: Cesium.SceneMode.SCENE2D,
-                //                imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
-                //                    url: 'https://a.tile.openstreetmap.org'
-                //                })
-            });
-            var viewer = new Cesium.Viewer('cesiumContainer', {
-                timeline: false,
-                animation: false,
-                selectionIndicator: false,
-                infoBox: false,
-                homeButton: false,
-                sceneModePicker: false,
-                automaticallyTrackDataSourceClocks: false,
-                navigationHelpButton: false,
-                geocoder: false,
-                navigationInstructionsInitiallyVisible: false,
-                baseLayerPicker: false
-            });
-            document.getElementsByClassName("cesium-viewer")[1].removeChild(viewerGroundTrack.bottomContainer);
-            document.getElementsByClassName("cesium-viewer")[0].removeChild(viewer.bottomContainer);
-            document.getElementsByClassName("cesium-viewer")[1].removeChild(document.getElementsByClassName("cesium-viewer-fullscreenContainer")[1]);
-
-            var creditDiv = document.getElementById('creditDiv')
-
-            var scene = viewer.scene;
-            var groundTrackScene = viewerGroundTrack.scene;
-            scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
-            scene.globe.tileCacheSize = 1000;
-            groundTrackScene.globe.tileCacheSize = 1000;
-
-            viewer.scene.frameState.creditDisplay.addDefaultCredit(new Cesium.Credit('Cesium', 'Documentation/images/cesium_logo.png', 'http://cesiumjs.org/'));
-
-            var scene = viewer.scene;
-
-            // Get the camera
-            var camera = viewer.camera;
-            var groundTrackCamera = viewerGroundTrack.scene.camera;
-
-            // Model used for the rocket, placeholder at the moment.
-            //        var modelURL = '../Build/3Dmodels/rocket.glb';
-            var modelURL = '../Build/3Dmodels/Cesium_Air.glb';
-
-            // The position of Esrange, which will be the initial position of the rocket.
-            esrangeLong = 21.1068944441480;
-            esrangeLat = 67.8932469830635;
+            <!--        <div id="speedValueBox">
+                        <span class="speedValue">1000</span>
+                    </div>-->
 
 
-            var groundTrackMarker = viewerGroundTrack.entities.add({
-                "name": 'marker',
-                "position": Cesium.Cartesian3.fromDegrees(esrangeLong, esrangeLat, 0),
-                "show": false,
-                "point": {
-                    "pixelSize": 10,
-                    "color": Cesium.Color.BLUE,
-                    "outlineColor": Cesium.Color.BLUE
-                }
-            });
 
-            //            // Create a billbord that will serve as background if it is desirable to only view the attitude
-            //            bbBackgroundPos = Cesium.Cartesian3.fromDegrees(esrangeLong + 0.001, esrangeLat, height);
-            //            var bbBackground = viewer.entities.add({
-            //                name: 'Billboard',
-            //                position: bbBackgroundPos,
-            //                billboard: {
-            //                    image: '../Source/Assets/Textures/bb-background.png', // default: undefined
-            //                    show: false, // default
-            //                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
-            //                    verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
-            //                    scale: 2, // default: 1.0
-            //                    alignedAxis: Cesium.Cartesian3.ZERO, // default
-            //                    //                width : 50*16, // default: undefined
-            //                    //                height : 50*9 // default: undefined
-            //                }
-            //            });
+            <script>
 
-            //        viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 100));
-            //        viewer.trackedEntity = rocket;
+                Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
+                //            Cesium.RequestScheduler.prioritize = false;
+                var viewerGroundTrack = new Cesium.Viewer('cesiumContainerGroundTrack', {
+                    timeline: false,
+                    animation: false,
+                    selectionIndicator: false,
+                    infoBox: false,
+                    homeButton: false,
+                    sceneModePicker: false,
+                    navigationHelpButton: false,
+                    geocoder: false,
+                    navigationInstructionsInitiallyVisible: false,
+                    //                baseLayerPicker: false,
+                    //            automaticallyTrackDataSourceClocks: true,
+                    sceneMode: Cesium.SceneMode.SCENE2D,
+                    //                imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
+                    //                    url: 'https://a.tile.openstreetmap.org'
+                    //                })
+                });
+                var viewer = new Cesium.Viewer('cesiumContainer', {
+                    timeline: false,
+                    animation: false,
+                    selectionIndicator: false,
+                    infoBox: false,
+                    homeButton: false,
+                    sceneModePicker: false,
+                    automaticallyTrackDataSourceClocks: false,
+                    navigationHelpButton: false,
+                    geocoder: false,
+                    navigationInstructionsInitiallyVisible: false,
+                    baseLayerPicker: false
+                });
+                document.getElementsByClassName("cesium-viewer")[1].removeChild(viewerGroundTrack.bottomContainer);
+                document.getElementsByClassName("cesium-viewer")[0].removeChild(viewer.bottomContainer);
+                document.getElementsByClassName("cesium-viewer")[1].removeChild(document.getElementsByClassName("cesium-viewer-fullscreenContainer")[1]);
 
+                var creditDiv = document.getElementById('creditDiv')
 
-            //        function showAttitude(){
-            //            camera.cancelFlight();
-            //            viewer.trackedEntity = undefined;
-            //            scene.screenSpaceCameraController.enableInputs = false;
-            //            bbBackground.billboard.show = true;
-            //            viewer.camera.setView({
-            //                destination : new Cesium.Cartesian3.fromDegrees(esrangeLong-0.002,esrangeLat,height),
-            //                orientation: {
-            //                    heading : Cesium.Math.toRadians(90.0), // east, default value is 0.0 (north)
-            //                    pitch : Cesium.Math.toRadians(0),    // default value (looking down)
-            //                    roll : 0.0                             // default value
-            //                }
-            //            });
-            //        }
+                var scene = viewer.scene;
+                var groundTrackScene = viewerGroundTrack.scene;
+                scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
+                //            scene.globe.tileCacheSize = 1000;
+                //            groundTrackScene.globe.tileCacheSize = 1000;
 
-            //        function showTrajectory(){
-            //            viewer.trackedEntity = rocket;
-            //            scene.screenSpaceCameraController.enableInputs = true;
-            //            bbBackground.billboard.show = false;
-            ////            viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 200));
-            //        }
+                viewer.scene.frameState.creditDisplay.addDefaultCredit(new Cesium.Credit('Cesium', 'Documentation/images/cesium_logo.png', 'http://cesiumjs.org/'));
 
-            var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
+                var scene = viewer.scene;
 
-            var miniWidth = d3.select("body").node().getBoundingClientRect().width * 0.5 - margin.right;
-            var miniHeight = d3.select("body").node().getBoundingClientRect().height * 0.5 - margin.top - margin.bottom;
-            miniWidth = miniHeight * 2;
+                // Get the camera
+                var camera = viewer.camera;
+                var groundTrackCamera = viewerGroundTrack.scene.camera;
 
-//                $(document).ready(function () {
-//                    var divHeight = $('#cesiumContainerGroundTrack').height();
-//                    $('#cesiumContainerGroundTrack').css('height', 50 + '%');
-//                    $('#cesiumContainerGroundTrack').css('width', 60 + '%');
-//                });
+                // Model used for the rocket, placeholder at the moment.
+                //        var modelURL = '../Build/3Dmodels/rocket.glb';
+                var modelURL = '../Build/3Dmodels/Cesium_Air.glb';
 
-            // Set latitude and longitude labels
-            var miniCesium = d3.select("cesiumContainerGroundTrack")
-                    .attr("width", miniWidth)
-                    .attr("height", miniHeight);
-            //        console.log(miniCesium)
-
-            miniCesium.append("text")
-                    .attr("class", "altitude label")
-                    .attr("text-anchor", "start")
-                    .attr("y", 28)
-                    .attr("x", 30)
-                    .attr("transform", "translate(20," + 0 + ")")
-                    .text('Altitude: High as a kite');
-
-            //        var x;
-            //        var y;
-            //        var z;
-            //        var w;
-            var w1;
-            var w2;
-            var w3;
-
-            //        var miniCesium = d3.select("dashboard");
-            //        
-            //        miniCesium.append("text")
-            //                .attr("class", "altitude label")
-            //                .attr("text-anchor", "start")
-            //                .attr("y", 28)
-            //                .attr("x", 30)
-            //                .attr("transform", "translate(20," + 0 + ")")
-            //                .text('Velocity');
-
-            //        setInterval(function(){
-            ////            w1 = Math.random()*0.1;
-            ////            w2 = Math.random()*0.1;
-            ////            w3 = Math.random()*0.1;
-            //            w1 = 0.1;
-            //            w2 = 0.1;
-            //            w3 = 0.1;
-            //            orientation = RK4(w1,w2,w3,orientation,0.1);
-            //            rocket.orientation = orientation;
-            ////            document.getElementById("velocity").innerHTML = Math.floor(100*Math.random()).toString();
-            //        },10)
-
-            // Accessing the status diodes, used in order to change them.
-            var syncDiode = $('#syncDiode');
-            var syncStatus = false;
-            var tmDiode = $('#tmDiode');
-            var tmStatus = false;
-            var gpsDiode = $('#gpsDiode');
-            var gpsStatus = false;
-
-            // Check when the messages are recieved
-            var timeOfLastMessage;
-
-            var backlogLoaded = false;
-
-            //        // STREAMING CODE
-            var czmlStream = new Cesium.CzmlDataSource();
-
-            var czmlStreamUrl = "/czml";
-            //            var czmlStreamUrl = "https://flight-data-visualization.herokuapp.com/czml";
-
-            // Setup EventSource
-            var czmlEventSource = new EventSource(czmlStreamUrl);
-
-            // Put the datasource into Cesium
-            viewer.dataSources.add(czmlStream);
-            //            viewer.dataSources.add(czmlBackLog);
-
-            czmlEventSource.onopen = function () {
-                console.log('Connection open');
-            };
-
-            czmlEventSource.onerror = function (event) {
-                console.log(event.error);
-            };
-
-            var czmlData;
-            // Listen for EventSource data coming
-
-            // lastPos used to keep track on last position in order to draw a polyline that corresponds to the groundtrack
-            var lastPos;
-            var firstRocketDataRecieved = false;
-            var apogee = 0;
-            var tracked = false;
-            czmlEventSource.onmessage = function (event) {
-                czmlData = JSON.parse(event.data);
-                czmlStream.process(czmlData);
-                viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
-                if (czmlData[0].id === "document") {
-                    timeOfLastMessage = new Date().getTime();
-                    syncDiode.toggleClass('led-red led-green');
-                    syncStatus = True;
-                    // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
-                    viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
-                    console.log("setting time!");
-                    //                viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(czmlData[0].clock.currentTime);
-                }
+                // The position of Esrange, which will be the initial position of the rocket.
+                esrangeLong = 21.1068944441480;
+                esrangeLat = 67.8932469830635;
 
 
-                if (czmlData[0].id === "rocket") {
-                    timeOfLastMessage = new Date().getTime();
-                    var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                    Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-                    viewer.clock.currentTime = startTime;
-
-                    // If stream has been interupted, but now is resumed, set
-                    // SYNC to green
-                    if (!syncStatus) {
-                        syncDiode.toggleClass('led-red led-green');
-                        syncStatus = true;
+                var groundTrackMarker = viewerGroundTrack.entities.add({
+                    "name": 'marker',
+                    "position": Cesium.Cartesian3.fromDegrees(esrangeLong, esrangeLat, 0),
+                    "show": false,
+                    "point": {
+                        "pixelSize": 10,
+                        "color": Cesium.Color.BLUE,
+                        "outlineColor": Cesium.Color.BLUE
                     }
+                });
 
-                    var position = czmlData[0].position.cartographicDegrees;
-                    //////            console.log(czmlData[0].position.cartographicDegrees);
-                    ////
-                    var speed = czmlData[1].point.pixelSize.number[1];
-                    var missionTime = Math.floor(czmlData[1].point.outlineWidth);
-                    var gForceX = czmlData[1].point.position.cartesian[0];
-                    var gForceY = czmlData[1].point.position.cartesian[1];
-                    var gForceZ = czmlData[1].point.position.cartesian[2];
-                    ////
-                    var longitude = position[1];
-                    var latitude = position[2];
-                    var altitude = position[position.length - 1];
+                //            // Create a billbord that will serve as background if it is desirable to only view the attitude
+                //            bbBackgroundPos = Cesium.Cartesian3.fromDegrees(esrangeLong + 0.001, esrangeLat, height);
+                //            var bbBackground = viewer.entities.add({
+                //                name: 'Billboard',
+                //                position: bbBackgroundPos,
+                //                billboard: {
+                //                    image: '../Source/Assets/Textures/bb-background.png', // default: undefined
+                //                    show: false, // default
+                //                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
+                //                    verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
+                //                    scale: 2, // default: 1.0
+                //                    alignedAxis: Cesium.Cartesian3.ZERO, // default
+                //                    //                width : 50*16, // default: undefined
+                //                    //                height : 50*9 // default: undefined
+                //                }
+                //            });
 
-                    if (!firstRocketDataRecieved) {
-                        lastPos = [longitude, latitude];
-                        firstRocketDataRecieved = true;
-                        groundTrackMarker.show = true;
-                        //                        viewerGroundTrack.trackedEntity = groundTrackMarker;
+                //        viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 100));
+                //        viewer.trackedEntity = rocket;
 
-                        groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 10000));
-                    }
 
-                    // Checking if the position data is recieved correctly
-                    if ((altitude !== undefined) && (longitude !== undefined) && (latitude !== undefined)) {
-                        // If the gps diode is not already green, make it so
-                        if (!gpsStatus) {
-                            gpsDiode.toggleClass('led-red led-green');
-                            gpsStatus = true;
+                //        function showAttitude(){
+                //            camera.cancelFlight();
+                //            viewer.trackedEntity = undefined;
+                //            scene.screenSpaceCameraController.enableInputs = false;
+                //            bbBackground.billboard.show = true;
+                //            viewer.camera.setView({
+                //                destination : new Cesium.Cartesian3.fromDegrees(esrangeLong-0.002,esrangeLat,height),
+                //                orientation: {
+                //                    heading : Cesium.Math.toRadians(90.0), // east, default value is 0.0 (north)
+                //                    pitch : Cesium.Math.toRadians(0),    // default value (looking down)
+                //                    roll : 0.0                             // default value
+                //                }
+                //            });
+                //        }
+
+                //        function showTrajectory(){
+                //            viewer.trackedEntity = rocket;
+                //            scene.screenSpaceCameraController.enableInputs = true;
+                //            bbBackground.billboard.show = false;
+                ////            viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 200));
+                //        }
+
+                var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
+
+                var miniWidth = d3.select("body").node().getBoundingClientRect().width * 0.5 - margin.right;
+                var miniHeight = d3.select("body").node().getBoundingClientRect().height * 0.5 - margin.top - margin.bottom;
+                miniWidth = miniHeight * 2;
+
+                // Set latitude and longitude labels
+                var miniCesium = d3.select("cesiumContainerGroundTrack")
+                        .attr("width", miniWidth)
+                        .attr("height", miniHeight);
+                //        console.log(miniCesium)
+
+                miniCesium.append("text")
+                        .attr("class", "altitude label")
+                        .attr("text-anchor", "start")
+                        .attr("y", 28)
+                        .attr("x", 30)
+                        .attr("transform", "translate(20," + 0 + ")")
+                        .text('Altitude: High as a kite');
+
+                //        var x;
+                //        var y;
+                //        var z;
+                //        var w;
+                var w1;
+                var w2;
+                var w3;
+
+                //        var miniCesium = d3.select("dashboard");
+                //        
+                //        miniCesium.append("text")
+                //                .attr("class", "altitude label")
+                //                .attr("text-anchor", "start")
+                //                .attr("y", 28)
+                //                .attr("x", 30)
+                //                .attr("transform", "translate(20," + 0 + ")")
+                //                .text('Velocity');
+
+                //        setInterval(function(){
+                ////            w1 = Math.random()*0.1;
+                ////            w2 = Math.random()*0.1;
+                ////            w3 = Math.random()*0.1;
+                //            w1 = 0.1;
+                //            w2 = 0.1;
+                //            w3 = 0.1;
+                //            orientation = RK4(w1,w2,w3,orientation,0.1);
+                //            rocket.orientation = orientation;
+                ////            document.getElementById("velocity").innerHTML = Math.floor(100*Math.random()).toString();
+                //        },10)
+
+                // Accessing the status diodes, used in order to change them.
+                var syncDiode = $('#syncDiode');
+                var syncStatus = false;
+                var tmDiode = $('#tmDiode');
+                var tmStatus = false;
+                var gpsDiode = $('#gpsDiode');
+                var gpsStatus = false;
+
+                // Check when the messages are recieved
+                var timeOfLastMessage;
+
+                var backlogLoaded = false;
+
+                //        // STREAMING CODE
+                var czmlStream = new Cesium.CzmlDataSource();
+
+                var czmlStreamUrl = "/czml";
+                //            var czmlStreamUrl = "https://flight-data-visualization.herokuapp.com/czml";
+
+                // Setup EventSource
+                var czmlEventSource = new EventSource(czmlStreamUrl);
+
+                // Put the datasource into Cesium
+                viewer.dataSources.add(czmlStream);
+                //            viewer.dataSources.add(czmlBackLog);
+
+                czmlEventSource.onopen = function () {
+                    console.log('Connection open');
+                };
+
+                czmlEventSource.onerror = function (event) {
+                    console.log(event.error);
+                };
+
+                var czmlData;
+                // Listen for EventSource data coming
+
+                // lastPos used to keep track on last position in order to draw a polyline that corresponds to the groundtrack
+                var lastPos;
+                var firstRocketDataRecieved = false;
+                var apogee = 0;
+                var tracked = false;
+                czmlEventSource.onmessage = function (event) {
+                    czmlData = JSON.parse(event.data);
+                    czmlStream.process(czmlData);
+                    viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
+                    if (czmlData[0].id === "document") {
+                        timeOfLastMessage = new Date().getTime();
+                        if (!syncStatus) {
+                            syncDiode.toggleClass('led-red led-green');
+                            syncStatus = true;
                         }
-                        document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
-                        document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
-                        document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
-                    } else {
-                        // Setting the gps diode to red
+                        // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
+                        viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
+                        console.log("setting time!");
+                        //                viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(czmlData[0].clock.currentTime);
+                    }
+
+
+                    if (czmlData[0].id === "rocket") {
+                        timeOfLastMessage = new Date().getTime();
+                        var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                        viewer.clock.currentTime = startTime;
+
+                        // If stream has been interupted, but now is resumed, set
+                        // SYNC to green
+                        if (!syncStatus) {
+                            syncDiode.toggleClass('led-red led-green');
+                            syncStatus = true;
+                        }
+
+                        var position = czmlData[0].position.cartographicDegrees;
+                        //////            console.log(czmlData[0].position.cartographicDegrees);
+                        ////
+                        var speed = czmlData[1].point.pixelSize.number[1];
+                        var missionTime = Math.floor(czmlData[1].point.outlineWidth);
+                        var gForceUp = czmlData[1].point.position.cartesian[0];
+                        var gForceEast = czmlData[1].point.position.cartesian[1];
+                        var gForceNorth = czmlData[1].point.position.cartesian[2];
+                        ////
+                        var longitude = position[1];
+                        var latitude = position[2];
+                        var altitude = position[position.length - 1];
+
+                        if (!firstRocketDataRecieved) {
+                            lastPos = [longitude, latitude];
+                            firstRocketDataRecieved = true;
+                            groundTrackMarker.show = true;
+                            //                        viewerGroundTrack.trackedEntity = groundTrackMarker;
+
+                            groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
+                        }
+
+                        // Checking if the position data is recieved correctly
+                        if ((altitude !== undefined) && (longitude !== undefined) && (latitude !== undefined)) {
+                            // If the gps diode is not already green, make it so
+                            if (!gpsStatus) {
+                                gpsDiode.toggleClass('led-red led-green');
+                                gpsStatus = true;
+                            }
+                            document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
+                            document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
+                            document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
+                        } else {
+                            // Setting the gps diode to red
+                            if (gpsStatus) {
+                                gpsDiode.toggleClass('led-red led-green');
+                                gpsStatus = false;
+                            }
+                        }
+                        //                    document.getElementsByClassName("speedValue")[0].innerHTML = Math.round(speed) + " m/s";
+                        document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T+ " + missionTime + "s";
+
+                        // If the speed value isn't recieved, but gps data is, 
+                        // calculate the speed from that
+                        if (speed === undefined) {
+                            if (gpsStatus) {
+
+                            }
+                        } else {
+                            document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed);
+                        }
+                        document.getElementsByClassName("gForceMeterEastValueInner")[0].innerHTML = gForceEast;
+                        document.getElementsByClassName("gForceMeterNorthValueInner")[0].innerHTML = gForceNorth;
+                        document.getElementsByClassName("gForceMeterUpValueInner")[0].innerHTML = gForceUp;
+
+                        viewerGroundTrack.entities.add({
+                            name: 'Glowing blue line on the surface',
+                            polyline: {
+                                positions: Cesium.Cartesian3.fromDegreesArray([longitude, latitude,
+                                    lastPos[0], lastPos[1]]),
+                                width: 10,
+                                material: new Cesium.PolylineGlowMaterialProperty({
+                                    glowPower: 0.2,
+                                    color: Cesium.Color.BLUE
+                                })
+                            }
+                        });
+                        groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
+
+                        // Using lookAt in every call to track the marker. Could potentially use "viewer.trackedEntity", but that limits the choices of initial altitude of the camera.
+                        groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, groundTrackCamera.positionCartographic.height));
+
+                        lastPos = [longitude, latitude];
+
+                        updateGraph();
+                        setGaugeIndicatorLength(speed);
+                        setgForceIndicatorLength(gForceUp, gForceEast, gForceNorth);
+
+                    }
+                };
+
+                // Checking if the stream is interrupted for some reason, then set 
+                // the sync diode to red.
+
+                setInterval(function () {
+                    // If the streaming is ongoing, but the time since last message 
+                    // is above a certain threshold, assume that streaming is 
+                    // interrupted and set SYNC to red.
+                    if ((new Date().getTime() - timeOfLastMessage > 2500)) {
+                        if (syncStatus) {
+                            syncDiode.toggleClass('led-green led-red');
+                            syncStatus = false;
+                        }
                         if (gpsStatus) {
-                            gpsDiode.toggleClass('led-red led-green');
+                            gpsDiode.toggleClass('led-green led-red');
                             gpsStatus = false;
                         }
                     }
-                    //                    document.getElementsByClassName("speedValue")[0].innerHTML = Math.round(speed) + " m/s";
-                    document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T+ " + missionTime + "s";
-                    
-                    // If the speed value isn't recieved, but gps data is, 
-                    // calculate the speed from that
-                    if (speed === undefined) {
-                        if(gpsStatus){
-                            
-                        }
-                    } else {
-                        document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed);
-                    }
-                    document.getElementById("gForceMeterEastValue").innerHTML = gForceX;
-                    document.getElementById("gForceMeterNorthValue").innerHTML = gForceY;
-                    document.getElementById("gForceMeterUpValue").innerHTML = gForceZ;
+                }, 5000);
 
 
+                //        var clockStarted = false;
+                //
+                //        var clockstarter = setInterval(function () {
+                //            if (clockStarted = false) {
+                //                viewer.clock.startTime = viewer.dataSources.get(0).entities.getById("rocket").position._property._times[0].addSeconds(-0.5);
+                //                clearInterval(clockStarter);
+                //            }
+                //        }, 10);
 
-                    //                    console.log(groundTrackMarker.position)
-
-                    viewerGroundTrack.entities.add({
-                        name: 'Glowing blue line on the surface',
-                        polyline: {
-                            positions: Cesium.Cartesian3.fromDegreesArray([longitude, latitude,
-                                lastPos[0], lastPos[1]]),
-                            width: 10,
-                            material: new Cesium.PolylineGlowMaterialProperty({
-                                glowPower: 0.2,
-                                color: Cesium.Color.BLUE
-                            })
-                        }
-                    });
-                    groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
-
-                    // Using lookAt in every call to track the marker. Could potentially use "viewer.trackedEntity", but that limits the choices of initial altitude of the camera.
-                    groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, groundTrackCamera.positionCartographic.height));
-
-                    lastPos = [longitude, latitude];
-
-                    updateGraph();
-                    setGaugeIndicatorLength(speed);
-                    setgForceIndicatorLength(gForceX, gForceY, gForceZ);
-
+                // IE loading tiles extremely slowly, if IE detected, send warning
+                if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > 0) {
+                    alert("You are using Internet Explorer: 3D rendering will be very slow. Please use latest Version of Microsoft EDGE, Firefox or Chrome to experience maximum performance.");
                 }
-            };
-
-            // Checking if the stream is interrupted for some reason, then set 
-            // the sync diode to red.
-
-            setInterval(function () {
-                // If the streaming is ongoing, but the time since last message 
-                // is above a certain threshold, assume that streaming is 
-                // interrupted and set SYNC to red.
-                if ((new Date().getTime() - timeOfLastMessage > 2500)) {
-                    if (syncStatus) {
-                        syncDiode.toggleClass('led-green led-red');
-                        syncStatus = false;
-                    }
-                    if (gpsStatus) {
-                        gpsDiode.toggleClass('led-green led-red');
-                        gpsStatus = false;
-                    }
-                }
-            }, 5000);
 
 
-            //        var clockStarted = false;
-            //
-            //        var clockstarter = setInterval(function () {
-            //            if (clockStarted = false) {
-            //                viewer.clock.startTime = viewer.dataSources.get(0).entities.getById("rocket").position._property._times[0].addSeconds(-0.5);
-            //                clearInterval(clockStarter);
-            //            }
-            //        }, 10);
-
-
-        </script>
-        <script type="text/javascript" src="SideDiv.js"></script>
-        <script type="text/javascript" src="d3chartAltPlot.js"></script>
-        <script type="text/javascript" src="gauge.js"></script>
-        <script type="text/javascript" src="gForceMeter.js"></script>
+            </script>
+            <script type="text/javascript" src="SideDiv.js"></script>
+            <script type="text/javascript" src="d3chartAltPlot.js"></script>
+            <script type="text/javascript" src="gauge.js"></script>
+            <script type="text/javascript" src="gForceMeter.js"></script>
     </body>
 
 </html>

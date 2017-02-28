@@ -13,7 +13,7 @@
 @media only screen and (orientation:portrait){
     #sideContainer { width: 0;
                      overflow: hidden;}
-    #statusDiodesContainer{
+    #statusDiodesContainer, #eventMessages{
         display: none;
     }
     #orientation-warning { display:block; }
@@ -163,7 +163,7 @@
     font-size: 1.5vh;
 }
 .xaxis{
-    font-size: 1.8vh;
+    font-size: 1.5vh;
 }
 
 .yaxis{
@@ -196,8 +196,8 @@
     position: absolute;
     background: rgba(42,42,42,0.8);
     border-radius: 1%;
-    top:0;
-    right:0;
+    top:2px;
+    right:2px;
     width: 15%;
     height: 5%;
 /*    width: 270px;
@@ -265,6 +265,22 @@
 }
 
 /*------------------------------------*/
+/*------------EVENT STRINGS-----------*/
+
+#eventMessages{
+    position: absolute;
+    background: rgba(42,42,42,0.8);
+    border-radius: 1%;
+    top:6%;
+    right:2px;
+    width: 15%;
+    height: 30%;
+    overflow: auto;
+}
+
+/*------------------------------------*/
+
+
 
 #dashboard {
     position: absolute;
@@ -379,7 +395,7 @@
 
 .missionTimeValue, .speedValue{
     position: absolute;
-    top: 1%;
+    top: 0.5%;
     left: 70%;
     color: #fff;
     /*background: rgba(42, 42, 42, 0.5);*/
@@ -443,15 +459,15 @@
 }
 
 #gForceMeterEast, #gForceMeterEastValue{
-    bottom: 60%;
+    bottom: 40%;
 }
 
 #gForceMeterNorth, #gForceMeterNorthValue{
-    bottom: 35%;
+    bottom: 15%;
 }
 
 #gForceMeterUp, #gForceMeterUpValue{
-    bottom: 10%;
+    bottom: 65%;
 }
 
 .gForceMeterEastLabel, .gForceMeterNorthLabel, .gForceMeterUpLabel, .gForceMainLabel{
@@ -465,23 +481,23 @@
 }
 
 .gForceMainLabel{
-    top: 10%;
-    font-size: 2vw;
+    top: 8%;
+    font-size: 3vh;
 }
 
 .gForceMeterEastLabel{
-    top: 40%;
-    font-size: 1vw;
+    top: 60%;
+    font-size: 2vh;
 }
 
 .gForceMeterNorthLabel{
-    top: 65%;
-    font-size: 1vw;
+    top: 85%;
+    font-size: 2vh;
 }
 
 .gForceMeterUpLabel{
-    top: 90%;
-    font-size: 1vw;
+    top: 35%;
+    font-size: 2vh;
 }
 
 #gForceMeterEastValue, #gForceMeterNorthValue, #gForceMeterUpValue{
@@ -505,6 +521,13 @@
     background: -o-linear-gradient(top, rgba(0,0,0,1) 0%,rgba(0,0,0,1) 5%,rgba(30,30,30,1) 50%,rgba(0,0,0,1) 95%,rgba(0,0,0,1) 100%); /* Opera 11.10+ */
     background: -ms-linear-gradient(top, rgba(0,0,0,1) 0%,rgba(0,0,0,1) 5%,rgba(30,30,30,1) 50%,rgba(0,0,0,1) 95%,rgba(0,0,0,1) 100%); /* IE10+ */
     background: linear-gradient(top, rgba(0,0,0,1) 0%,rgba(0,0,0,1) 5%,rgba(30,30,30,1) 50%,rgba(0,0,0,1) 95%,rgba(0,0,0,1) 100%); /* W3C */
+}
+
+.gForceMeterEastValueInner, .gForceMeterNorthValueInner, .gForceMeterUpValueInner{
+    top:0;
+    bottom:0;
+    margin-bottom: auto;
+    margin-top: auto;
 }
 
 
@@ -540,15 +563,27 @@
     src: url(../Build/Fonts/raleway.woff);
 }
 
+@font-face {
+	font-family: 'amble';
+	src: url(../Build/Fonts/Amble-Regular.eot);
+	src: url(../Build/Fonts/Amble-Regular.woff) format('woff'), 
+	     url(../Build/Fonts/Amble-Regular.ttf) format('truetype'), 
+             url(../Build/Fonts/Amble-Regular.svg) format('svg');
+}
+
 /*---SETTING FONTS---*/
 
-/*.speedLabel, .gForceLabel, .missionTimeLabel, .altitude, .apogee, .longitude, .latitude, .label, .gaugeSpeedLabel, .gForceMeterEastLabel, .gForceMeterNorthLabel, .gForceMeterUpLabel, .gForceMainLabel {
-    font-family: "sackers-gothic", monospace;
+/*.speedLabel, .gForceLabel, .missionTimeLabel, .altitude, .apogee, .longitude, .latitude, .label, .gaugeSpeedLabel, .gForceMeterEastLabel, .gForceMeterNorthLabel, .gForceMeterUpLabel, .gForceMainLabel, .xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gForceValueX, .gForceValueY, .gForceValueZ, .speedValue, .missionTimeValue {
+    font-family: "amble";
 }
 
 .xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gForceValueX, .gForceValueY, .gForceValueZ, .speedValue, .missionTimeValue{
-    font-family: "futura_maxi", monospace;
+    font-family: "amble";
 }*/
+
+*{
+    font-family: "amble";
+}
 
 /*NEON GLOW*/ 
 

@@ -7,7 +7,7 @@
     var request = require('request');
     var fs = require("fs");
     var bodyParser = require("body-parser");
-    
+
 
 //    Variables in which to store imortant information:
     var streaming = true;
@@ -79,8 +79,9 @@
     var startEpoch; //The epoch of the initial rocket packet
     var streaming = false;
     var date = new Date();
-    var now = date.getTime();
-    var then = date.getTime();
+
+    var postInterval;
+    var timeSinceLastPost;
 
     var openConnections = [];
 
@@ -94,6 +95,7 @@
         var getResp;
 
         if (req.method === "POST") {
+            timeSinceLastPost = new Date().getTime();
             postReq = req;
 //            console.log(postReq.body);
             postResp = resp;
@@ -122,20 +124,23 @@
 //                    getResp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
 //                }
 //                console.log(postReq)
-                // Attaching listener, on closed connection: set "streaming" to false and reset all variables associated with the stream
-                postResp.connection.addListener("close", function () {
-                    streamCSV.close();
-                    streamCZML.close();
-                    streaming = false;
-                    console.log("Connection closed, stream closed");
-                    CZMLHeader = undefined;
-                    CZMLRocket = undefined;
-                    postReq = undefined;
-                    postResp = undefined;
-                    czmlString = [];
-                    packetNumber = 0;
-                    positionsOnlyTempString = [];
-                });
+////              ------------------------------------------------------------------------------------------------------------------------
+////              --------------This does not work on heroku, workaround using setIntervall instead. Uncomment this is fixed.-------------
+//                // Attaching listener, on closed connection: set "streaming" to false and reset all variables associated with the stream
+//                postResp.connection.addListener("close", function () {
+//                    streamCSV.close();
+//                    streamCZML.close();
+//                    streaming = false;
+//                    console.log("Connection closed, stream closed");
+//                    CZMLHeader = undefined;
+//                    CZMLRocket = undefined;
+//                    postReq = undefined;
+//                    postResp = undefined;
+//                    czmlString = [];
+//                    packetNumber = 0;
+//                    positionsOnlyTempString = [];
+//                });
+////              ------------------------------------------------------------------------------------------------------------------------
             } else {
                 CZMLRocket = postReq.body;
 
@@ -164,7 +169,7 @@
 //                console.log(CZMLRocket[0].position.cartographicDegrees);
 //                stream.write(JSON.stringify(CZMLRocket[0].position) + ';' +  + '\n');
 
-                
+
 
 //                if (!(getResp == null)) {
 //                    getResp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
@@ -178,9 +183,9 @@
                         positionsOnlyTempString.push(pos);
                     }
                 });
-                
+
                 CZMLRocket[2].polyline.positions.cartographicDegrees = positionsOnlyTempString;
-                
+
                 openConnections.forEach(function (getResp) {
 //                    console.log('Sending rocket data');
                     getResp.write('data:[' + JSON.stringify(CZMLRocket[0]) + ',' + JSON.stringify(CZMLRocket[1]) + ']' + '\n\n');
@@ -225,10 +230,31 @@
 
             }
             fs.truncateSync("backlog.czml");
-            fs.writeFileSync("backlog.czml",JSON.stringify(czmlString))
+            fs.writeFileSync("backlog.czml", JSON.stringify(czmlString))
 //            streamCZML.write(JSON.stringify(czmlString));
 
+            if (postInterval === undefined) {
+                postInterval = setInterval(function () {
+                    if ((new Date().getTime() - timeSinceLastPost > 2500)) {
+                        streamCSV.close();
+                        streamCZML.close();
+                        streaming = false;
+                        console.log("Connection closed, stream closed");
+                        CZMLHeader = undefined;
+                        CZMLRocket = undefined;
+                        postReq = undefined;
+                        postResp = undefined;
+                        czmlString = [];
+                        packetNumber = 0;
+                        positionsOnlyTempString = [];
+                        clearInterval(postInterval);
+                        postInterval = undefined;
+                    }
+                }, 5000);
+            }
+
             postResp.send('POST request successful');
+
         } else if (req.method === "GET") {
             getReq = req;
             getResp = resp;

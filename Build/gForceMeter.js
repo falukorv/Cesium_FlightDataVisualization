@@ -70,9 +70,9 @@ $(document).ready(function () {
 
     pathStartPositiveX = (0.5 + 0.25 * 0.9 / 2) * gForceMeterWidth; //Start x-position if G>0
     pathStartNegativeX = (0.5 - 0.25 * 0.9 / 2) * gForceMeterWidth; //Start x-position if G<0
-    pathYEast = (0.4 - 0.05) * gForceMeterHeight;
-    pathYNorth = (0.65 - 0.05) * gForceMeterHeight;
-    pathYUp = (0.9 - 0.05) * gForceMeterHeight;
+    pathYUp = (0.35 - 0.05) * gForceMeterHeight;
+    pathYEast = (0.6 - 0.05) * gForceMeterHeight;
+    pathYNorth = (0.85 - 0.05) * gForceMeterHeight;
 
     pathWidth = 0.1 * gForceMeterHeight;
 
@@ -98,13 +98,13 @@ $(document).ready(function () {
 
     positiveEastAxisElement = gForceSvg.append("g")
             .attr("class", "gForcePositiveAxis")
-            .attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.90 + ")")
+            .attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.85 + ")")
             .call(positiveEastAxis);
 
 
     negativeEastAxisElement = gForceSvg.append("g")
             .attr("class", "gForceNegativeAxis")
-            .attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.90 + ")")
+            .attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.85 + ")")
             .call(negativeEastAxis);
 
     gForcePathEast = gForceSvg.append("path")
@@ -132,9 +132,9 @@ new ResizeSensor(document.getElementById("gForceMeter"), function () {
     gForceSvgBase.attr("width", gForceMeterWidth)
             .attr("height", gForceMeterHeight);
     
-    pathYEast = (0.4 - 0.05) * gForceMeterHeight;
-    pathYNorth = (0.65 - 0.05) * gForceMeterHeight;
-    pathYUp = (0.9 - 0.05) * gForceMeterHeight;
+    pathYUp = (0.35 - 0.05) * gForceMeterHeight;
+    pathYEast = (0.6 - 0.05) * gForceMeterHeight;
+    pathYNorth = (0.85 - 0.05) * gForceMeterHeight;
     
     pathMaximumX = 0.95 * gForceMeterWidth;
     pathMinimumX = 0.05 * gForceMeterWidth;
@@ -160,8 +160,8 @@ new ResizeSensor(document.getElementById("gForceMeter"), function () {
     positiveEastAxis = d3.axisBottom(positiveEastScale).ticks(4);
     negativeEastAxis = d3.axisBottom(negativeEastScale).ticks(4);
 
-    positiveEastAxisElement.attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.90 + ")").call(positiveEastAxis);
-    negativeEastAxisElement.attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.90 + ")").call(negativeEastAxis);
+    positiveEastAxisElement.attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.85 + ")").call(positiveEastAxis);
+    negativeEastAxisElement.attr("transform", "translate(" + 0 + "," + gForceMeterHeight * 0.85 + ")").call(negativeEastAxis);
     
     gForcePathEast.attr("d", gForceEastPath);
     gForcePathNorth.attr("d", gForceNorthPath);
@@ -170,35 +170,35 @@ new ResizeSensor(document.getElementById("gForceMeter"), function () {
     });
 });
 
-function setgForceIndicatorLength(Gx, Gy, Gz) {
+function setgForceIndicatorLength(Gup, Geast, Gnorth) {
 
-    if (Gx > 0) {
-        var pathEndPositiveX = pathStartPositiveX + (Gx / maxGForce) * (pathMaximumX - pathStartPositiveX);
-        gForceEastPath = "M" + pathStartPositiveX + "," + pathYEast + "L" + positiveEastScale(Gx) + "," + pathYEast;
-    } else if (Gx < 0) {
-        var pathEndNegativeX = pathStartNegativeX - (Gx / maxGForce) * (-pathMaximumX + pathStartNegativeX);
-        gForceEastPath = "M" + pathStartNegativeX + "," + pathYEast + "L" + negativeEastScale(Gx) + "," + pathYEast;
+    if (Geast > 0) {
+        var pathEndPositiveX = pathStartPositiveX + (Geast / maxGForce) * (pathMaximumX - pathStartPositiveX);
+        gForceEastPath = "M" + pathStartPositiveX + "," + pathYEast + "L" + positiveEastScale(Geast) + "," + pathYEast;
+    } else if (Geast < 0) {
+        var pathEndNegativeX = pathStartNegativeX - (Geast / maxGForce) * (-pathMaximumX + pathStartNegativeX);
+        gForceEastPath = "M" + pathStartNegativeX + "," + pathYEast + "L" + negativeEastScale(Geast) + "," + pathYEast;
     } else {
         gForceEastPath = "M" + pathStartNegativeX + "," + pathYEast + "L" + pathStartNegativeX + "," + pathYEast;
     }
 
 
-    if (Gy > 0) {
-        var pathEndPositiveX = pathStartPositiveX + (Gx / maxGForce) * (pathMaximumX - pathStartPositiveX);
-        gForceNorthPath = "M" + pathStartPositiveX + "," + pathYNorth + "L" + positiveEastScale(Gy) + "," + pathYNorth;
-    } else if (Gy < 0) {
-        var pathEndNegativeX = pathStartNegativeX - (Gx / maxGForce) * (-pathMaximumX + pathStartNegativeX);
-        gForceNorthPath = "M" + pathStartNegativeX + "," + pathYNorth + "L" + negativeEastScale(Gy) + "," + pathYNorth;
+    if (Gnorth > 0) {
+        var pathEndPositiveX = pathStartPositiveX + (Gnorth / maxGForce) * (pathMaximumX - pathStartPositiveX);
+        gForceNorthPath = "M" + pathStartPositiveX + "," + pathYNorth + "L" + positiveEastScale(Gnorth) + "," + pathYNorth;
+    } else if (Gnorth < 0) {
+        var pathEndNegativeX = pathStartNegativeX - (Gnorth / maxGForce) * (-pathMaximumX + pathStartNegativeX);
+        gForceNorthPath = "M" + pathStartNegativeX + "," + pathYNorth + "L" + negativeEastScale(Gnorth) + "," + pathYNorth;
     } else {
         gForceNorthPath = "M" + pathStartNegativeX + "," + pathYNorth + "L" + pathStartNegativeX + "," + pathYNorth;
     }
 
-    if (Gz > 0) {
-        var pathEndPositiveX = pathStartPositiveX + (Gx / maxGForce) * (pathMaximumX - pathStartPositiveX);
-        gForceUpPath = "M" + pathStartPositiveX + "," + pathYUp + "L" + positiveEastScale(Gz) + "," + pathYUp;
-    } else if (Gz < 0) {
-        var pathEndNegativeX = pathStartNegativeX - (Gx / maxGForce) * (-pathMaximumX + pathStartNegativeX);
-        gForceUpPath = "M" + pathStartNegativeX + "," + pathYUp + "L" + negativeEastScale(Gz) + "," + pathYUp;
+    if (Gup > 0) {
+        var pathEndPositiveX = pathStartPositiveX + (Gup / maxGForce) * (pathMaximumX - pathStartPositiveX);
+        gForceUpPath = "M" + pathStartPositiveX + "," + pathYUp + "L" + positiveEastScale(Gup) + "," + pathYUp;
+    } else if (Gup < 0) {
+        var pathEndNegativeX = pathStartNegativeX - (Gup / maxGForce) * (-pathMaximumX + pathStartNegativeX);
+        gForceUpPath = "M" + pathStartNegativeX + "," + pathYUp + "L" + negativeEastScale(Gup) + "," + pathYUp;
     } else {
         gForceUpPath = "M" + pathStartNegativeX + "," + pathYUp + "L" + pathStartNegativeX + "," + pathYUp;
     }
