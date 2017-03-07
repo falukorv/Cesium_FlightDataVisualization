@@ -89,6 +89,7 @@
     var postResp;
 
     var czmlString = []; //Will store the czml backlog in this variable, and then write everything to the file for the client read.
+    var firstPacket = true;
 
     app.all("/czml", function (req, resp) {
         var getReq;
@@ -97,11 +98,15 @@
         if (req.method === "POST") {
             timeSinceLastPost = new Date().getTime();
             postReq = req;
-//            console.log(postReq.body);
+            console.log(postReq.body);
+            console.log(postReq.body[0].id);
             postResp = resp;
             czmlString = []; //Resetting the czmlString every call POST request, otherwise we get a memory leak due to the string just appending the same thing over and over.
 
-            if (postReq.body[0].id === "document") {
+            if (postReq.body[0].name === "initial-packet") {
+
+
+                console.log(postReq.body);
                 // This is the first packet arriving
                 CZMLHeader = postReq.body;
 
@@ -118,12 +123,17 @@
                 openConnections.forEach(function (resp) {
                     resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
                 });
+                firstPacket = false;
+            } else if (postReq.body[0].name === "Ping") {
+                console.log("Ping");
+                openConnections.forEach(function (resp) {
+                    resp.write('data:' + JSON.stringify(postReq.body) + '\n\n');
+                });
+            }
 
-//                if (!(getResp == null)) {
-//                    console.log(getResp);
-//                    getResp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
-//                }
-//                console.log(postReq)
+
+
+
 ////              ------------------------------------------------------------------------------------------------------------------------
 ////              --------------This does not work on heroku, workaround using setIntervall instead. Uncomment this is fixed.-------------
 //                // Attaching listener, on closed connection: set "streaming" to false and reset all variables associated with the stream
@@ -141,7 +151,7 @@
 //                    positionsOnlyTempString = [];
 //                });
 ////              ------------------------------------------------------------------------------------------------------------------------
-            } else {
+            else if (postReq.body[0].id === "rocket") {
                 CZMLRocket = postReq.body;
 
                 //For the first incoming rocket packet:
@@ -162,7 +172,9 @@
 
                 var missionTimes = CZMLRocket[1].point.outlineWidth;
                 // Might have some optimization to do here, do we really need to plot all samples?
-                streamCSV.write(JSON.stringify(positions[3]) + ',' + JSON.stringify(missionTimes) + '\n');
+                if (missionTimes >= 0) {
+                    streamCSV.write(JSON.stringify(positions[3]) + ',' + JSON.stringify(missionTimes) + '\n');
+                }
 //                for (var j=0; j<positions.length/4; j++){
 //                    stream.write(JSON.stringify(positions[j*4+3]) + ',' + JSON.stringify(missionTimes[j*4+3]) + '\n');
 //                }

@@ -23,15 +23,15 @@
     #sideContainer { width: 20%;}
 }
 
-#groundTrackDiv, #chart, #gaugeBase, #gForceMeter{
+#groundTrackDiv, #chart, #gaugeBase, #gForceMeter, #attitudeDiv{
     display:block;
     position: absolute;    
     background: rgba(42, 42, 42, 0.8);    
     border-radius: 1%;
-    -webkit-transform: scale(0.6);
+    -webkit-transform: scale(0.5);
     -webkit-transition-property: -webkit-transform;
     -webkit-transition-duration: 1s;
-    -moz-transform: scale(0.6);
+    -moz-transform: scale(0.5);
     -moz-transition-property: -moz-transform;
     -moz-transition-duration: 1s;
     transform: scale(0.5);
@@ -55,12 +55,17 @@
     transform-origin: left bottom;
 }
 
-#groundTrackDiv, #chart, #gForceMeter{
-    width: 200%;
+#attitudeDiv{
+    height: 125%;
+    bottom: 1.5%;
+    right:0;
+    -webkit-transform-origin: right bottom;
+    -moz-transform-origin: right bottom;
+    transform-origin: right bottom;
 }
 
-#gaugeBase{
-    /*width: 160%;*/ 
+#groundTrackDiv, #chart, #gForceMeter, #attitudeDiv{
+    width: 200%;
 }
 
 #cesiumContainerGroundTrack{
@@ -94,6 +99,13 @@
     z-index:999;
 }
 
+#attitudeDiv:hover {
+    -webkit-transform: scale(0.75);
+    -moz-transform: scale(0.75);
+    transform: scale(0.75);
+    z-index:999;
+}
+
 #sideContainer{
     position: absolute;
     left:0;
@@ -101,6 +113,27 @@
     height:100%;
     background: rgba(42, 42, 42, 0.4);  
 } 
+
+#sideContainerRight{
+    position: absolute;
+    right:0;
+    top:0;
+    width: 20%;
+    height:100%;
+    background: rgba(42, 42, 42, 0.4);  
+} 
+
+
+#cesiumContainerAttitude{
+    position: absolute;
+    left:0;
+    right:0;
+    top:1%;
+    margin-left: auto;
+    margin-right: auto;
+    height: 70%;
+    width: 98%;
+}
 
 #cesiumContainer{
     position: absolute;
@@ -153,13 +186,13 @@
     stroke: #eee;
 }
 
-.xaxis, .yaxis, .gForcePositiveAxis, .gForceNegativeAxis{
+.xaxis, .yaxis, .positiveLogAxis, .negativeLogAxis{
     stroke: #fff;
     fill: #fff;
     color: #fff;
 }
 
-.gForcePositiveAxis, .gForceNegativeAxis{
+.positiveLogAxis, .negativeLogAxis{
     font-size: 1.5vh;
 }
 .xaxis{
@@ -196,9 +229,8 @@
     position: absolute;
     background: rgba(42,42,42,0.8);
     border-radius: 1%;
-    top:2px;
-    right:2px;
-    width: 15%;
+    top:0;
+    width: 100%;
     height: 5%;
 /*    width: 270px;
     height: 60px;*/
@@ -271,9 +303,8 @@
     position: absolute;
     background: rgba(42,42,42,0.8);
     border-radius: 1%;
-    top:6%;
-    right:2px;
-    width: 15%;
+    top:5.5%;
+    width: 100%;
     height: 30%;
     overflow: auto;
 }
@@ -439,9 +470,14 @@
     top: 55%;
 }
 
+#aRateValueContainer{
+    position: absolute;
+    top: 70%;
+    width: 100%;
+    height: 30%;
+}
 
-
-#gForceMeterEast, #gForceMeterNorth, #gForceMeterUp{
+#gForceMeterY, #gForceMeterX, #gForceMeterZ, #aRateMeterY, #aRateMeterX, #aRateMeterZ{
     position: absolute;
     width: 90%;
     height: 10%;
@@ -458,19 +494,19 @@
     z-index: -1;
 }
 
-#gForceMeterEast, #gForceMeterEastValue{
+#gForceMeterY, #gForceMeterYValue, #aRateMeterY, #aRateMeterYValue{
     bottom: 40%;
 }
 
-#gForceMeterNorth, #gForceMeterNorthValue{
+#gForceMeterZ, #gForceMeterZValue, #aRateMeterZ, #aRateMeterZValue{
     bottom: 15%;
 }
 
-#gForceMeterUp, #gForceMeterUpValue{
+#gForceMeterX, #gForceMeterXValue, #aRateMeterX, #aRateMeterXValue{
     bottom: 65%;
 }
 
-.gForceMeterEastLabel, .gForceMeterNorthLabel, .gForceMeterUpLabel, .gForceMainLabel{
+.someMeterYLabel, .someMeterZLabel, .someMeterXLabel, .someMeterMainLabel{
     color: #fff;
     position: absolute;
     text-align: center;
@@ -480,27 +516,27 @@
     margin-right: auto;
 }
 
-.gForceMainLabel{
+.someMeterMainLabel{
     top: 8%;
     font-size: 3vh;
 }
 
-.gForceMeterEastLabel{
+.someMeterYLabel{
     top: 60%;
     font-size: 2vh;
 }
 
-.gForceMeterNorthLabel{
+.someMeterZLabel{
     top: 85%;
     font-size: 2vh;
 }
 
-.gForceMeterUpLabel{
+.someMeterXLabel{
     top: 35%;
     font-size: 2vh;
 }
 
-#gForceMeterEastValue, #gForceMeterNorthValue, #gForceMeterUpValue{
+#gForceMeterYValue, #gForceMeterZValue, #gForceMeterXValue, #aRateMeterYValue, #aRateMeterZValue, #aRateMeterXValue{
     position: absolute;
     /*vertical-align: middle;*/
     left:0;
@@ -523,7 +559,7 @@
     background: linear-gradient(top, rgba(0,0,0,1) 0%,rgba(0,0,0,1) 5%,rgba(30,30,30,1) 50%,rgba(0,0,0,1) 95%,rgba(0,0,0,1) 100%); /* W3C */
 }
 
-.gForceMeterEastValueInner, .gForceMeterNorthValueInner, .gForceMeterUpValueInner{
+.someMeterYValueInner, .someMeterZValueInner, .someMeterXValueInner{
     top:0;
     bottom:0;
     margin-bottom: auto;
@@ -573,7 +609,7 @@
 
 /*---SETTING FONTS---*/
 
-/*.speedLabel, .gForceLabel, .missionTimeLabel, .altitude, .apogee, .longitude, .latitude, .label, .gaugeSpeedLabel, .gForceMeterEastLabel, .gForceMeterNorthLabel, .gForceMeterUpLabel, .gForceMainLabel, .xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gForceValueX, .gForceValueY, .gForceValueZ, .speedValue, .missionTimeValue {
+/*.speedLabel, .gForceLabel, .missionTimeLabel, .altitude, .apogee, .longitude, .latitude, .label, .gaugeSpeedLabel, .gForceMeterYLabel, .gForceMeterZLabel, .gForceMeterXLabel, .gForceMainLabel, .xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gForceValueX, .gForceValueY, .gForceValueZ, .speedValue, .missionTimeValue {
     font-family: "amble";
 }
 
