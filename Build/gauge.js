@@ -40,11 +40,11 @@ var gaugeSvg = gaugeSvgBase.append("g")
 var gaugeRadius = gaugeWidth / 2;
 var gaugeStartAngle = -4 * Math.PI / 5;
 var gaugeEndAngle = 4 * Math.PI / 5;
-var NoOfGaugeTicks = 13;
+var NoOfGaugeTicks = 11;
 var tickLength = gaugeWidth * 0.03;
 var arcRadius = gaugeRadius * 0.8;
 var gaugeStartValue = 0;
-var gaugeMaxValue = 3000;
+var gaugeMaxValue = 1000;
 
 // Arc function for the stationary arc
 var arc = d3.arc()
@@ -154,7 +154,7 @@ function arcTween(d) {
 
 
 function setGaugeIndicatorLength(speedValue) {
-
+    speedValue = speedValue/3.6;
     var indicatorEndAngle = gaugeStartAngle + speedValue / gaugeMaxValue * (gaugeEndAngle - gaugeStartAngle);
     //indicator.endAngle(indicatorEndAngle);
     //console.log(indicator.toString())

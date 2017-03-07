@@ -44,7 +44,7 @@
 
             <div id="chart"></div>
             <div id="gaugeBase">
-                <span class="gaugeUnitLabel">[m/s]</span>
+                <span class="gaugeUnitLabel">[km/h]</span>
                 <span class="gaugeSpeedLabel">Speed</span>
                 <div id="odometer" class="odometer gaugeOdometer">10000</div> <!-- The first number in the odometer is hidden in order to always showing four digits -->
             </div>
@@ -452,7 +452,7 @@
                         }
                     });
                     console.log(counter);
-                    if (counter > 1) {
+                    if (counter > 1 && Math.abs(viewerAttitude.camera.right.y)>0.99) {
                         console.log("clearing");
                         clearInterval(startTrackingInterval);
                         attitudeDone = true;
@@ -570,7 +570,7 @@
 
                         }
                     } else {
-                        document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed);
+                        document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed/3.6);
                     }
                     document.getElementsByClassName("someMeterYValueInner")[0].innerHTML = gForceEast;
                     document.getElementsByClassName("someMeterZValueInner")[0].innerHTML = gForceNorth;

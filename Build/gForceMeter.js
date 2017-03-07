@@ -110,17 +110,17 @@ $(document).ready(function () {
     gForcePathGY = gForceSvg.append("path")
             .attr("stroke-width", pathWidth)
 //        .attr("stroke-linecap","round")
-            .attr("stroke", "rgba(150, 0, 0, 0.8)");
+            .attr("stroke", "rgba(255, 0, 0, 0.5)");
 
     gForcePathGZ = gForceSvg.append("path")
             .attr("stroke-width", pathWidth)
 //        .attr("stroke-linecap","round")
-            .attr("stroke", "rgba(150, 0, 0, 0.8)");
+            .attr("stroke", "rgba(255, 0, 0, 0.5)");
 
     gForcePathGX = gForceSvg.append("path")
             .attr("stroke-width", pathWidth)
 //        .attr("stroke-linecap","round")
-            .attr("stroke", "rgba(150, 0, 0, 0.8)");
+            .attr("stroke", "rgba(255, 0, 0, 0.5)");
 
 });
 

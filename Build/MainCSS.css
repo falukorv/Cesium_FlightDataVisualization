@@ -11,7 +11,7 @@
     position: absolute;
 }
 @media only screen and (orientation:portrait){
-    #sideContainer { width: 0;
+    #sideContainer, #sideContainerRight{ width: 0;
                      overflow: hidden;}
     #statusDiodesContainer, #eventMessages{
         display: none;
@@ -20,7 +20,7 @@
 }
 @media only screen and (orientation:landscape){
     #orientation-warning { display:none; }
-    #sideContainer { width: 20%;}
+    #sideContainer, #sideContainerRight { width: 20%;}
 }
 
 #groundTrackDiv, #chart, #gaugeBase, #gForceMeter, #attitudeDiv{
@@ -118,7 +118,6 @@
     position: absolute;
     right:0;
     top:0;
-    width: 20%;
     height:100%;
     background: rgba(42, 42, 42, 0.4);  
 } 
@@ -188,8 +187,6 @@
 
 .xaxis, .yaxis, .positiveLogAxis, .negativeLogAxis{
     stroke: #fff;
-    fill: #fff;
-    color: #fff;
 }
 
 .positiveLogAxis, .negativeLogAxis{
@@ -440,7 +437,7 @@
 }
 
 .arcDynamic{
-    fill: rgba(150, 0, 0, 0.8);
+    fill: rgba(200, 0, 0, 1);
 }
 
 .gaugeTicks{
