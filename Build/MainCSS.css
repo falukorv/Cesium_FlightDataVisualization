@@ -68,6 +68,40 @@
     width: 200%;
 }
 
+#gForceMeterOverlay{
+    position: absolute;
+    height:100%;
+    width:100%;
+    background: rgba(42, 42, 42, 0.8);
+}
+
+#gForceMeterOverlayText{
+    position: absolute;
+    left:0;
+    right:0;
+    top:40%;
+    font-size: 2vw;
+    text-align: center;
+    color: #fff;
+}
+
+#aRateMeterOverlay{
+    position: absolute;
+    height:100%;
+    width:100%;
+    background: rgba(42, 42, 42, 0.8);
+}
+
+#aRateMeterOverlayText{
+    position: absolute;
+    left:0;
+    right:0;
+    top:40%;
+    font-size: 2vw;
+    text-align: center;
+    color: #fff;
+}
+
 #cesiumContainerGroundTrack{
     position: absolute;
     left:0;
@@ -132,6 +166,7 @@
     margin-right: auto;
     height: 70%;
     width: 98%;
+    z-index: 10;
 }
 
 #cesiumContainer{
@@ -424,7 +459,7 @@
 .missionTimeValue, .speedValue{
     position: absolute;
     top: 0.5%;
-    left: 70%;
+    left: 55%;
     color: #fff;
     /*background: rgba(42, 42, 42, 0.5);*/
     font-size: 200%;
@@ -520,17 +555,17 @@
 
 .someMeterYLabel{
     top: 60%;
-    font-size: 2vh;
+    font-size: 3vh;
 }
 
 .someMeterZLabel{
     top: 85%;
-    font-size: 2vh;
+    font-size: 3vh;
 }
 
 .someMeterXLabel{
     top: 35%;
-    font-size: 2vh;
+    font-size: 3vh;
 }
 
 #gForceMeterYValue, #gForceMeterZValue, #gForceMeterXValue, #aRateMeterYValue, #aRateMeterZValue, #aRateMeterXValue{

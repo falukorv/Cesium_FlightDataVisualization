@@ -69,6 +69,7 @@
                 <span class="someMeterXLabel">G<sub>x</sub></span>
                 <span class="someMeterYLabel">G<sub>y</sub></span>
                 <span class="someMeterZLabel">G<sub>z</sub></span>
+                <div id="gForceMeterOverlay"><span id="gForceMeterOverlayText">G-Load data unavailable</span></div>
             </div>
         </div>
         <div id="sideContainerRight">
@@ -110,7 +111,9 @@
                         <span class="someMeterXLabel">&omega;<sub>x</sub></span>
                         <span class="someMeterYLabel">&omega;<sub>y</sub></span>
                         <span class="someMeterZLabel">&omega;<sub>z</sub></span>
-                    </div></div>
+                    </div>
+                    <div id="aRateMeterOverlay"><span id="aRateMeterOverlayText">Data for angular rates unavailable</span></div>
+                </div>
             </div>
         </div>
         <div id="creditDiv"></div>
@@ -151,6 +154,12 @@
         <script>
 
             Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
+
+            $('#gForceMeterOverlay').css('display', 'none');
+            $('#aRateMeterOverlay').css('display', 'none');
+
+//            Cesium.Camera.DEFAULT_VIEW_RECTANGLE = new Cesium.Rectangle.fromDegrees(19, 67.8, 21.5, 69);
+//            Cesium.Camera.DEFAULT_VIEW_FACTOR = 0.1;
             //            Cesium.RequestScheduler.prioritize = false;
             var viewerGroundTrack = new Cesium.Viewer('cesiumContainerGroundTrack', {
                 timeline: false,
@@ -314,6 +323,14 @@
             // Get the camera
             var camera = viewer.camera;
             var groundTrackCamera = viewerGroundTrack.scene.camera;
+            var viewRectangle = new Cesium.Rectangle.fromDegrees(19.7, 67.8, 22, 69);
+            camera.flyTo({
+                destination: viewRectangle
+            });
+            groundTrackCamera.zoomIn();
+            groundTrackCamera.flyTo({
+                destination: new Cesium.Cartesian3(2294925.383103221, 873305.9902726595, 6166275.118281682)
+            });
 
             // The position of Esrange, which will be the initial position of the rocket.
             esrangeLong = 21.1068944441480;
@@ -396,20 +413,6 @@
             var miniHeight = d3.select("body").node().getBoundingClientRect().height * 0.5 - margin.top - margin.bottom;
             miniWidth = miniHeight * 2;
 
-            // Set latitude and longitude labels
-            var miniCesium = d3.select("cesiumContainerGroundTrack")
-                    .attr("width", miniWidth)
-                    .attr("height", miniHeight);
-            //        console.log(miniCesium)
-
-            miniCesium.append("text")
-                    .attr("class", "altitude label")
-                    .attr("text-anchor", "start")
-                    .attr("y", 28)
-                    .attr("x", 30)
-                    .attr("transform", "translate(20," + 0 + ")")
-                    .text('Altitude: High as a kite');
-
             // Accessing the status diodes, used in order to change them.
             var syncDiode = $('#syncDiode');
             var syncStatus = false;
@@ -452,7 +455,7 @@
                         }
                     });
                     console.log(counter);
-                    if (counter > 1 && Math.abs(viewerAttitude.camera.right.y)>0.99) {
+                    if (counter > 1 && Math.abs(viewerAttitude.camera.right.y) > 0.99) {
                         console.log("clearing");
                         clearInterval(startTrackingInterval);
                         attitudeDone = true;
@@ -489,11 +492,12 @@
             var apogee = 0;
             var tracked = false;
             czmlEventSource.onmessage = function (event) {
-//                tick();
+                var t0 = performance.now();
                 czmlData = JSON.parse(event.data);
                 czmlStream.process(czmlData);
-                viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
+
                 if (czmlData[0].id === "document") {
+                    camera.cancelFlight();
                     timeOfLastMessage = new Date().getTime();
                     if (!syncStatus) {
                         syncDiode.toggleClass('led-red led-green');
@@ -507,6 +511,7 @@
 
 
                 if (czmlData[0].id === "rocket") {
+                    viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
                     timeOfLastMessage = new Date().getTime();
                     var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
                     Cesium.JulianDate.addSeconds(startTime, -1, startTime);
@@ -522,13 +527,9 @@
 
                     var position = czmlData[0].position.cartographicDegrees;
                     var orientation = czmlData[0].orientation;
-                    //////            console.log(czmlData[0].position.cartographicDegrees);
-                    ////
-                    var speed = czmlData[1].point.pixelSize;
-                    var missionTime = Math.floor(czmlData[1].point.outlineWidth);
-                    var gForceUp = czmlData[1].point.position.cartesian[0];
-                    var gForceEast = czmlData[1].point.position.cartesian[1];
-                    var gForceNorth = czmlData[1].point.position.cartesian[2];
+
+                    var missionTime = czmlData[2].name;
+
                     ////
                     var longitude = position[1];
                     var latitude = position[2];
@@ -538,13 +539,14 @@
                         lastPos = [longitude, latitude];
                         firstRocketDataRecieved = true;
                         groundTrackMarker.show = true;
-                        //                        viewerGroundTrack.trackedEntity = groundTrackMarker;
 
                         groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
                     }
 
+
+
                     // Checking if the position data is recieved correctly
-                    if ((altitude !== undefined) && (longitude !== undefined) && (latitude !== undefined)) {
+                    if (typeof altitude !== 'undefined' && typeof longitude !== 'undefined' && typeof latitude !== 'undefined') {
                         // If the gps diode is not already green, make it so
                         if (!gpsStatus) {
                             gpsDiode.toggleClass('led-red led-green');
@@ -553,6 +555,7 @@
                         document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
                         document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
                         document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
+                        updateGraph();
                     } else {
                         // Setting the gps diode to red
                         if (gpsStatus) {
@@ -560,21 +563,46 @@
                             gpsStatus = false;
                         }
                     }
-                    //                    document.getElementsByClassName("speedValue")[0].innerHTML = Math.round(speed) + " m/s";
-                    document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T+ " + missionTime + "s";
+                    document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
 
-                    // If the speed value isn't recieved, but gps data is, 
-                    // calculate the speed from that
-                    if (speed === undefined) {
-                        if (gpsStatus) {
+                    // Trying to access the G-load data
+                    if (typeof czmlData[1].point.position !== 'undefined') {
+                        var gLoadX = round2FourDecimals(czmlData[1].point.position.cartesian[0]);
+                        var gLoadY = round2FourDecimals(czmlData[1].point.position.cartesian[1]);
+                        var gLoadZ = round2FourDecimals(czmlData[1].point.position.cartesian[2]);
 
-                        }
+                        document.getElementsByClassName("someMeterYValueInner")[0].innerHTML = gLoadY;
+                        document.getElementsByClassName("someMeterZValueInner")[0].innerHTML = gLoadZ;
+                        document.getElementsByClassName("someMeterXValueInner")[0].innerHTML = gLoadX;
+                        setgForceIndicatorLength(gLoadX, gLoadY, gLoadZ);
+                        $('#gForceMeterOverlay').css('display', 'none');
                     } else {
-                        document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed/3.6);
+                        $('#gForceMeterOverlay').css('display', 'block');
                     }
-                    document.getElementsByClassName("someMeterYValueInner")[0].innerHTML = gForceEast;
-                    document.getElementsByClassName("someMeterZValueInner")[0].innerHTML = gForceNorth;
-                    document.getElementsByClassName("someMeterXValueInner")[0].innerHTML = gForceUp;
+
+                    try {
+                        var speed = czmlData[1].point.pixelSize;
+                        document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed / 3.6); // Note that the term "10000" is just used to make the odometer look good. 
+                        setGaugeIndicatorLength(speed);
+                    } catch (err) {
+                        console.log(err.message);
+                    }
+
+                    // Trying to access the angular rate data
+                    // Trying to access the G-load data
+                    if (typeof czmlData[2].point.position !== 'undefined') {
+                        var aRateX = round2FourDecimals(czmlData[2].point.position.cartesian[0]);
+                        var aRateY = round2FourDecimals(czmlData[2].point.position.cartesian[1]);
+                        var aRateZ = round2FourDecimals(czmlData[2].point.position.cartesian[2]);
+
+                        document.getElementsByClassName("someMeterXValueInner")[1].innerHTML = aRateX;
+                        document.getElementsByClassName("someMeterYValueInner")[1].innerHTML = aRateY;
+                        document.getElementsByClassName("someMeterZValueInner")[1].innerHTML = aRateZ;
+                        setAngleRateIndicatorLength(aRateX, aRateY, aRateZ);
+                        $('#aRateMeterOverlay').css('display', 'none');
+                    } else {
+                        $('#aRateMeterOverlay').css('display', 'block');
+                    }
 
                     viewerGroundTrack.entities.add({
                         name: 'Glowing blue line on the surface',
@@ -590,29 +618,29 @@
                     });
                     groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
 
-//                    viewerAttitude.trackedEntity = attitudeEntity;
-
                     // Using lookAt in every call to track the marker. Could potentially use "viewer.trackedEntity", but that limits the choices of initial altitude of the camera.
                     groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, groundTrackCamera.positionCartographic.height));
 
                     lastPos = [longitude, latitude];
 
                     if (attitudeDone) {
-//                        attitudeCZML[1].model.show = true;
                         attitudeCZML[1].orientation = orientation;
                     }
 
                     czmlAttitudeSource.process(attitudeCZML);
 
-                    updateGraph();
-                    setGaugeIndicatorLength(speed);
-                    setgForceIndicatorLength(gForceUp, gForceEast, gForceNorth);
 
                 }
+                var t1 = performance.now();
+//                console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
             };
 
             // Checking if the stream is interrupted for some reason, then set 
             // the sync diode to red.
+
+            function round2FourDecimals(number) {
+                return Math.round((number + 0.0000001) * 10000) / 10000;
+            }
 
             setInterval(function () {
                 // If the streaming is ongoing, but the time since last message 

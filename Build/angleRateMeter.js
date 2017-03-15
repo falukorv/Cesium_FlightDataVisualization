@@ -6,9 +6,6 @@ var aRateMeterWidth;
 var aRateMeterHeight;
 
 var aRateAxisLength; // Length of the axis in one direction
-var gAX;
-var gAY;
-var gWest;
 
 var maxGForce;
 
@@ -59,9 +56,6 @@ $(document).ready(function () {
     aRateMeterHeight = document.getElementById("aRateValueContainer").offsetHeight;
 
     aRateAxisLength = aRateMeterWidth * 0.35; // Length of the axis in one direction
-    gAX = 4;
-    gAY = 0;
-    gWest = 0;
 
     maxGForce = 10;
     pathMaximumX = 0.95 * aRateMeterWidth;
@@ -169,24 +163,24 @@ new ResizeSensor(document.getElementById("aRateValueContainer"), function () {
     });
 });
 
-function setangleRateIndicatorLength(aRateX, aRateY, aRateZ) {
+function setAngleRateIndicatorLength(aRateX, aRateY, aRateZ) {
     
     if (aRateX > 0) {
         var pathEndPositiveX = pathStartPositiveX + (aRateX / maxGForce) * (pathMaximumX - pathStartPositiveX);
-        aRateAXPath = "M" + pathStartPositiveX + "," + pathYAX + "L" + positiveAYScale(aRateX) + "," + pathYAX;
+        aRateAXPath = "M" + pathStartPositiveX + "," + pathYAX + "L" + positiveAScale(aRateX) + "," + pathYAX;
     } else if (aRateX < 0) {
         var pathEndNegativeX = pathStartNegativeX - (aRateX / maxGForce) * (-pathMaximumX + pathStartNegativeX);
-        aRateAXPath = "M" + pathStartNegativeX + "," + pathYAX + "L" + negativeAYScale(aRateX) + "," + pathYAX;
+        aRateAXPath = "M" + pathStartNegativeX + "," + pathYAX + "L" + negativeAScale(aRateX) + "," + pathYAX;
     } else {
         aRateAXPath = "M" + pathStartNegativeX + "," + pathYAX + "L" + pathStartNegativeX + "," + pathYAX;
     }
 
     if (aRateY > 0) {
         var pathEndPositiveX = pathStartPositiveX + (aRateY / maxGForce) * (pathMaximumX - pathStartPositiveX);
-        aRateAYPath = "M" + pathStartPositiveX + "," + pathYAY + "L" + positiveAYScale(aRateY) + "," + pathYAY;
+        aRateAYPath = "M" + pathStartPositiveX + "," + pathYAY + "L" + positiveAScale(aRateY) + "," + pathYAY;
     } else if (aRateY < 0) {
         var pathEndNegativeX = pathStartNegativeX - (aRateY / maxGForce) * (-pathMaximumX + pathStartNegativeX);
-        aRateAYPath = "M" + pathStartNegativeX + "," + pathYAY + "L" + negativeAYScale(aRateY) + "," + pathYAY;
+        aRateAYPath = "M" + pathStartNegativeX + "," + pathYAY + "L" + negativeAScale(aRateY) + "," + pathYAY;
     } else {
         aRateAYPath = "M" + pathStartNegativeX + "," + pathYAY + "L" + pathStartNegativeX + "," + pathYAY;
     }
@@ -194,10 +188,10 @@ function setangleRateIndicatorLength(aRateX, aRateY, aRateZ) {
 
     if (aRateZ > 0) {
         var pathEndPositiveX = pathStartPositiveX + (aRateZ / maxGForce) * (pathMaximumX - pathStartPositiveX);
-        aRateAZPath = "M" + pathStartPositiveX + "," + pathYAZ + "L" + positiveAYScale(aRateZ) + "," + pathYAZ;
+        aRateAZPath = "M" + pathStartPositiveX + "," + pathYAZ + "L" + positiveAScale(aRateZ) + "," + pathYAZ;
     } else if (aRateZ < 0) {
         var pathEndNegativeX = pathStartNegativeX - (aRateZ / maxGForce) * (-pathMaximumX + pathStartNegativeX);
-        aRateAZPath = "M" + pathStartNegativeX + "," + pathYAZ + "L" + negativeAYScale(aRateZ) + "," + pathYAZ;
+        aRateAZPath = "M" + pathStartNegativeX + "," + pathYAZ + "L" + negativeAScale(aRateZ) + "," + pathYAZ;
     } else {
         aRateAZPath = "M" + pathStartNegativeX + "," + pathYAZ + "L" + pathStartNegativeX + "," + pathYAZ;
     }

@@ -96,10 +96,11 @@
         var getResp;
 
         if (req.method === "POST") {
+            var t0 = new Date().getTime();
             timeSinceLastPost = new Date().getTime();
             postReq = req;
             console.log(postReq.body);
-            console.log(postReq.body[0].id);
+//            console.log(postReq.body[0].id);
             postResp = resp;
             czmlString = []; //Resetting the czmlString every call POST request, otherwise we get a memory leak due to the string just appending the same thing over and over.
 
@@ -170,10 +171,11 @@
 //                czmlString.push(CZMLRocket[2]);
 ////                czmlString.push(CZMLRocket[1]);
 
-                var missionTimes = CZMLRocket[1].point.outlineWidth;
+                var missionTime = CZMLRocket[2].point.pixelSize;
                 // Might have some optimization to do here, do we really need to plot all samples?
-                if (missionTimes >= 0) {
-                    streamCSV.write(JSON.stringify(positions[3]) + ',' + JSON.stringify(missionTimes) + '\n');
+                if (missionTime>0) {
+//                    var missionTimeSeconds = parseFloat(missionTime.substring(1,3))*60*60 + parseFloat(missionTime.substring(4,6))*60 + parseFloat(missionTime.substring(7,9));
+                    streamCSV.write(JSON.stringify(positions[3]) + ',' + JSON.stringify(missionTime) + '\n');
                 }
 //                for (var j=0; j<positions.length/4; j++){
 //                    stream.write(JSON.stringify(positions[j*4+3]) + ',' + JSON.stringify(missionTimes[j*4+3]) + '\n');
@@ -196,11 +198,11 @@
                     }
                 });
 
-                CZMLRocket[2].polyline.positions.cartographicDegrees = positionsOnlyTempString;
+                CZMLRocket[3].polyline.positions.cartographicDegrees = positionsOnlyTempString;
 
                 openConnections.forEach(function (getResp) {
 //                    console.log('Sending rocket data');
-                    getResp.write('data:[' + JSON.stringify(CZMLRocket[0]) + ',' + JSON.stringify(CZMLRocket[1]) + ']' + '\n\n');
+                    getResp.write('data:[' + JSON.stringify(CZMLRocket[0]) + ',' + JSON.stringify(CZMLRocket[1]) + ',' + JSON.stringify(CZMLRocket[2]) + ']' + '\n\n');
                 });
 //
 //                orientations.forEach(function (pos, index) {
@@ -233,7 +235,7 @@
 ////                czmlString[2].point.pixelSize.epoch = startEpoch;
 ////                console.log(czmlString);
 //
-                czmlString.push(CZMLRocket[2]);
+                czmlString.push(CZMLRocket[3]);
 //
 //                
 ////                console.log(czmlString[2].polyline.positions.cartographicDegrees)
@@ -242,7 +244,7 @@
 
             }
             fs.truncateSync("backlog.czml");
-            fs.writeFileSync("backlog.czml", JSON.stringify(czmlString))
+            fs.writeFileSync("backlog.czml", JSON.stringify(czmlString));
 //            streamCZML.write(JSON.stringify(czmlString));
 
             if (postInterval === undefined) {
@@ -264,7 +266,8 @@
                     }
                 }, 5000);
             }
-
+            var t1 = new Date().getTime();
+            console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.");
             postResp.send('POST request successful');
 
         } else if (req.method === "GET") {
@@ -296,11 +299,6 @@
             });
 
         }
-
-
-
-
-
     });
 
 //--------------------------------------
