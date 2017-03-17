@@ -163,79 +163,48 @@
                 }
 // BACKLOGGING
 ////                console.log(CZMLRocket[0].position.cartographicDegrees);
-                var positions = CZMLRocket[0].position.cartographicDegrees;
-                var orientations = CZMLRocket[0].orientation.unitQuaternion;
-                var speeds = CZMLRocket[1].point.pixelSize.number;
-                czmlString.push(CZMLHeader[0]);
-//                czmlString.push(CZMLRocket[0]);
-//                czmlString.push(CZMLRocket[2]);
-////                czmlString.push(CZMLRocket[1]);
+                if (typeof CZMLRocket[0].position !== 'undefined') {
+                    var positions = CZMLRocket[0].position.cartographicDegrees;
 
-                var missionTime = CZMLRocket[2].point.pixelSize;
-                // Might have some optimization to do here, do we really need to plot all samples?
-                if (missionTime>0) {
+                    positions.forEach(function (pos, index) {
+                        if (index % 4 === 0) {
+                            positionsTempString.push(pos + packetNumber * 0.5);// This is not a very flexible solution, but based on the fact that we know that the packets are sampled every 0.5s..
+                        } else {
+                            positionsTempString.push(pos);
+                            positionsOnlyTempString.push(pos);
+                        }
+                    });
+
+                    CZMLRocket[3].polyline.positions.cartographicDegrees = positionsOnlyTempString;
+
+                    czmlString.push(CZMLHeader[0]);
+                    czmlString.push(CZMLRocket[3]);
+                    
+                    if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
+                    var missionTime = CZMLRocket[2].point.pixelSize;
+                    // Might have some optimization to do here, do we really need to plot all samples?
+                    if (missionTime > 0) {
 //                    var missionTimeSeconds = parseFloat(missionTime.substring(1,3))*60*60 + parseFloat(missionTime.substring(4,6))*60 + parseFloat(missionTime.substring(7,9));
-                    streamCSV.write(JSON.stringify(positions[3]) + ',' + JSON.stringify(missionTime) + '\n');
-                }
-//                for (var j=0; j<positions.length/4; j++){
-//                    stream.write(JSON.stringify(positions[j*4+3]) + ',' + JSON.stringify(missionTimes[j*4+3]) + '\n');
-//                }
-//                console.log(CZMLRocket[0].position.cartographicDegrees);
-//                stream.write(JSON.stringify(CZMLRocket[0].position) + ';' +  + '\n');
-
-
-
-//                if (!(getResp == null)) {
-//                    getResp.write('data:' + JSON.stringify(CZMLRocket) + '\n\n');
-//                }
-
-                positions.forEach(function (pos, index) {
-                    if (index % 4 === 0) {
-                        positionsTempString.push(pos + packetNumber * 0.5);// This is not a very flexible solution, but based on the fact that we know that the packets are sampled every 0.5s..
-                    } else {
-                        positionsTempString.push(pos);
-                        positionsOnlyTempString.push(pos);
+                        streamCSV.write(JSON.stringify(positions[3]) + ',' + JSON.stringify(missionTime) + '\n');
                     }
-                });
+                }
+                } else {
+                    if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
+                    var missionTime = CZMLRocket[2].point.pixelSize;
+                    // Might have some optimization to do here, do we really need to plot all samples?
+                    if (missionTime > 0) {
+//                    var missionTimeSeconds = parseFloat(missionTime.substring(1,3))*60*60 + parseFloat(missionTime.substring(4,6))*60 + parseFloat(missionTime.substring(7,9));
+                        streamCSV.write(0 + ',' + JSON.stringify(missionTime) + '\n');
+                    }
+                }
+                }
 
-                CZMLRocket[3].polyline.positions.cartographicDegrees = positionsOnlyTempString;
+                
 
                 openConnections.forEach(function (getResp) {
 //                    console.log('Sending rocket data');
                     getResp.write('data:[' + JSON.stringify(CZMLRocket[0]) + ',' + JSON.stringify(CZMLRocket[1]) + ',' + JSON.stringify(CZMLRocket[2]) + ']' + '\n\n');
                 });
-//
-//                orientations.forEach(function (pos, index) {
-//                    if (index % 5 === 0) {
-//                        orientationsTempString.push(pos + packetNumber * 0.5);// This is not a very flexible solution, but based on the fact that we know that the packets are sampled every 0.5s..
-//                    } else {
-//                        orientationsTempString.push(pos);
-//                    }
-//                });
-//
-//                speeds.forEach(function (pos, index) {
-//                    if (index % 2 === 0) {
-//                        speedsTempString.push(pos + packetNumber * 0.5);// This is not a very flexible solution, but based on the fact that we know that the packets are sampled every 0.5s..
-//                    } else {
-//                        speedsTempString.push(pos);
-//                    }
-//                });
-//
-////                console.log(czmlString[0][0])
-////                czmlString = '[' + JSON.stringify(CZMLHeader[0]) + ',\n {"id":' + JSON.stringify(CZMLRocket[0].id) + ',\n "path":' + JSON.stringify(CZMLRocket[0].path) + ',\n "position":' + JSON.stringify(CZMLRocket[0].position)
-//
-//                czmlString[1].position.cartographicDegrees = positionsTempString;
-//                czmlString[1].position.epoch = startEpoch;
-//                czmlString[1].orientation.unitQuaternion = positionsTempString;
-//                czmlString[1].orientation.epoch = startEpoch;
-//                czmlString[2].polyline.positions.cartographicDegrees = positionsOnlyTempString;
-//                czmlString[2].polyline.show = true;
-////                czmlString[2].polyline.positions.epoch = startEpoch;
-////                czmlString[2].point.pixelSize.number = speedsTempString;
-////                czmlString[2].point.pixelSize.epoch = startEpoch;
-////                console.log(czmlString);
-//
-                czmlString.push(CZMLRocket[3]);
 //
 //                
 ////                console.log(czmlString[2].polyline.positions.cartographicDegrees)

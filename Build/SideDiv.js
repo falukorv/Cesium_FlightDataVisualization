@@ -10,18 +10,18 @@
     var groundTrack = $('#groundTrackDiv');
     var chart = $('#chart');
     var gauge = $('#gaugeBase');
-    var gForce = $('#gForceMeter');
+    var gLoad = $('#gLoadMeter');
 
     // Weights that decides the space each div can hold. The sum of these weights should amount to, or at least be less than 1.
     var groundTrackFactor = 4 / 16;
     var chartFactor = 4 / 16;
     var gaugeFactor = 5 / 16;
-    var gForceFactor = 3 / 16;
+    var gLoadFactor = 3 / 16;
 
     // Distance to the top of the window for each div
     var chartTop;
     var gaugeTop;
-    var gForceTop;
+    var gLoadTop;
     
     var gaugeWidth;
     
@@ -42,7 +42,7 @@
         
         groundTrack.height(groundTrackFactor * verticalSpace);
         chart.height(chartFactor * verticalSpace);
-        gForce.height(gForceFactor * verticalSpace);  
+        gLoad.height(gLoadFactor * verticalSpace);  
         
         if (gaugeFactor * verticalSpace  > sideDivWidth*2) {
             gaugeWidth = sideDivWidth*2;
@@ -60,8 +60,8 @@
         gaugeTop = chartTop + groundTrack.height()/2 + chart.height() - gauge.height()/2 + 0.005*sideDivHeight;
         gauge.css({top: gaugeTop, left: sideDivWidth / 2 - gaugeWidth / 4});
 
-        gForceTop = gaugeTop + 3*gaugeWidth / 4 - gForce.height() + 0.005 * sideDivHeight;
-        gForce.css({top: gForceTop});
+        gLoadTop = gaugeTop + 3*gaugeWidth / 4 - gLoad.height() + 0.005 * sideDivHeight;
+        gLoad.css({top: gLoadTop});
         });
     }
 

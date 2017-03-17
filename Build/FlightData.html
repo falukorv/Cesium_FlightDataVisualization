@@ -48,28 +48,28 @@
                 <span class="gaugeSpeedLabel">Speed</span>
                 <div id="odometer" class="odometer gaugeOdometer">10000</div> <!-- The first number in the odometer is hidden in order to always showing four digits -->
             </div>
-            <div id="gForceMeter">
-                <div id="gForceMeterY">
+            <div id="gLoadMeter">
+                <div id="gLoadMeterY">
 
                 </div>
-                <div id="gForceMeterYValue">
+                <div id="gLoadMeterYValue">
                     <span class ="someMeterYValueInner">0</span>
                 </div>
-                <div id="gForceMeterZ">
+                <div id="gLoadMeterZ">
                 </div>
-                <div id="gForceMeterZValue">
+                <div id="gLoadMeterZValue">
                     <span class ="someMeterZValueInner">0</span>
                 </div>
-                <div id="gForceMeterX">
+                <div id="gLoadMeterX">
                 </div>
-                <div id="gForceMeterXValue">
+                <div id="gLoadMeterXValue">
                     <span class ="someMeterXValueInner">0</span>
                 </div>
                 <span class="someMeterMainLabel">G-Loads [G]</span>
                 <span class="someMeterXLabel">G<sub>x</sub></span>
                 <span class="someMeterYLabel">G<sub>y</sub></span>
                 <span class="someMeterZLabel">G<sub>z</sub></span>
-                <div id="gForceMeterOverlay"><span id="gForceMeterOverlayText">G-Load data unavailable</span></div>
+                <div id="gLoadMeterOverlay"><span id="gLoadMeterOverlayText">G-Load data unavailable</span></div>
             </div>
         </div>
         <div id="sideContainerRight">
@@ -136,11 +136,11 @@
                         <span class="speedValue">0 m/s</span>
                     </div>
                     <div id="separationLine3"></div>
-                    <div id="gForceContainer">
-                        <span class="gForceLabel">G-loads</span>
-                        <span class="gForceValueX">G<sub>X</sub>: 0g</span>
-                        <span class="gForceValueY">G<sub>Y</sub>: 0g</span>
-                        <span class="gForceValueZ">G<sub>Z</sub>: 0g</span>
+                    <div id="gLoadContainer">
+                        <span class="gLoadLabel">G-loads</span>
+                        <span class="gLoadValueX">G<sub>X</sub>: 0g</span>
+                        <span class="gLoadValueY">G<sub>Y</sub>: 0g</span>
+                        <span class="gLoadValueZ">G<sub>Z</sub>: 0g</span>
                     </div>
                     <span class="speed">Speed [m/s]</span>
                 </div>-->
@@ -155,7 +155,7 @@
 
             Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
 
-            $('#gForceMeterOverlay').css('display', 'none');
+            $('#gLoadMeterOverlay').css('display', 'none');
             $('#aRateMeterOverlay').css('display', 'none');
 
 //            Cesium.Camera.DEFAULT_VIEW_RECTANGLE = new Cesium.Rectangle.fromDegrees(19, 67.8, 21.5, 69);
@@ -347,6 +347,10 @@
                     "outlineColor": Cesium.Color.BLUE
                 }
             });
+            
+//            var rocketFlameGif = new Cesium.BillboardAnimator.fromGif({
+//                url: '../Source/Assets/Textures/rocketFlame.gif'
+//            });
 
             // Create a billbord that will serve as background if it is desirable to only view the attitude
             bbBackgroundPos = new Cesium.Cartesian3.fromDegrees(esrangeLong, esrangeLat, 1000);
@@ -423,6 +427,9 @@
 
             // Check when the messages are recieved
             var timeOfLastMessage;
+            var timeOfLastGPSMessage;
+            var timeOfLastGLoadMessage;
+            var timeOfLastARateMessage;
 
             var backlogLoaded = false;
 
@@ -503,20 +510,14 @@
                         syncDiode.toggleClass('led-red led-green');
                         syncStatus = true;
                     }
+
                     // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
                     viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
-                    console.log("setting time!");
-                    //                viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(czmlData[0].clock.currentTime);
                 }
 
 
                 if (czmlData[0].id === "rocket") {
-                    viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
                     timeOfLastMessage = new Date().getTime();
-                    var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                    Cesium.JulianDate.addSeconds(startTime, -1, startTime);
-                    viewer.clock.currentTime = startTime;
-                    viewerAttitude.clock.currentTime = startTime;
 
                     // If stream has been interupted, but now is resumed, set
                     // SYNC to green
@@ -525,36 +526,61 @@
                         syncStatus = true;
                     }
 
-                    var position = czmlData[0].position.cartographicDegrees;
-                    var orientation = czmlData[0].orientation;
-
-                    var missionTime = czmlData[2].name;
-
                     ////
-                    var longitude = position[1];
-                    var latitude = position[2];
-                    var altitude = position[position.length - 1];
+                    if (typeof czmlData[0].position !== 'undefined') {
+                        viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
+                        var position = czmlData[0].position.cartographicDegrees;
+                        timeSinceLastGPSMessage = new Date().getTime();
 
-                    if (!firstRocketDataRecieved) {
-                        lastPos = [longitude, latitude];
-                        firstRocketDataRecieved = true;
-                        groundTrackMarker.show = true;
-
-                        groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
-                    }
+                        var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                        viewer.clock.currentTime = startTime;
+                        viewerAttitude.clock.currentTime = startTime;
 
 
-
-                    // Checking if the position data is recieved correctly
-                    if (typeof altitude !== 'undefined' && typeof longitude !== 'undefined' && typeof latitude !== 'undefined') {
-                        // If the gps diode is not already green, make it so
+                        if (!tmStatus) {
+                            tmDiode.toggleClass('led-green led-red');
+                            tmStatus = true;
+                        }
+                        // Checking if the position data is recieved correctly
                         if (!gpsStatus) {
                             gpsDiode.toggleClass('led-red led-green');
                             gpsStatus = true;
                         }
+
+                        var longitude = position[1];
+                        var latitude = position[2];
+                        var altitude = position[position.length - 1];
+
+                        if (!firstRocketDataRecieved) {
+                            lastPos = [longitude, latitude];
+                            groundTrackMarker.show = true;
+                            groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
+                            firstRocketDataRecieved = true;
+                        }
+                        
                         document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
                         document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
                         document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
+
+                        viewerGroundTrack.entities.add({
+                            name: 'Glowing blue line on the surface',
+                            polyline: {
+                                positions: Cesium.Cartesian3.fromDegreesArray([longitude, latitude,
+                                    lastPos[0], lastPos[1]]),
+                                width: 10,
+                                material: new Cesium.PolylineGlowMaterialProperty({
+                                    glowPower: 0.2,
+                                    color: Cesium.Color.BLUE
+                                })
+                            }
+                        });
+                        groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
+
+                        lastPos = [longitude, latitude];
+
+                        groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, groundTrackCamera.positionCartographic.height));
+
                         updateGraph();
                     } else {
                         // Setting the gps diode to red
@@ -563,10 +589,28 @@
                             gpsStatus = false;
                         }
                     }
-                    document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
+
+                    if (typeof czmlData[0].orientation !== 'undefined') {
+                        var orientation = czmlData[0].orientation;
+                        if (attitudeDone) {
+                            attitudeCZML[1].orientation = orientation;
+                        }
+                        if (!tmStatus) {
+                            tmDiode.toggleClass('led-green led-red');
+                            tmStatus = true;
+                        }
+                        czmlAttitudeSource.process(attitudeCZML);
+                    }
 
                     // Trying to access the G-load data
                     if (typeof czmlData[1].point.position !== 'undefined') {
+                        timeOfLastGLoadMessage = new Date().getTime();
+
+                        if (!tmStatus) {
+                            tmDiode.toggleClass('led-green led-red');
+                            tmStatus = true;
+                        }
+
                         var gLoadX = round2FourDecimals(czmlData[1].point.position.cartesian[0]);
                         var gLoadY = round2FourDecimals(czmlData[1].point.position.cartesian[1]);
                         var gLoadZ = round2FourDecimals(czmlData[1].point.position.cartesian[2]);
@@ -574,16 +618,22 @@
                         document.getElementsByClassName("someMeterYValueInner")[0].innerHTML = gLoadY;
                         document.getElementsByClassName("someMeterZValueInner")[0].innerHTML = gLoadZ;
                         document.getElementsByClassName("someMeterXValueInner")[0].innerHTML = gLoadX;
-                        setgForceIndicatorLength(gLoadX, gLoadY, gLoadZ);
-                        $('#gForceMeterOverlay').css('display', 'none');
+                        setgLoadIndicatorLength(gLoadX, gLoadY, gLoadZ);
+                        $('#gLoadMeterOverlay').css('display', 'none');
                     } else {
-                        $('#gForceMeterOverlay').css('display', 'block');
+                        $('#gLoadMeterOverlay').css('display', 'block');
                     }
 
-                    try {
+                    if (typeof czmlData[1].point.pixelSize !== 'undefined') {
                         var speed = czmlData[1].point.pixelSize;
                         document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed / 3.6); // Note that the term "10000" is just used to make the odometer look good. 
                         setGaugeIndicatorLength(speed);
+                    }
+                    ;
+
+                    try {
+                        var missionTime = czmlData[2].name;
+                        document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
                     } catch (err) {
                         console.log(err.message);
                     }
@@ -591,6 +641,13 @@
                     // Trying to access the angular rate data
                     // Trying to access the G-load data
                     if (typeof czmlData[2].point.position !== 'undefined') {
+                        timeOfLastARateMessage = new Date().getTime();
+
+                        if (!tmStatus) {
+                            tmDiode.toggleClass('led-green led-red');
+                            tmStatus = true;
+                        }
+
                         var aRateX = round2FourDecimals(czmlData[2].point.position.cartesian[0]);
                         var aRateY = round2FourDecimals(czmlData[2].point.position.cartesian[1]);
                         var aRateZ = round2FourDecimals(czmlData[2].point.position.cartesian[2]);
@@ -604,32 +661,18 @@
                         $('#aRateMeterOverlay').css('display', 'block');
                     }
 
-                    viewerGroundTrack.entities.add({
-                        name: 'Glowing blue line on the surface',
-                        polyline: {
-                            positions: Cesium.Cartesian3.fromDegreesArray([longitude, latitude,
-                                lastPos[0], lastPos[1]]),
-                            width: 10,
-                            material: new Cesium.PolylineGlowMaterialProperty({
-                                glowPower: 0.2,
-                                color: Cesium.Color.BLUE
-                            })
-                        }
-                    });
-                    groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
-
                     // Using lookAt in every call to track the marker. Could potentially use "viewer.trackedEntity", but that limits the choices of initial altitude of the camera.
-                    groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, groundTrackCamera.positionCartographic.height));
+                }
 
-                    lastPos = [longitude, latitude];
-
-                    if (attitudeDone) {
-                        attitudeCZML[1].orientation = orientation;
+                if (typeof czmlData[1] !== 'undefined') {
+                    if (czmlData[1].id === "pingTimePacket") {
+                        try {
+                            var missionTime = czmlData[1].name;
+                            document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
+                        } catch (err) {
+                            console.log(err.message);
+                        }
                     }
-
-                    czmlAttitudeSource.process(attitudeCZML);
-
-
                 }
                 var t1 = performance.now();
 //                console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
@@ -643,10 +686,17 @@
             }
 
             setInterval(function () {
+                var threshold = 2500;
+
+                var timeSinceLastMessage = new Date().getTime() - timeOfLastMessage;
+                var timeSinceLastGPSMessage = new Date().getTime() - timeOfLastGPSMessage;
+                var timeSinceLastGLoadMessage = new Date().getTime() - timeOfLastGLoadMessage;
+                var timeSinceLastARateMessage = new Date().getTime() - timeOfLastARateMessage;
+
                 // If the streaming is ongoing, but the time since last message 
                 // is above a certain threshold, assume that streaming is 
                 // interrupted and set SYNC to red.
-                if ((new Date().getTime() - timeOfLastMessage > 2500)) {
+                if (timeSinceLastMessage > threshold) {
                     if (syncStatus) {
                         syncDiode.toggleClass('led-green led-red');
                         syncStatus = false;
@@ -655,7 +705,39 @@
                         gpsDiode.toggleClass('led-green led-red');
                         gpsStatus = false;
                     }
+                    if (tmStatus) {
+                        tmDiode.toggleClass('led-green led-red');
+                        tmStatus = false;
+                    }
                 }
+
+                if (timeSinceLastGPSMessage > threshold) {
+                    if (gpsStatus) {
+                        gpsDiode.toggleClass('led-green led-red');
+                        gpsStatus = false;
+                    }
+                }
+
+                if (timeSinceLastGLoadMessage > threshold) {
+                    $('#gLoadMeterOverlay').css('display', 'block');
+                }
+
+                if (timeSinceLastARateMessage > threshold) {
+                    $('#aRateMeterOverlay').css('display', 'block');
+                }
+
+                if (timeSinceLastGLoadMessage < threshold || timeSinceLastARateMessage < threshold || timeSinceLastGPSMessage < threshold) {
+                    if (!tmStatus) {
+                        tmDiode.toggleClass('led-green led-red');
+                        tmStatus = true;
+                    }
+                } else {
+                    if (tmStatus) {
+                        tmDiode.toggleClass('led-green led-red');
+                        tmStatus = false;
+                    }
+                }
+
             }, 5000);
 
 
@@ -678,7 +760,7 @@
         <script type="text/javascript" src="SideDiv.js"></script>
         <script type="text/javascript" src="d3chartAltPlot.js"></script>
         <script type="text/javascript" src="gauge.js"></script>
-        <script type="text/javascript" src="gForceMeter.js"></script>
+        <script type="text/javascript" src="gLoadMeter.js"></script>
         <script type="text/javascript" src="angleRateMeter.js"></script>
     </body>
 

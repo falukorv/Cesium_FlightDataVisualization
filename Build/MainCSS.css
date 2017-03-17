@@ -23,7 +23,7 @@
     #sideContainer, #sideContainerRight { width: 20%;}
 }
 
-#groundTrackDiv, #chart, #gaugeBase, #gForceMeter, #attitudeDiv{
+#groundTrackDiv, #chart, #gaugeBase, #gLoadMeter, #attitudeDiv{
     display:block;
     position: absolute;    
     background: rgba(42, 42, 42, 0.8);    
@@ -49,7 +49,7 @@
     -moz-transform-origin: left top;
     transform-origin: left top;
 }
-#gForceMeter{
+#gLoadMeter{
     -webkit-transform-origin: left bottom;
     -moz-transform-origin: left bottom;
     transform-origin: left bottom;
@@ -64,18 +64,18 @@
     transform-origin: right bottom;
 }
 
-#groundTrackDiv, #chart, #gForceMeter, #attitudeDiv{
+#groundTrackDiv, #chart, #gLoadMeter, #attitudeDiv{
     width: 200%;
 }
 
-#gForceMeterOverlay{
+#gLoadMeterOverlay{
     position: absolute;
     height:100%;
     width:100%;
     background: rgba(42, 42, 42, 0.8);
 }
 
-#gForceMeterOverlayText{
+#gLoadMeterOverlayText{
     position: absolute;
     left:0;
     right:0;
@@ -126,7 +126,7 @@
     }
 }*/
 
-#chart:hover, #gaugeBase:hover, #gForceMeter:hover, #groundTrackDiv:hover {
+#chart:hover, #gaugeBase:hover, #gLoadMeter:hover, #groundTrackDiv:hover {
     -webkit-transform: scale(0.75);
     -moz-transform: scale(0.75);
     transform: scale(1);
@@ -389,7 +389,7 @@
     left: 34%;
 }
 
-#missionTimeContainer, #speedContainer, #gForceContainer{
+#missionTimeContainer, #speedContainer, #gLoadContainer{
     position: absolute;
     bottom: 0px;
     top: 0px;
@@ -410,11 +410,11 @@
     left: 20%;
 }
 
-#gForceContainer{
+#gLoadContainer{
     left: 35%;
 }
 
-.missionTimeLabel, .speedLabel, .gForceLabel{
+.missionTimeLabel, .speedLabel, .gLoadLabel{
     position: absolute;
     text-decoration: underline;
     top: 0.5%;
@@ -426,7 +426,7 @@
     /*text-align: center;*/
 }
 
-.gForceValueX{
+.gLoadValueX{
     position: absolute;
     bottom: 40%;
     left: 0%;
@@ -436,7 +436,7 @@
     font-size: 1.5vh;
 }
 
-.gForceValueY{
+.gLoadValueY{
     position: absolute;
     bottom: 20%;
     left: 0%;
@@ -446,7 +446,7 @@
     font-size: 1.5vh;
 }
 
-.gForceValueZ{
+.gLoadValueZ{
     position: absolute;
     bottom: 0%;
     left: 0%;
@@ -509,7 +509,7 @@
     height: 30%;
 }
 
-#gForceMeterY, #gForceMeterX, #gForceMeterZ, #aRateMeterY, #aRateMeterX, #aRateMeterZ{
+#gLoadMeterY, #gLoadMeterX, #gLoadMeterZ, #aRateMeterY, #aRateMeterX, #aRateMeterZ{
     position: absolute;
     width: 90%;
     height: 10%;
@@ -526,15 +526,15 @@
     z-index: -1;
 }
 
-#gForceMeterY, #gForceMeterYValue, #aRateMeterY, #aRateMeterYValue{
+#gLoadMeterY, #gLoadMeterYValue, #aRateMeterY, #aRateMeterYValue{
     bottom: 40%;
 }
 
-#gForceMeterZ, #gForceMeterZValue, #aRateMeterZ, #aRateMeterZValue{
+#gLoadMeterZ, #gLoadMeterZValue, #aRateMeterZ, #aRateMeterZValue{
     bottom: 15%;
 }
 
-#gForceMeterX, #gForceMeterXValue, #aRateMeterX, #aRateMeterXValue{
+#gLoadMeterX, #gLoadMeterXValue, #aRateMeterX, #aRateMeterXValue{
     bottom: 65%;
 }
 
@@ -568,7 +568,7 @@
     font-size: 3vh;
 }
 
-#gForceMeterYValue, #gForceMeterZValue, #gForceMeterXValue, #aRateMeterYValue, #aRateMeterZValue, #aRateMeterXValue{
+#gLoadMeterYValue, #gLoadMeterZValue, #gLoadMeterXValue, #aRateMeterYValue, #aRateMeterZValue, #aRateMeterXValue{
     position: absolute;
     /*vertical-align: middle;*/
     left:0;
@@ -641,11 +641,11 @@
 
 /*---SETTING FONTS---*/
 
-/*.speedLabel, .gForceLabel, .missionTimeLabel, .altitude, .apogee, .longitude, .latitude, .label, .gaugeSpeedLabel, .gForceMeterYLabel, .gForceMeterZLabel, .gForceMeterXLabel, .gForceMainLabel, .xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gForceValueX, .gForceValueY, .gForceValueZ, .speedValue, .missionTimeValue {
+/*.speedLabel, .gLoadLabel, .missionTimeLabel, .altitude, .apogee, .longitude, .latitude, .label, .gaugeSpeedLabel, .gLoadMeterYLabel, .gLoadMeterZLabel, .gLoadMeterXLabel, .gLoadMainLabel, .xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gLoadValueX, .gLoadValueY, .gLoadValueZ, .speedValue, .missionTimeValue {
     font-family: "amble";
 }
 
-.xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gForceValueX, .gForceValueY, .gForceValueZ, .speedValue, .missionTimeValue{
+.xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gLoadValueX, .gLoadValueY, .gLoadValueZ, .speedValue, .missionTimeValue{
     font-family: "amble";
 }*/
 
@@ -680,7 +680,7 @@
 
 /*---ODOMETER---*/
 
-.odometer.odometer-auto-theme.gaugeOdometer, .odometer.odometer-theme-car.gaugeOdometer, .odometer.odometer-auto-theme.gForceOdometer {
+.odometer.odometer-auto-theme.gaugeOdometer, .odometer.odometer-theme-car.gaugeOdometer, .odometer.odometer-auto-theme.gLoadOdometer {
     display: inline-block;
     vertical-align: middle;
     *vertical-align: auto;
