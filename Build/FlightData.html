@@ -87,7 +87,11 @@
                     <div id="gpsDiode" class="led-red diode"></div>
                 </div>
             </div>
-            <div id="eventMessages"></div>
+            <div id="eventMessages">
+                <div id="horizontalSepLine"></div>
+                <span class="eventLabel">EVENTS</span>
+                <table id="eventTable" rules="rows"></table>
+            </div>
             <div id="attitudeDiv">
                 <div id="cesiumContainerAttitude"></div>
                 <div id="aRateValueContainer"><div id="angleRateMeter">
@@ -157,6 +161,8 @@
 
             $('#gLoadMeterOverlay').css('display', 'none');
             $('#aRateMeterOverlay').css('display', 'none');
+
+            var eventTable = $('#eventTable')[0];
 
 //            Cesium.Camera.DEFAULT_VIEW_RECTANGLE = new Cesium.Rectangle.fromDegrees(19, 67.8, 21.5, 69);
 //            Cesium.Camera.DEFAULT_VIEW_FACTOR = 0.1;
@@ -348,6 +354,16 @@
                 }
             });
 
+            var IIPMarker = viewerGroundTrack.entities.add({
+                "name": 'IIPmarker',
+                "position": Cesium.Cartesian3.fromDegrees(0, 0, 0),
+                "show": false,
+                "billboard": {
+                    "image": '../Source/Assets/Textures/crosshair3.png',
+                    "scale": 0.025
+                }
+            });
+
             // Create a billbord that will serve as background if it is desirable to only view the attitude
             bbBackgroundPos = new Cesium.Cartesian3.fromDegrees(esrangeLong, esrangeLat, 1000);
             var bbBackground = viewerAttitude.entities.add({
@@ -518,13 +534,22 @@
 
             // lastPos used to keep track on last position in order to draw a polyline that corresponds to the groundtrack
             var lastPos;
-            var firstRocketDataRecieved = false;
+            var firstDocumentDataReceived = false;
+            var firstRocketDataReceived = false;
             var apogee = 0;
             var tracked = false;
+            var messageCounter = 0;
+            var eventsLoaded = false;
+            var lastEvent;
+
             czmlEventSource.onmessage = function (event) {
+                counter++;
                 var t0 = performance.now();
                 czmlData = JSON.parse(event.data);
                 czmlStream.process(czmlData);
+
+                console.log("Number of messages recieved: " + counter.toString());
+                console.log("Time since last message: " + (new Date().getTime() - timeOfLastMessage).toString());
 
                 if (czmlData[0].id === "document") {
                     camera.cancelFlight();
@@ -534,8 +559,25 @@
                         syncStatus = true;
                     }
 
-                    // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
-                    viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
+                    if (!firstDocumentDataReceived) {
+                        // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
+                        viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
+                        // Adding the events that has already occured;
+                        d3.csv('../events.csv', function (error, data) {
+                            var eventDataSet = data;
+                            eventDataSet.forEach(function (da) {
+                                var tableRow = eventTable.insertRow(0);
+                                var cell1 = tableRow.insertCell(0);
+                                var cell2 = tableRow.insertCell(1);
+                                cell1.innerHTML = da.time;
+                                cell2.innerHTML = da.event;
+                                cell2.style.color = 'Thistle';
+                                lastEvent = da.event;
+                                eventsLoaded = true;
+                            });
+                        });
+                        firstDocumentDataReceived = true;
+                    }
                 }
 
 
@@ -556,7 +598,7 @@
                         timeSinceLastGPSMessage = new Date().getTime();
 
                         var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                        Cesium.JulianDate.addSeconds(startTime, -1, startTime);
                         viewer.clock.currentTime = startTime;
                         viewerAttitude.clock.currentTime = startTime;
 
@@ -575,11 +617,11 @@
                         var latitude = position[2];
                         var altitude = position[position.length - 1];
 
-                        if (!firstRocketDataRecieved) {
+                        if (!firstRocketDataReceived) {
                             lastPos = [longitude, latitude];
                             groundTrackMarker.show = true;
                             groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
-                            firstRocketDataRecieved = true;
+                            firstRocketDataReceived = true;
                         }
 
                         document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
@@ -599,15 +641,20 @@
                                 })
                             }
                         });
+
                         groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
 
                         lastPos = [longitude, latitude];
 
                         groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, groundTrackCamera.positionCartographic.height));
 
-
-
-                        updateGraph();
+                        try {
+                            if (czmlData[2].point.pixelSize >= 0) {
+                                updateGraph();
+                            }
+                        } catch (err) {
+                            console.log(err.message);
+                        }
                     } else {
                         // Setting the gps diode to red
                         if (gpsStatus) {
@@ -655,11 +702,21 @@
                         document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed / 3.6); // Note that the term "10000" is just used to make the odometer look good. 
                         setGaugeIndicatorLength(speed);
                     }
-                    ;
 
                     try {
                         var missionTime = czmlData[2].name;
                         document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
+
+                        if (czmlData[1].name !== lastEvent && eventsLoaded) {
+                            var tableRow = eventTable.insertRow(0);
+                            var cell1 = tableRow.insertCell(0);
+                            var cell2 = tableRow.insertCell(1);
+                            cell1.innerHTML = missionTime;
+                            cell2.innerHTML = czmlData[1].name;
+                            cell2.style.color = 'Thistle';
+                            lastEvent = czmlData[1].name;
+                        }
+
                     } catch (err) {
                         console.log(err.message);
                     }
@@ -687,7 +744,10 @@
                         $('#aRateMeterOverlay').css('display', 'block');
                     }
 
-                    // Using lookAt in every call to track the marker. Could potentially use "viewer.trackedEntity", but that limits the choices of initial altitude of the camera.
+                    if (typeof czmlData[3].point.position !== 'undefined') {
+                        IIPMarker.position = new Cesium.Cartesian3.fromDegrees(czmlData[3].point.position.cartographicDegrees[0], czmlData[3].point.position.cartographicDegrees[1], czmlData[3].point.position.cartographicDegrees[2]);
+                        IIPMarker.show = true;
+                    }
                 }
 
                 if (typeof czmlData[1] !== 'undefined') {
@@ -710,6 +770,10 @@
             function round2FourDecimals(number) {
                 return Math.round((number + 0.0000001) * 10000) / 10000;
             }
+
+
+
+
 
             setInterval(function () {
                 var threshold = 2500;
