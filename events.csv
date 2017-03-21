@@ -1,16 +1,4 @@
 event,time
-Lift-off,-00:01:08
-XRMON-DIFF2 Internal power (module),-00:01:07
-XRMON-DIFF2 Internal power (furnace 1),-00:01:05
-Launch sequencer activation,-00:01:00
-TVA command check,-00:00:57
-TVA check (unpressurised),-00:00:47
-Charging pressurising pyro capacitors,-00:00:40
-Verifying launcher status and arming TVA,-00:00:24
-TVA Pressurising,-00:00:20
-TVA pressure check,-00:00:16
-TVA Deflection test,-00:00:14
-TVA Baseline Retrace test,-00:00:09
 Go signal,-00:00:08
 Lift-off,-00:00:00
 Expected motor burn-out,+00:01:02
@@ -19,3 +7,5 @@ Expected motor separation,+00:01:26
 Expected Super-Max separation,+00:01:36
 XRMON-DIFF2 Alumina shearing,+00:02:40
 XRMON-DIFF2 Graphite shearing,+00:03:50
+XRMON-DIFF2 Experiment power down,+00:13:20
+Castor 4B destruction,+00:14:05

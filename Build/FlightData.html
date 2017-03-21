@@ -311,10 +311,14 @@
             document.getElementsByClassName("cesium-viewer")[1].removeChild(viewerGroundTrack.bottomContainer);
             document.getElementsByClassName("cesium-viewer")[2].removeChild(viewerAttitude.bottomContainer);
             document.getElementsByClassName("cesium-viewer")[0].removeChild(viewer.bottomContainer);
-            document.getElementsByClassName("cesium-viewer")[1].removeChild(document.getElementsByClassName("cesium-viewer-fullscreenContainer")[1]);
-            document.getElementsByClassName("cesium-viewer")[2].removeChild(document.getElementsByClassName("cesium-viewer-fullscreenContainer")[1]);
+            document.getElementsByClassName("cesium-viewer")[1].removeChild($('.cesium-viewer-fullscreenContainer')[1]);
+            document.getElementsByClassName("cesium-viewer")[2].removeChild($('.cesium-viewer-fullscreenContainer')[1]);
 
-            var creditDiv = document.getElementById('creditDiv')
+            $('.cesium-viewer-fullscreenContainer')[0].style.zIndex = 999;
+            $('.cesium-viewer-fullscreenContainer')[0].style.height = "1.5%";
+
+            var creditDiv = $('#creditDiv')[0];
+
 
             var scene = viewer.scene;
             var groundTrackScene = viewerGroundTrack.scene;
@@ -353,6 +357,18 @@
                     "outlineColor": Cesium.Color.BLUE
                 }
             });
+            
+            groundTrackLine = viewerGroundTrack.entities.add({
+                id: '2D-line',
+                polyline: {
+                    width: 4,
+                    material: new Cesium.PolylineOutlineMaterialProperty({
+                        color: Cesium.Color.RED,
+                        outlineWidth: 1,
+                        outlineColor: Cesium.Color.BLACK
+                    })
+                }
+            });
 
             var IIPMarker = viewerGroundTrack.entities.add({
                 "name": 'IIPmarker',
@@ -384,6 +400,8 @@
             var flameBillboard;
             var attitudeCZML;
 
+            
+
 //            var rocketFlameGif = new Cesium.BillboardAnimator.fromGif({
 //                url: '../Source/Assets/Textures/rocketFlame.gif'
 //            }).then(function (gif) {
@@ -404,6 +422,20 @@
 //                viewer.trackedEntity = flameBillboard;
 //            });
 
+
+//                flameBillboard = viewer.entities.add({
+//                    name: 'glow',
+//                    position: bbBackgroundPos,
+//                    billboard: {
+//                        image: '../Source/Assets/Textures/glow2.png', // default: undefined
+//                        show: true, // default
+//                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
+//                        verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
+//                        scale: 1, // default: 1.0,
+//                        color: new Cesium.Color(1.0, 1.0, 1.0, 1)
+//                    }
+//                });
+//                viewer.trackedEntity = flameBillboard;
 
 
 
@@ -467,15 +499,17 @@
             // Check when the messages are recieved
             var timeOfLastMessage;
             var timeOfLastGPSMessage;
+            var timeOfLastAttitudeMessage;
             var timeOfLastGLoadMessage;
             var timeOfLastARateMessage;
+            var timeOfLastIIPMessage;
 
             var backlogLoaded = false;
 
             //        // STREAMING CODE
             var czmlStream = new Cesium.CzmlDataSource();
 
-            var czmlAttitudeSource = new Cesium.CzmlDataSource()
+            var czmlAttitudeSource = new Cesium.CzmlDataSource();
 
             var attitudeProcess = viewerAttitude.dataSources.add(czmlAttitudeSource);
 
@@ -491,7 +525,6 @@
             var attitudeDone = false;
             $(document).ready(function () {
                 var startTrackingInterval = setInterval(function () {
-
                     viewerAttitude.camera.setView({
                         destination: cameraPos,
                         orientation: {
@@ -562,6 +595,7 @@
                     if (!firstDocumentDataReceived) {
                         // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
                         viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
+                        viewerGroundTrack.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
                         // Adding the events that has already occured;
                         d3.csv('../events.csv', function (error, data) {
                             var eventDataSet = data;
@@ -573,10 +607,9 @@
                                 cell2.innerHTML = da.event;
                                 cell2.style.color = 'Thistle';
                                 lastEvent = da.event;
-                                eventsLoaded = true;
                             });
+                            firstDocumentDataReceived = true;
                         });
-                        firstDocumentDataReceived = true;
                     }
                 }
 
@@ -595,10 +628,10 @@
                     if (typeof czmlData[0].position !== 'undefined') {
                         viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
                         var position = czmlData[0].position.cartographicDegrees;
-                        timeSinceLastGPSMessage = new Date().getTime();
+                        timeOfLastGPSMessage = new Date().getTime();
 
                         var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                        Cesium.JulianDate.addSeconds(startTime, -1, startTime);
+                        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
                         viewer.clock.currentTime = startTime;
                         viewerAttitude.clock.currentTime = startTime;
 
@@ -629,15 +662,15 @@
                         document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
 
                         viewerGroundTrack.entities.add({
-                            name: 'Glowing blue line on the surface',
+                            name: '2D-line',
                             polyline: {
                                 positions: Cesium.Cartesian3.fromDegreesArray([longitude, latitude,
                                     lastPos[0], lastPos[1]]),
-                                width: 4,
+                                width: 2,
                                 material: new Cesium.PolylineOutlineMaterialProperty({
                                     color: Cesium.Color.RED,
                                     outlineWidth: 1,
-                                    outlineColor: Cesium.Color.BLACK
+                                    outlineColor: Cesium.Color.RED
                                 })
                             }
                         });
@@ -664,6 +697,15 @@
                     }
 
                     if (typeof czmlData[0].orientation !== 'undefined') {
+                        timeOfLastAttitudeMessage = new Date().getTime();
+                        
+                        if (typeof czmlData[0].position === 'undefined') {
+                            var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].orientation.epoch);
+                            Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                            viewer.clock.currentTime = startTime;
+                            viewerAttitude.clock.currentTime = startTime;
+                        }
+
                         var orientation = czmlData[0].orientation;
                         if (attitudeDone) {
                             attitudeCZML[1].orientation = orientation;
@@ -707,7 +749,7 @@
                         var missionTime = czmlData[2].name;
                         document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
 
-                        if (czmlData[1].name !== lastEvent && eventsLoaded) {
+                        if (czmlData[1].name !== lastEvent && firstDocumentDataReceived) {
                             var tableRow = eventTable.insertRow(0);
                             var cell1 = tableRow.insertCell(0);
                             var cell2 = tableRow.insertCell(1);
@@ -745,8 +787,14 @@
                     }
 
                     if (typeof czmlData[3].point.position !== 'undefined') {
+                        timeOfLastIIPMessage = new Date().getTime();
                         IIPMarker.position = new Cesium.Cartesian3.fromDegrees(czmlData[3].point.position.cartographicDegrees[0], czmlData[3].point.position.cartographicDegrees[1], czmlData[3].point.position.cartographicDegrees[2]);
                         IIPMarker.show = true;
+                        
+                        if (!tmStatus) {
+                            tmDiode.toggleClass('led-green led-red');
+                            tmStatus = true;
+                        }
                     }
                 }
 
@@ -780,8 +828,10 @@
 
                 var timeSinceLastMessage = new Date().getTime() - timeOfLastMessage;
                 var timeSinceLastGPSMessage = new Date().getTime() - timeOfLastGPSMessage;
+                var timeSinceLastAttitudeMessage = new Date().getTime() - timeOfLastAttitudeMessage;
                 var timeSinceLastGLoadMessage = new Date().getTime() - timeOfLastGLoadMessage;
                 var timeSinceLastARateMessage = new Date().getTime() - timeOfLastARateMessage;
+                var timeSinceLastIIPMessage = new Date().getTime() - timeOfLastIIPMessage;
 
                 // If the streaming is ongoing, but the time since last message 
                 // is above a certain threshold, assume that streaming is 
@@ -815,15 +865,24 @@
                 if (timeSinceLastARateMessage > threshold) {
                     $('#aRateMeterOverlay').css('display', 'block');
                 }
-
-                if (timeSinceLastGLoadMessage < threshold || timeSinceLastARateMessage < threshold || timeSinceLastGPSMessage < threshold) {
+                
+                if (timeSinceLastIIPMessage > threshold) {
+                    IIPMarker.show = false;
+                }
+                
+                if (timeSinceLastGLoadMessage < threshold || timeSinceLastARateMessage < threshold || timeSinceLastGPSMessage < threshold || timeSinceLastIIPMessage < threshold || timeSinceLastAttitudeMessage < threshold) {
                     if (!tmStatus) {
                         tmDiode.toggleClass('led-green led-red');
                         tmStatus = true;
                     }
                 }
-
-            }, 5000);
+                else{
+                    if (tmStatus) {
+                        tmDiode.toggleClass('led-green led-red');
+                        tmStatus = false;
+                    }
+                }
+            }, 4871);
 
 
             //        var clockStarted = false;

@@ -73,6 +73,7 @@
     var streamCZML; //stream to the backlog.czml
     var positionsTempString = []; //String used to construct a newpositions array in order to minimize write sizes
     var positionsOnlyTempString = []; //same as positionsTempString, but excluding the timestamps
+    var coordinatesOnlyTempString = []; //same as positionsTempString, but excluding the timestamps
     var orientationsTempString = []; //String used to construct a new positions array in order to minimize write sizes
     var positionsTempString = []; //String used to construct a new orientations array in order to minimize write sizes
     var speedsTempString = []; //String used to construct a new speeds array in order to minimize write sizes
@@ -83,7 +84,7 @@
 
     var postInterval;
     var timeSinceLastPost;
-    
+
     var lastEvent = "";
 
     var openConnections = [];
@@ -112,7 +113,7 @@
 
 
                 console.log(postReq.body);
-                
+
                 // This is the first packet arriving
                 CZMLHeader = postReq.body;
 
@@ -181,6 +182,15 @@
                             positionsOnlyTempString.push(pos);
                         }
                     });
+                    
+//                    positionsOnlyTempString.forEach(function (pos, index) {
+//                        if (index % 3 === 0){
+//                            return;
+//                        }
+//                        else{
+//                            coordinatesOnlyTempString.push(pos);
+//                        }
+//                    });
 
                     CZMLRocket[4].polyline.positions.cartographicDegrees = positionsOnlyTempString;
 
@@ -205,9 +215,9 @@
                         }
                     }
                 }
-                
-                if (typeof CZMLRocket[1].name !== 'undefined'){
-                    if (CZMLRocket[1].name !== lastEvent){
+
+                if (typeof CZMLRocket[1].name !== 'undefined') {
+                    if (CZMLRocket[1].name !== lastEvent) {
                         streamCSV2.write(CZMLRocket[1].name + ',' + CZMLRocket[2].name + '\n');
                         lastEvent = CZMLRocket[1].name;
                     }
