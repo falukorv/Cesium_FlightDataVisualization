@@ -182,7 +182,7 @@
                             positionsOnlyTempString.push(pos);
                         }
                     });
-                    
+
 //                    positionsOnlyTempString.forEach(function (pos, index) {
 //                        if (index % 3 === 0){
 //                            return;
@@ -191,11 +191,12 @@
 //                            coordinatesOnlyTempString.push(pos);
 //                        }
 //                    });
+                    if (typeof CZMLRocket[4].polyline.position !== 'undefined') {
+                        CZMLRocket[4].polyline.positions.cartographicDegrees = positionsOnlyTempString;
 
-                    CZMLRocket[4].polyline.positions.cartographicDegrees = positionsOnlyTempString;
-
-                    czmlString.push(CZMLHeader[0]);
-                    czmlString.push(CZMLRocket[4]);
+                        czmlString.push(CZMLHeader[0]);
+                        czmlString.push(CZMLRocket[4]);
+                    }
 
                     if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
                         var missionTime = CZMLRocket[2].point.pixelSize;

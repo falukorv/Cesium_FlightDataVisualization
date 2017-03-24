@@ -1,11 +1,4 @@
 event,time
+Server synchronized with data pusher,-99:00:00
 Go signal,-00:00:08
 Lift-off,-00:00:00
-Expected motor burn-out,+00:01:02
-XRMON-DIFF2 Image sequence start,+00:01:04
-Expected motor separation,+00:01:26
-Expected Super-Max separation,+00:01:36
-XRMON-DIFF2 Alumina shearing,+00:02:40
-XRMON-DIFF2 Graphite shearing,+00:03:50
-XRMON-DIFF2 Experiment power down,+00:13:20
-Castor 4B destruction,+00:14:05
