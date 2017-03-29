@@ -17,15 +17,26 @@ body {
 @media only screen and (orientation:portrait){
     #sideContainer, #sideContainerRight{ width: 0;
                      overflow: hidden;}
-    #statusDiodesContainer, #eventMessages{
+    #statusDiodesContainer, #eventMessages {
         display: none;
     }
     #orientation-warning { display:block; }
+    .cesium-viewer-fullscreenContainer {
+        width: 0;
+        height: 0;
+    }
 }
 @media only screen and (orientation:landscape){
-    #orientation-warning { display:none; }
-    #sideContainer, #sideContainerRight { width: 20%;}
+    #orientation-warning, {
+        display: none;
+    }
+    #sideContainer, #sideContainerRight { width: 20%; }
+    .cesium-viewer-fullscreenContainer {
+        width: 30px;
+        height: 15px;
+    }
 }
+
 
 #groundTrackDiv, #chart, #gaugeBase, #gLoadMeter, #attitudeDiv{
     display:block;
@@ -260,15 +271,14 @@ body {
 }
 
 /*------------Status diodes-------------*/
-
-#statusDiodesContainer{
+#statusDiodesContainer {
     position: absolute;
     background: rgba(42,42,42,0.8);
     border-radius: 1%;
-    top:0;
+    top: 0;
     width: 100%;
     height: 5%;
-/*    width: 270px;
+    /*    width: 270px;
     height: 60px;*/
 }
 

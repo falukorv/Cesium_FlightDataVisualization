@@ -7,6 +7,7 @@
     var request = require('request');
     var fs = require("fs");
     var bodyParser = require("body-parser");
+    var httpGet = require("http");
 
 
 //    Variables in which to store imortant information:
@@ -140,9 +141,6 @@
                 });
             }
 
-
-
-
 ////              ------------------------------------------------------------------------------------------------------------------------
 ////              --------------This does not work on heroku, workaround using setIntervall instead. Uncomment this is fixed.-------------
 //                // Attaching listener, on closed connection: set "streaming" to false and reset all variables associated with the stream
@@ -163,14 +161,8 @@
             else if (postReq.body[0].id === "rocket") {
                 CZMLRocket = postReq.body;
 
-                //For the first incoming rocket packet:
-                if (packetNumber === 0) {
-//                    CZMLRocket[0].path.trailTime = 0;
-//                    console.log(CZMLRocket[0])
-//                    startEpoch = CZMLRocket[0].position.epoch;
-                }
 // BACKLOGGING
-////                console.log(CZMLRocket[0].position.cartographicDegrees);
+
                 if (typeof CZMLRocket[0].position !== 'undefined') {
                     var positions = CZMLRocket[0].position.cartographicDegrees;
 
@@ -183,15 +175,8 @@
                         }
                     });
 
-//                    positionsOnlyTempString.forEach(function (pos, index) {
-//                        if (index % 3 === 0){
-//                            return;
-//                        }
-//                        else{
-//                            coordinatesOnlyTempString.push(pos);
-//                        }
-//                    });
-                    if (typeof CZMLRocket[4].polyline.position !== 'undefined') {
+
+                    if (typeof CZMLRocket[4].polyline.positions !== 'undefined') {
                         CZMLRocket[4].polyline.positions.cartographicDegrees = positionsOnlyTempString;
 
                         czmlString.push(CZMLHeader[0]);
@@ -227,19 +212,16 @@
 
 
                 openConnections.forEach(function (getResp) {
-//                    console.log('Sending rocket data');
                     getResp.write('data:[' + JSON.stringify(CZMLRocket[0]) + ',' + JSON.stringify(CZMLRocket[1]) + ',' + JSON.stringify(CZMLRocket[2]) + ',' + JSON.stringify(CZMLRocket[3]) + ']' + '\n\n');
                 });
-//
-//                
-////                console.log(czmlString[2].polyline.positions.cartographicDegrees)
+
 
                 packetNumber += 1;
 
             }
             fs.truncateSync("backlog.czml");
             fs.writeFileSync("backlog.czml", JSON.stringify(czmlString));
-//            streamCZML.write(JSON.stringify(czmlString));
+
 
             if (postInterval === undefined) {
                 postInterval = setInterval(function () {
@@ -294,6 +276,10 @@
 
         }
     });
+
+    setInterval(function () {
+        httpGet.get("http://sscflightdata.herokuapp.com");
+    }, 290000); // every 5 minutes (300000)
 
 //--------------------------------------
 

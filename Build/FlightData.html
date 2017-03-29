@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
     <head>
@@ -6,7 +6,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
         <title>Flight data visualization</title>
-        <script src="../Build/CesiumUnminified/Cesium.js"></script>
+        <script src="../Build/Cesium/Cesium.js"></script>
         <script src="../Build/EventSource.js"></script>
         <script src="../Build/AngleIntegrator.js"></script>
         <script src="../Build/odometer.min.js"></script>
@@ -31,7 +31,7 @@
         </div>
         <div id="sideContainer">
             <span class="missionTimeLabel">Mission time</span>
-            <span class="missionTimeValue">T- 0s</span>
+            <span class="missionTimeValue">T- xx:xx:xx</span>
 
             <div id="groundTrackDiv">
                 <div id="cesiumContainerGroundTrack"></div>
@@ -315,7 +315,8 @@
             document.getElementsByClassName("cesium-viewer")[2].removeChild($('.cesium-viewer-fullscreenContainer')[1]);
 
             $('.cesium-viewer-fullscreenContainer')[0].style.zIndex = 999;
-            $('.cesium-viewer-fullscreenContainer')[0].style.height = "1.5%";
+            $('.cesium-viewer-fullscreenContainer')[0].style.top = "1.25%";
+            $('.cesium-viewer-fullscreenContainer')[0].style.right = "20.2%";
 
             var creditDiv = $('#creditDiv')[0];
 
@@ -497,12 +498,12 @@
             var gpsStatus = false;
 
             // Check when the messages are recieved
-            var timeOfLastMessage;
-            var timeOfLastGPSMessage;
-            var timeOfLastAttitudeMessage;
-            var timeOfLastGLoadMessage;
-            var timeOfLastARateMessage;
-            var timeOfLastIIPMessage;
+            var timeOfLastMessage = new Date().getTime();
+            var timeOfLastGPSMessage = new Date().getTime();
+            var timeOfLastAttitudeMessage = new Date().getTime();
+            var timeOfLastGLoadMessage = new Date().getTime();
+            var timeOfLastARateMessage = new Date().getTime();
+            var timeOfLastIIPMessage = new Date().getTime();
 
             var backlogLoaded = false;
 
@@ -533,9 +534,9 @@
                             roll: 0.0                             // default value
                         }
                     });
-                    console.log(counter);
+                    //console.log(counter);
                     if (counter > 1 && Math.abs(viewerAttitude.camera.right.y) > 0.99) {
-                        console.log("clearing");
+                        //console.log("clearing");
                         clearInterval(startTrackingInterval);
                         attitudeDone = true;
                     }
@@ -574,15 +575,16 @@
             var messageCounter = 0;
             var eventsLoaded = false;
             var lastEvent;
+            var gpsNotUpdatedCounter = 0; // Counting how many packets since we last received gps data
+            var lastAttitude;
 
             czmlEventSource.onmessage = function (event) {
                 counter++;
                 var t0 = performance.now();
                 czmlData = JSON.parse(event.data);
                 czmlStream.process(czmlData);
-
-                console.log("Number of messages recieved: " + counter.toString());
-                console.log("Time since last message: " + (new Date().getTime() - timeOfLastMessage).toString());
+                
+                //console.log("Time since last message: " + (new Date().getTime() - timeOfLastMessage).toString());
 
                 if (czmlData[0].id === "document") {
                     camera.cancelFlight();
@@ -624,27 +626,47 @@
                         syncStatus = true;
                     }
 
-                    ////
-                    if (typeof czmlData[0].position !== 'undefined') {
-                        viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
-                        var position = czmlData[0].position.cartographicDegrees;
+                    //console.log(czmlData[0]);
+                    if (czmlData[0].name === "!GPS_updated") {
+                        gpsNotUpdatedCounter++;
+                        if (gpsStatus && gpsNotUpdatedCounter > 4) {
+                            gpsDiode.toggleClass('led-red led-green');
+                            gpsStatus = false;
+                            
+                        }
+                    } else {
+                        gpsNotUpdatedCounter = 0;
                         timeOfLastGPSMessage = new Date().getTime();
-
-                        var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-                        viewer.clock.currentTime = startTime;
-                        viewerAttitude.clock.currentTime = startTime;
-
-
+                        if (!gpsStatus) {
+                            gpsDiode.toggleClass('led-green led-red');
+                            gpsStatus = true;
+                        }
                         if (!tmStatus) {
                             tmDiode.toggleClass('led-green led-red');
                             tmStatus = true;
                         }
+                    }
+
+                    ////
+                    if (typeof czmlData[0].position !== 'undefined') {
+                        viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
+                        var position = czmlData[0].position.cartographicDegrees;
+
+                        var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                        //viewer.clock.currentTime = startTime;
+                        //viewerAttitude.clock.currentTime = startTime;
+
+
+                        //if (!tmStatus) {
+                        //    tmDiode.toggleClass('led-green led-red');
+                        //    tmStatus = true;
+                        //}
                         // Checking if the position data is recieved correctly
-                        if (!gpsStatus) {
-                            gpsDiode.toggleClass('led-red led-green');
-                            gpsStatus = true;
-                        }
+                        //if (!gpsStatus) {
+                        //    gpsDiode.toggleClass('led-red led-green');
+                        //    gpsStatus = true;
+                        //}
 
                         var longitude = position[1];
                         var latitude = position[2];
@@ -655,6 +677,10 @@
                             groundTrackMarker.show = true;
                             groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
                             firstRocketDataReceived = true;
+                            var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                            Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                            viewer.clock.currentTime = startTime;
+                            viewerAttitude.clock.currentTime = startTime;
                         }
 
                         document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
@@ -697,23 +723,34 @@
                     }
 
                     if (typeof czmlData[0].orientation !== 'undefined') {
-                        timeOfLastAttitudeMessage = new Date().getTime();
+                        var tempOrientation = czmlData[0].orientation.unitQuaternion;
+                        var tempQ0 = tempOrientation[1];
                         
-                        if (typeof czmlData[0].position === 'undefined') {
-                            var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].orientation.epoch);
-                            Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-                            viewer.clock.currentTime = startTime;
-                            viewerAttitude.clock.currentTime = startTime;
+                        if (lastAttitude !== tempQ0) {
+                            timeOfLastAttitudeMessage = new Date().getTime();
+                            if (!tmStatus) {
+                                tmDiode.toggleClass('led-green led-red');
+                                tmStatus = true;
+                            }
                         }
+
+                        lastAttitude = tempQ0;
+                        
+                        //if (typeof czmlData[0].position === 'undefined') {
+                        //    var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                        //    czmlData[0].orientation.epoch = czmlData[0].position.epoch;
+                        //    Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                        //    viewer.clock.currentTime = startTime;
+                        //    viewerAttitude.clock.currentTime = startTime;
+                        //}
+
+                        viewerAttitude.clock.currentTime = viewer.clock.currentTime;
 
                         var orientation = czmlData[0].orientation;
                         if (attitudeDone) {
                             attitudeCZML[1].orientation = orientation;
                         }
-                        if (!tmStatus) {
-                            tmDiode.toggleClass('led-green led-red');
-                            tmStatus = true;
-                        }
+                        
                         czmlAttitudeSource.process(attitudeCZML);
                     }
 
@@ -736,7 +773,7 @@
                         setgLoadIndicatorLength(gLoadX, gLoadY, gLoadZ);
                         $('#gLoadMeterOverlay').css('display', 'none');
                     } else {
-                        $('#gLoadMeterOverlay').css('display', 'block');
+                        //$('#gLoadMeterOverlay').css('display', 'block');
                     }
 
                     if (typeof czmlData[1].point.pixelSize !== 'undefined') {
@@ -782,19 +819,17 @@
                         document.getElementsByClassName("someMeterZValueInner")[1].innerHTML = aRateZ;
                         setAngleRateIndicatorLength(aRateX, aRateY, aRateZ);
                         $('#aRateMeterOverlay').css('display', 'none');
-                    } else {
-                        $('#aRateMeterOverlay').css('display', 'block');
-                    }
+                    } 
 
                     if (typeof czmlData[3].point.position !== 'undefined') {
                         timeOfLastIIPMessage = new Date().getTime();
                         IIPMarker.position = new Cesium.Cartesian3.fromDegrees(czmlData[3].point.position.cartographicDegrees[0], czmlData[3].point.position.cartographicDegrees[1], czmlData[3].point.position.cartographicDegrees[2]);
                         IIPMarker.show = true;
                         
-                        if (!tmStatus) {
-                            tmDiode.toggleClass('led-green led-red');
-                            tmStatus = true;
-                        }
+                        //if (!tmStatus) {
+                        //    tmDiode.toggleClass('led-green led-red');
+                        //    tmStatus = true;
+                        //}
                     }
                 }
 
@@ -808,6 +843,9 @@
                         }
                     }
                 }
+
+                
+
                 var t1 = performance.now();
 //                console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
             };
@@ -819,70 +857,80 @@
                 return Math.round((number + 0.0000001) * 10000) / 10000;
             }
 
+            // Start the routine for checing the diode status
+            setInterval(
+                function () {
+                    var threshold = 2500;
+
+                    var timeSinceLastMessage = new Date().getTime() - timeOfLastMessage;
+                    var timeSinceLastGPSMessage = new Date().getTime() - timeOfLastGPSMessage;
+                    var timeSinceLastAttitudeMessage = new Date().getTime() - timeOfLastAttitudeMessage;
+                    var timeSinceLastGLoadMessage = new Date().getTime() - timeOfLastGLoadMessage;
+                    var timeSinceLastARateMessage = new Date().getTime() - timeOfLastARateMessage;
+                    var timeSinceLastIIPMessage = new Date().getTime() - timeOfLastIIPMessage;
+
+                    //console.log(timeSinceLastMessage);
+                    //console.log(timeSinceLastGPSMessage);
+                    //console.log(timeSinceLastAttitudeMessage);
+                    //console.log(timeSinceLastGLoadMessage);
+                    //console.log(timeSinceLastARateMessage);
+                    //console.log(timeSinceLastIIPMessage);
 
 
 
-
-            setInterval(function () {
-                var threshold = 2500;
-
-                var timeSinceLastMessage = new Date().getTime() - timeOfLastMessage;
-                var timeSinceLastGPSMessage = new Date().getTime() - timeOfLastGPSMessage;
-                var timeSinceLastAttitudeMessage = new Date().getTime() - timeOfLastAttitudeMessage;
-                var timeSinceLastGLoadMessage = new Date().getTime() - timeOfLastGLoadMessage;
-                var timeSinceLastARateMessage = new Date().getTime() - timeOfLastARateMessage;
-                var timeSinceLastIIPMessage = new Date().getTime() - timeOfLastIIPMessage;
-
-                // If the streaming is ongoing, but the time since last message 
-                // is above a certain threshold, assume that streaming is 
-                // interrupted and set SYNC to red.
-                if (timeSinceLastMessage > threshold) {
-                    if (syncStatus) {
-                        syncDiode.toggleClass('led-green led-red');
-                        syncStatus = false;
+                    // If the streaming is ongoing, but the time since last message 
+                    // is above a certain threshold, assume that streaming is 
+                    // interrupted and set SYNC to red.
+                    if (timeSinceLastMessage > threshold) {
+                        if (syncStatus) {
+                            syncDiode.toggleClass('led-green led-red');
+                            syncStatus = false;
+                        }
+                        if (gpsStatus) {
+                            gpsDiode.toggleClass('led-green led-red');
+                            gpsStatus = false;
+                        }
+                        if (tmStatus) {
+                            tmDiode.toggleClass('led-green led-red');
+                            tmStatus = false;
+                        }
                     }
-                    if (gpsStatus) {
-                        gpsDiode.toggleClass('led-green led-red');
-                        gpsStatus = false;
-                    }
-                    if (tmStatus) {
-                        tmDiode.toggleClass('led-green led-red');
-                        tmStatus = false;
-                    }
-                }
 
-                if (timeSinceLastGPSMessage > threshold) {
-                    if (gpsStatus) {
-                        gpsDiode.toggleClass('led-green led-red');
-                        gpsStatus = false;
+                    if (timeSinceLastGPSMessage > threshold) {
+                        if (gpsStatus) {
+                            gpsDiode.toggleClass('led-green led-red');
+                            gpsStatus = false;
+                        }
                     }
-                }
 
-                if (timeSinceLastGLoadMessage > threshold) {
-                    $('#gLoadMeterOverlay').css('display', 'block');
-                }
+                    if (timeSinceLastGLoadMessage > threshold) {
+                        $('#gLoadMeterOverlay').css('display', 'block');
+                    }
 
-                if (timeSinceLastARateMessage > threshold) {
-                    $('#aRateMeterOverlay').css('display', 'block');
-                }
-                
-                if (timeSinceLastIIPMessage > threshold) {
-                    IIPMarker.show = false;
-                }
-                
-                if (timeSinceLastGLoadMessage < threshold || timeSinceLastARateMessage < threshold || timeSinceLastGPSMessage < threshold || timeSinceLastIIPMessage < threshold || timeSinceLastAttitudeMessage < threshold) {
-                    if (!tmStatus) {
-                        tmDiode.toggleClass('led-green led-red');
-                        tmStatus = true;
+                    if (timeSinceLastARateMessage > threshold) {
+                        $('#aRateMeterOverlay').css('display', 'block');
                     }
-                }
-                else{
-                    if (tmStatus) {
-                        tmDiode.toggleClass('led-green led-red');
-                        tmStatus = false;
+
+                    if (timeSinceLastIIPMessage > threshold) {
+                        IIPMarker.show = false;
                     }
-                }
-            }, 4871);
+
+                    if (timeSinceLastGLoadMessage < threshold || timeSinceLastARateMessage < threshold || timeSinceLastGPSMessage < threshold || timeSinceLastAttitudeMessage < threshold) {
+                        if (!tmStatus) {
+                            tmDiode.toggleClass('led-green led-red');
+                            tmStatus = true;
+                        }
+                    }
+                    else {
+                        if (tmStatus) {
+                            tmDiode.toggleClass('led-green led-red');
+                            tmStatus = false;
+                        }
+                    }
+                }, 4871);
+
+
+            
 
 
             //        var clockStarted = false;
