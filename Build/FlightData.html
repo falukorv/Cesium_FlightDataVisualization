@@ -460,29 +460,6 @@
                 }
             ];
 
-
-            //        function showAttitude(){
-            //            camera.cancelFlight();
-            //            viewer.trackedEntity = undefined;
-            //            scene.screenSpaceCameraController.enableInputs = false;
-            //            bbBackground.billboard.show = true;
-            //            viewer.camera.setView({
-            //                destination : new Cesium.Cartesian3.fromDegrees(esrangeLong-0.002,esrangeLat,height),
-            //                orientation: {
-            //                    heading : Cesium.Math.toRadians(90.0), // east, default value is 0.0 (north)
-            //                    pitch : Cesium.Math.toRadians(0),    // default value (looking down)
-            //                    roll : 0.0                             // default value
-            //                }
-            //            });
-            //        }
-
-            //        function showTrajectory(){
-            //            viewer.trackedEntity = rocket;
-            //            scene.screenSpaceCameraController.enableInputs = true;
-            //            bbBackground.billboard.show = false;
-            ////            viewer.flyTo(rocket, new Cesium.HeadingPitchRange(0, 0, 200));
-            //        }
-
             var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
 
             var miniWidth = d3.select("body").node().getBoundingClientRect().width * 0.5 - margin.right;
@@ -546,14 +523,12 @@
 
 
             var czmlStreamUrl = "/czml";
-            //            var czmlStreamUrl = "https://flight-data-visualization.herokuapp.com/czml";
 
             // Setup EventSource
             var czmlEventSource = new EventSource(czmlStreamUrl);
 
             // Put the datasource into Cesium
             viewer.dataSources.add(czmlStream);
-            //            viewer.dataSources.add(czmlBackLog);
 
             czmlEventSource.onopen = function () {
                 console.log('Connection open');
@@ -577,6 +552,7 @@
             var lastEvent;
             var gpsNotUpdatedCounter = 0; // Counting how many packets since we last received gps data
             var lastAttitude;
+            var counterTime = 0;
 
             czmlEventSource.onmessage = function (event) {
                 counter++;
@@ -652,8 +628,8 @@
                         viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
                         var position = czmlData[0].position.cartographicDegrees;
 
-                        var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                        //var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                        //Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
                         //viewer.clock.currentTime = startTime;
                         //viewerAttitude.clock.currentTime = startTime;
 
@@ -677,13 +653,22 @@
                             groundTrackMarker.show = true;
                             groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
                             firstRocketDataReceived = true;
-                            var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                            Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-                            viewer.clock.currentTime = startTime;
-                            viewerAttitude.clock.currentTime = startTime;
+
+                            $(document).ready(function () {
+                                var startTimeSettingInterval = setInterval(function () {
+                                    if (counterTime > 1) {
+                                        var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                                        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                                        viewer.clock.currentTime = startTime;
+                                        viewerAttitude.clock.currentTime = startTime;
+                                        clearInterval(startTimeSettingInterval);
+                                    }
+                                    counterTime++;
+                                }, 500);
+                            });
                         }
 
-                        document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude) + "m";
+                        document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude+330) + "m";
                         document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
                         document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
 
@@ -763,9 +748,9 @@
                             tmStatus = true;
                         }
 
-                        var gLoadX = round2FourDecimals(czmlData[1].point.position.cartesian[0]);
-                        var gLoadY = round2FourDecimals(czmlData[1].point.position.cartesian[1]);
-                        var gLoadZ = round2FourDecimals(czmlData[1].point.position.cartesian[2]);
+                        var gLoadX = parseFloat(czmlData[1].point.position.cartesian[0]).toFixed(2);
+                        var gLoadY = parseFloat(czmlData[1].point.position.cartesian[1]).toFixed(2);
+                        var gLoadZ = parseFloat(czmlData[1].point.position.cartesian[2]).toFixed(2);
 
                         document.getElementsByClassName("someMeterYValueInner")[0].innerHTML = gLoadY;
                         document.getElementsByClassName("someMeterZValueInner")[0].innerHTML = gLoadZ;
@@ -809,10 +794,10 @@
                             tmDiode.toggleClass('led-green led-red');
                             tmStatus = true;
                         }
-
-                        var aRateX = round2FourDecimals(czmlData[2].point.position.cartesian[0]);
-                        var aRateY = round2FourDecimals(czmlData[2].point.position.cartesian[1]);
-                        var aRateZ = round2FourDecimals(czmlData[2].point.position.cartesian[2]);
+                        
+                        var aRateX = parseFloat(czmlData[2].point.position.cartesian[0]).toFixed(2);
+                        var aRateY = parseFloat(czmlData[2].point.position.cartesian[1]).toFixed(2);
+                        var aRateZ = parseFloat(czmlData[2].point.position.cartesian[2]).toFixed(2);
 
                         document.getElementsByClassName("someMeterXValueInner")[1].innerHTML = aRateX;
                         document.getElementsByClassName("someMeterYValueInner")[1].innerHTML = aRateY;

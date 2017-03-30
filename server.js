@@ -188,7 +188,7 @@
                         // Might have some optimization to do here, do we really need to plot all samples?
                         if (missionTime > 0) {
 //                    var missionTimeSeconds = parseFloat(missionTime.substring(1,3))*60*60 + parseFloat(missionTime.substring(4,6))*60 + parseFloat(missionTime.substring(7,9));
-                            streamCSV.write(JSON.stringify(positions[3]) + ',' + JSON.stringify(missionTime) + '\n');
+                            streamCSV.write(JSON.stringify(positions[3]+330) + ',' + JSON.stringify(missionTime) + '\n');
                         }
                     }
                 } else {
@@ -277,9 +277,10 @@
         }
     });
 
+    // Keeping the heroku app alive
     setInterval(function () {
         httpGet.get("http://sscflightdata.herokuapp.com");
-    }, 290000); // every 5 minutes (300000)
+    }, 290000); 
 
 //--------------------------------------
 
