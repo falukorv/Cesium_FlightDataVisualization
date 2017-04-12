@@ -481,7 +481,7 @@ td {
     left: 35%;
 }
 
-.missionTimeLabel, .speedLabel, .gLoadLabel{
+.speedLabel, .gLoadLabel{
     position: absolute;
     text-decoration: underline;
     top: 0.5%;
@@ -490,6 +490,17 @@ td {
     /*background: rgba(42, 42, 42, 0.5);*/
     font-size: 150%;
     font-size: 1.6vw;
+    /*text-align: center;*/
+}
+.missionTimeLabel {
+    position: absolute;
+    text-decoration: underline;
+    top: 0.5%;
+    left: 5%;
+    color: #fff;
+    /*background: rgba(42, 42, 42, 0.5);*/
+    font-size: 150%;
+    font-size: 1.5vw;
     /*text-align: center;*/
 }
 
@@ -523,7 +534,7 @@ td {
     font-size: 1.5vh;
 }
 
-.missionTimeValue, .speedValue{
+.speedValue{
     position: absolute;
     top: 0.5%;
     left: 55%;
@@ -531,6 +542,17 @@ td {
     /*background: rgba(42, 42, 42, 0.5);*/
     font-size: 200%;
     font-size: 1.5vw;
+    /*text-align: center;*/
+}
+
+.missionTimeValue {
+    position: absolute;
+    top: 0.5%;
+    left: 50%;
+    color: #fff;
+    /*background: rgba(42, 42, 42, 0.5);*/
+    font-size: 200%;
+    font-size: 1.4vw;
     /*text-align: center;*/
 }
 

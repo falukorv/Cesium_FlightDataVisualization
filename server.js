@@ -178,9 +178,6 @@
 
                     if (typeof CZMLRocket[4].polyline.positions !== 'undefined') {
                         CZMLRocket[4].polyline.positions.cartographicDegrees = positionsOnlyTempString;
-
-                        czmlString.push(CZMLHeader[0]);
-                        czmlString.push(CZMLRocket[4]);
                     }
 
                     if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
@@ -188,7 +185,12 @@
                         // Might have some optimization to do here, do we really need to plot all samples?
                         if (missionTime > 0) {
 //                    var missionTimeSeconds = parseFloat(missionTime.substring(1,3))*60*60 + parseFloat(missionTime.substring(4,6))*60 + parseFloat(missionTime.substring(7,9));
-                            streamCSV.write(JSON.stringify(positions[3]+330) + ',' + JSON.stringify(missionTime) + '\n');
+                            streamCSV.write(JSON.stringify(positions[3] + 330) + ',' + JSON.stringify(missionTime) + '\n');
+
+                            if (typeof CZMLRocket[4].polyline.positions !== 'undefined') {
+                                czmlString.push(CZMLHeader[0]);
+                                czmlString.push(CZMLRocket[4]);
+                            }
                         }
                     }
                 } else {

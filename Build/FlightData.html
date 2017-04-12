@@ -46,7 +46,7 @@
             <div id="gaugeBase">
                 <span class="gaugeUnitLabel">[km/h]</span>
                 <span class="gaugeSpeedLabel">Speed</span>
-                <div id="odometer" class="odometer gaugeOdometer">10000</div> <!-- The first number in the odometer is hidden in order to always showing four digits -->
+                <div id="odometer" class="odometer gaugeOdometer">100000</div> <!-- The first number in the odometer is hidden in order to always showing four digits -->
             </div>
             <div id="gLoadMeter">
                 <div id="gLoadMeterY">
@@ -328,6 +328,9 @@
             //            groundTrackScene.globe.tileCacheSize = 1000;
 
             viewer.scene.frameState.creditDisplay.addDefaultCredit(new Cesium.Credit('Cesium', 'Documentation/images/cesium_logo.png', 'http://cesiumjs.org/'));
+            
+            //Cesium.JulianDate.addSeconds(viewer.clock.currentTime, -10, viewer.clock.currentTime);
+            //viewerAttitude.clock.currentTime = viewer.clock.currentTime;
 
             var scene = viewer.scene;
 
@@ -581,7 +584,15 @@
                                 var tableRow = eventTable.insertRow(0);
                                 var cell1 = tableRow.insertCell(0);
                                 var cell2 = tableRow.insertCell(1);
-                                cell1.innerHTML = da.time;
+                                var eventTimeTemp = da.time.toString();
+                                var eventTime;
+                                if (eventTimeTemp.slice(-1) === "C" || eventTimeTemp.slice(-1) === "H") {
+                                    eventTime = eventTimeTemp.slice(0, -1);
+                                }
+                                else {
+                                    eventTime = eventTimeTemp;
+                                }
+                                cell1.innerHTML = eventTime;
                                 cell2.innerHTML = da.event;
                                 cell2.style.color = 'Thistle';
                                 lastEvent = da.event;
@@ -654,18 +665,23 @@
                             groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
                             firstRocketDataReceived = true;
 
-                            $(document).ready(function () {
-                                var startTimeSettingInterval = setInterval(function () {
-                                    if (counterTime > 1) {
-                                        var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                                        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-                                        viewer.clock.currentTime = startTime;
-                                        viewerAttitude.clock.currentTime = startTime;
-                                        clearInterval(startTimeSettingInterval);
-                                    }
-                                    counterTime++;
-                                }, 500);
-                            });
+                            var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                            Cesium.JulianDate.addSeconds(startTime, -0.7, startTime);
+                            viewer.clock.currentTime = startTime;
+                            viewerAttitude.clock.currentTime = startTime;
+
+                            //$(document).ready(function () {
+                            //    var startTimeSettingInterval = setInterval(function () {
+                            //        var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
+                            //        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
+                            //        viewer.clock.currentTime = startTime;
+                            //        viewerAttitude.clock.currentTime = startTime;
+                            //        if (counterTime > 4) {
+                            //            clearInterval(startTimeSettingInterval);
+                            //        }
+                            //        counterTime++;
+                            //    }, 500);
+                            //});
                         }
 
                         document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude+330) + "m";
@@ -763,8 +779,8 @@
 
                     if (typeof czmlData[1].point.pixelSize !== 'undefined') {
                         var speed = czmlData[1].point.pixelSize;
-                        document.getElementsByClassName("odometer")[0].innerHTML = Math.round(10000 + speed / 3.6); // Note that the term "10000" is just used to make the odometer look good. 
-                        setGaugeIndicatorLength(speed);
+                        document.getElementsByClassName("odometer")[0].innerHTML = Math.round(100000 + speed * 3.6); // Note that the term "10000" is just used to make the odometer look good. 
+                        setGaugeIndicatorLength(speed*3.6);
                     }
 
                     try {
@@ -775,7 +791,15 @@
                             var tableRow = eventTable.insertRow(0);
                             var cell1 = tableRow.insertCell(0);
                             var cell2 = tableRow.insertCell(1);
-                            cell1.innerHTML = missionTime;
+                            var eventTimeTemp = missionTime.toString();
+                            var eventTime;
+                            if (eventTimeTemp.slice(-1) === "C" || eventTimeTemp.slice(-1) === "H") {
+                                eventTime = eventTimeTemp.slice(0, -1);
+                            }
+                            else {
+                                eventTime = eventTimeTemp;
+                            }
+                            cell1.innerHTML = eventTime;
                             cell2.innerHTML = czmlData[1].name;
                             cell2.style.color = 'Thistle';
                             lastEvent = czmlData[1].name;

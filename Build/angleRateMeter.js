@@ -82,8 +82,8 @@ $(document).ready(function () {
     positiveAScale = d3.scaleLog().range([pathStartPositiveX, pathMaximumX]);
     negativeAScale = d3.scaleLog().range([pathMinimumX, pathStartNegativeX]);
 
-    positiveAScale.domain([0.0001, 10000]);
-    negativeAScale.domain([-10000, -0.0001]);
+    positiveAScale.domain([0.01, 10000]);
+    negativeAScale.domain([-10000, -0.01]);
 
 // The x & y axes.
     positiveAAxis = d3.axisBottom(positiveAScale).ticks(4);
