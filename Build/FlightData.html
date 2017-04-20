@@ -489,6 +489,8 @@
 
             //        // STREAMING CODE
             var czmlStream = new Cesium.CzmlDataSource();
+            var czmlBackTrack = new Cesium.CzmlDataSource();
+            
 
             var czmlAttitudeSource = new Cesium.CzmlDataSource();
 
@@ -526,12 +528,14 @@
 
 
             var czmlStreamUrl = "/czml";
+            var recordedCZMLUrl = "../Maxus9.czml";
 
             // Setup EventSource
             var czmlEventSource = new EventSource(czmlStreamUrl);
 
-            // Put the datasource into Cesium
+            // Put the datasources into Cesium
             viewer.dataSources.add(czmlStream);
+            var recordedCZML = viewer.dataSources.add(czmlBackTrack);
 
             czmlEventSource.onopen = function () {
                 console.log('Connection open');
@@ -556,6 +560,10 @@
             var gpsNotUpdatedCounter = 0; // Counting how many packets since we last received gps data
             var lastAttitude;
             var counterTime = 0;
+
+            //viewer.clock.onTick.addEventListener(function (clock) {
+            //    console.log(viewer.camera.upWC);
+            //});
 
             czmlEventSource.onmessage = function (event) {
                 counter++;
@@ -615,6 +623,7 @@
 
                     //console.log(czmlData[0]);
                     if (czmlData[0].name === "!GPS_updated") {
+                        console.log("!GPS_updated")
                         gpsNotUpdatedCounter++;
                         if (gpsStatus && gpsNotUpdatedCounter > 4) {
                             gpsDiode.toggleClass('led-red led-green');
@@ -636,7 +645,7 @@
 
                     ////
                     if (typeof czmlData[0].position !== 'undefined') {
-                        viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
+                        
                         var position = czmlData[0].position.cartographicDegrees;
 
                         //var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
@@ -660,6 +669,9 @@
                         var altitude = position[position.length - 1];
 
                         if (!firstRocketDataReceived) {
+                            viewer.clock.onTick.addEventListener(function (clock) {
+                                viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
+                            });
                             lastPos = [longitude, latitude];
                             groundTrackMarker.show = true;
                             groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
@@ -858,6 +870,22 @@
                 var t1 = performance.now();
 //                console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
             };
+
+
+            //------------------------------------------------------
+
+            //var tjo = viewer.dataSources.get(1).load('../Maxus9.czml').then(function (czmlVar) {
+            //    console.log(czmlVar.entities.values);
+            //    var times = viewer.dataSources.get(1).entities.getById("rocket").position._property._times[0];
+                
+            //    var startTime = times;
+            //    Cesium.JulianDate.addSeconds(startTime, -0.7, startTime);
+            //    viewer.clock.currentTime = startTime;
+            //    viewer.dataSources.get(1).entities.getById("rocket");
+            //});
+
+            //------------------------------------------------------
+
 
             // Checking if the stream is interrupted for some reason, then set 
             // the sync diode to red.

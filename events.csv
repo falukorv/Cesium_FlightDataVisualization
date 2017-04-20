@@ -1,1 +1,16 @@
 event,time
+Server synchronized with data pusher,-99:00:00
+TVA Pressurising,-00:00:18 C
+TVA pressure check,-00:00:16 C
+TVA Deflection test,-00:00:14 C
+TVA Baseline Retrace test,-00:00:09 C
+Go signal,-00:00:08 C
+Lift-off,+00:00:00 C
+Expected motor burn-out,+00:01:04 C
+Expected motor separation,+00:01:26 C
+XRMON-DIFF2 Image sequence start,+00:01:28 C
+Expected Super-Max separation,+00:01:31 C
+XRMON-DIFF2 Alumina shearing,+00:02:40 C
+XRMON-DIFF2 Graphite shearing,+00:03:50 C
+XRMON-DIFF2 Experiment power down,+00:13:20 C
+Castor 4B destruction,+00:14:05 C

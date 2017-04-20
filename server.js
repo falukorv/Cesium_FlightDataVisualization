@@ -15,6 +15,9 @@
     var CZMLHeader; // This is the first packet in the CZML stream, which should be sent first in every GET-request
     var CZMLRocket; // The packet containing graphical information about the rocket
     var CZMLSpeed; // Packet containing information to be stated in text
+    var recordData = false; // Set this variable to true if you want to record data
+    var rocketName = "Maxus9.czml"; // Name of the file that will contain the recorded data
+    var loggValues = true; // Set this variable to true if you want to logg data for plotting
 
     var yargs = require('yargs').options({
         'port': {
@@ -71,7 +74,14 @@
 
     var streamCSV; //Stream to backlog.csv
     var streamCSV2; //Stream to events.csv
+    var streamPositionsCSV; //Stream to positions.csv
+    var streamTimesCSV; 
+    var streamQuaternionsCSV; 
+    var streamSpeedsCSV; 
+    var streamGLoadsCSV; 
+    var streamARatesCSV; 
     var streamCZML; //stream to the backlog.czml
+    var recordedCZML = []; //array containing the recorded czml
     var positionsTempString = []; //String used to construct a newpositions array in order to minimize write sizes
     var positionsOnlyTempString = []; //same as positionsTempString, but excluding the timestamps
     var coordinatesOnlyTempString = []; //same as positionsTempString, but excluding the timestamps
@@ -121,7 +131,17 @@
                 //creating streams in order to stor backlogs. These backlogs will then be loaded whenever a client connects mid-flight.
                 streamCSV = fs.createWriteStream("backlog.csv");
                 streamCSV2 = fs.createWriteStream("events.csv");
+                streamPositionsCSV = fs.createWriteStream("positions.csv");
+                streamSpeedsCSV = fs.createWriteStream("speeds.csv");
+                streamQuaternionsCSV = fs.createWriteStream("quats.csv");
+                streamTimesCSV = fs.createWriteStream("times.csv");
+                streamGLoadsCSV = fs.createWriteStream("gLoads.csv");
+                streamARatesCSV = fs.createWriteStream("aRates.csv");
                 streamCZML = fs.createWriteStream("backlog.czml");
+
+                if (recordData) {
+                    var fd = fs.openSync(rocketName, 'w');
+                }
 
                 // Noting that we are currently streaming
                 streaming = true;
@@ -134,6 +154,11 @@
                     resp.write('data:' + JSON.stringify(CZMLHeader) + '\n\n');
                 });
                 firstPacket = false;
+
+                if (recordData) {
+                    recordedCZML.push(CZMLHeader[0]);
+                }
+
             } else if (postReq.body[0].name === "Ping") {
                 console.log("Ping");
                 openConnections.forEach(function (resp) {
@@ -158,6 +183,7 @@
 //                    positionsOnlyTempString = [];
 //                });
 ////              ------------------------------------------------------------------------------------------------------------------------
+
             else if (postReq.body[0].id === "rocket") {
                 CZMLRocket = postReq.body;
 
@@ -182,9 +208,7 @@
 
                     if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
                         var missionTime = CZMLRocket[2].point.pixelSize;
-                        // Might have some optimization to do here, do we really need to plot all samples?
                         if (missionTime > 0) {
-//                    var missionTimeSeconds = parseFloat(missionTime.substring(1,3))*60*60 + parseFloat(missionTime.substring(4,6))*60 + parseFloat(missionTime.substring(7,9));
                             streamCSV.write(JSON.stringify(positions[3] + 330) + ',' + JSON.stringify(missionTime) + '\n');
 
                             if (typeof CZMLRocket[4].polyline.positions !== 'undefined') {
@@ -204,11 +228,96 @@
                     }
                 }
 
+                if (recordData) {
+                    recordedCZML.push(CZMLRocket[0]);
+                    recordedCZML.push(CZMLRocket[1]);
+                    recordedCZML.push(CZMLRocket[2]);
+                    recordedCZML.push(CZMLRocket[3]);
+                }
+
                 if (typeof CZMLRocket[1].name !== 'undefined') {
                     if (CZMLRocket[1].name !== lastEvent) {
                         streamCSV2.write(CZMLRocket[1].name + ',' + CZMLRocket[2].name + '\n');
                         lastEvent = CZMLRocket[1].name;
                     }
+                }
+
+                //Logging values for the purpose of plotting
+                if (loggValues) {
+                    if (typeof CZMLRocket[0].position !== 'undefined') {
+                        var positions = CZMLRocket[0].position.cartographicDegrees;
+
+                        var time;
+                        if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
+                            time = CZMLRocket[2].point.pixelSize;
+                        } else {
+                            time = -1;
+                        }
+
+                        for (var i = 0; i < positions.length / 4; i++) {
+                            streamPositionsCSV.write(JSON.stringify(positions[i * 4 + 1]) + ',' + JSON.stringify(positions[i * 4 + 2]) + ',' + JSON.stringify(positions[i * 4 + 3]) + ',' + JSON.stringify(time) + '\n');
+                        }
+                    }
+
+                    if (typeof CZMLRocket[0].orientation !== 'undefined') {
+                        var orientations = CZMLRocket[0].orientation.unitQuaternion;
+
+                        var time;
+                        if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
+                            time = CZMLRocket[2].point.pixelSize;
+                        } else {
+                            time = -1;
+                        }
+
+                        for (var i = 0; i < orientations.length / 5; i++) {
+                            streamQuaternionsCSV.write(JSON.stringify(orientations[i * 5 + 4]) + ',' + JSON.stringify(orientations[i * 5 + 1]) + ',' + JSON.stringify(orientations[i * 5 + 2]) + ',' + JSON.stringify(orientations[i * 5 + 3]) + ',' + JSON.stringify(time) + '\n');
+                        }
+                    }
+
+                    if (typeof CZMLRocket[1].point.pixelSize !== 'undefined') {
+                        var speed = CZMLRocket[1].point.pixelSize;
+
+                        var time;
+                        if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
+                            time = CZMLRocket[2].point.pixelSize;
+                        } else {
+                            time = -1;
+                        }
+
+                        streamSpeedsCSV.write(JSON.stringify(speed) + ',' + JSON.stringify(time) + '\n');
+                    }
+
+                    if (typeof CZMLRocket[1].point.position !== 'undefined') {
+                        var gLoads = CZMLRocket[1].point.position.cartesian;
+
+                        var time;
+                        if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
+                            time = CZMLRocket[2].point.pixelSize;
+                        } else {
+                            time = -1;
+                        }
+
+                        streamGLoadsCSV.write(JSON.stringify(gLoads[0]) + ',' + JSON.stringify(gLoads[1]) + ',' + JSON.stringify(gLoads[2]) + ',' + JSON.stringify(time) + '\n');
+                    }
+
+                    if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
+                        var time = CZMLRocket[2].point.pixelSize;
+                        streamTimesCSV.write(JSON.stringify(time) + '\n');
+                    }
+
+                    if (typeof CZMLRocket[2].point.position !== 'undefined') {
+                        var aRates = CZMLRocket[2].point.position.cartesian;
+
+                        var time;
+                        if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
+                            time = CZMLRocket[2].point.pixelSize;
+                        } else {
+                            time = -1;
+                        }
+
+                        streamARatesCSV.write(JSON.stringify(aRates[0]) + ',' + JSON.stringify(aRates[1]) + ',' + JSON.stringify(aRates[2]) + ',' + JSON.stringify(time) + '\n');
+                    }
+
                 }
 
 
@@ -224,12 +333,21 @@
             fs.truncateSync("backlog.czml");
             fs.writeFileSync("backlog.czml", JSON.stringify(czmlString));
 
+            fs.truncateSync(rocketName);
+            fs.writeFileSync(rocketName, JSON.stringify(recordedCZML));
+
 
             if (postInterval === undefined) {
                 postInterval = setInterval(function () {
                     if ((new Date().getTime() - timeSinceLastPost > 2500)) {
                         streamCSV.close();
                         streamCZML.close();
+                        streamPositionsCSV.close();
+                        streamQuaternionsCSV.close();
+                        streamTimesCSV.close();
+                        streamGLoadsCSV.close();
+                        streamARatesCSV.close();
+                        streamSpeedsCSV.close();
                         streaming = false;
                         console.log("Connection closed, stream closed");
 //                        CZMLHeader = undefined;
