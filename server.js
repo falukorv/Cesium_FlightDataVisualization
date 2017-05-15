@@ -10,14 +10,14 @@
     var httpGet = require("http");
 
 
-//    Variables in which to store imortant information:
+    //    Variables in which to store imortant information:
     var streaming = true;
     var CZMLHeader; // This is the first packet in the CZML stream, which should be sent first in every GET-request
     var CZMLRocket; // The packet containing graphical information about the rocket
     var CZMLSpeed; // Packet containing information to be stated in text
     var recordData = false; // Set this variable to true if you want to record data
     var rocketName = "Maxus9.czml"; // Name of the file that will contain the recorded data
-    var loggValues = true; // Set this variable to true if you want to logg data for plotting
+    var loggValues = false; // Set this variable to true if you want to logg data for plotting
 
     var yargs = require('yargs').options({
         'port': {
@@ -66,20 +66,20 @@
         resp.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
     });
-//    app.use(compression()); // [FOR SOME REASON, USING COMPRESSION BREAKS THE STREAMING]
+    //    app.use(compression()); // [FOR SOME REASON, USING COMPRESSION BREAKS THE STREAMING]
     app.use(express.static(__dirname));
 
-    app.use(bodyParser.urlencoded({extended: true}));
+    app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
 
     var streamCSV; //Stream to backlog.csv
     var streamCSV2; //Stream to events.csv
     var streamPositionsCSV; //Stream to positions.csv
-    var streamTimesCSV; 
-    var streamQuaternionsCSV; 
-    var streamSpeedsCSV; 
-    var streamGLoadsCSV; 
-    var streamARatesCSV; 
+    var streamTimesCSV;
+    var streamQuaternionsCSV;
+    var streamSpeedsCSV;
+    var streamGLoadsCSV;
+    var streamARatesCSV;
     var streamCZML; //stream to the backlog.czml
     var recordedCZML = []; //array containing the recorded czml
     var positionsTempString = []; //String used to construct a newpositions array in order to minimize write sizes
@@ -116,7 +116,7 @@
             postReq = req;
             console.log(postReq.body);
             console.log("Number of connections: " + openConnections.length);
-//            console.log(postReq.body[0].id);
+            //            console.log(postReq.body[0].id);
             postResp = resp;
             czmlString = []; //Resetting the czmlString every call POST request, otherwise we get a memory leak due to the string just appending the same thing over and over.
 
@@ -166,28 +166,28 @@
                 });
             }
 
-////              ------------------------------------------------------------------------------------------------------------------------
-////              --------------This does not work on heroku, workaround using setIntervall instead. Uncomment this is fixed.-------------
-//                // Attaching listener, on closed connection: set "streaming" to false and reset all variables associated with the stream
-//                postResp.connection.addListener("close", function () {
-//                    streamCSV.close();
-//                    streamCZML.close();
-//                    streaming = false;
-//                    console.log("Connection closed, stream closed");
-//                    CZMLHeader = undefined;
-//                    CZMLRocket = undefined;
-//                    postReq = undefined;
-//                    postResp = undefined;
-//                    czmlString = [];
-//                    packetNumber = 0;
-//                    positionsOnlyTempString = [];
-//                });
-////              ------------------------------------------------------------------------------------------------------------------------
+            ////              ------------------------------------------------------------------------------------------------------------------------
+            ////              --------------This does not work on heroku, workaround using setIntervall instead. Uncomment this is fixed.-------------
+            //                // Attaching listener, on closed connection: set "streaming" to false and reset all variables associated with the stream
+            //                postResp.connection.addListener("close", function () {
+            //                    streamCSV.close();
+            //                    streamCZML.close();
+            //                    streaming = false;
+            //                    console.log("Connection closed, stream closed");
+            //                    CZMLHeader = undefined;
+            //                    CZMLRocket = undefined;
+            //                    postReq = undefined;
+            //                    postResp = undefined;
+            //                    czmlString = [];
+            //                    packetNumber = 0;
+            //                    positionsOnlyTempString = [];
+            //                });
+            ////              ------------------------------------------------------------------------------------------------------------------------
 
             else if (postReq.body[0].id === "rocket") {
                 CZMLRocket = postReq.body;
 
-// BACKLOGGING
+                // BACKLOGGING
 
                 if (typeof CZMLRocket[0].position !== 'undefined') {
                     var positions = CZMLRocket[0].position.cartographicDegrees;
@@ -209,7 +209,9 @@
                     if (typeof CZMLRocket[2].point.pixelSize !== 'undefined') {
                         var missionTime = CZMLRocket[2].point.pixelSize;
                         if (missionTime > 0) {
+
                             streamCSV.write(JSON.stringify(positions[3] + 330) + ',' + JSON.stringify(missionTime) + '\n');
+
 
                             if (typeof CZMLRocket[4].polyline.positions !== 'undefined') {
                                 czmlString.push(CZMLHeader[0]);
@@ -222,8 +224,9 @@
                         var missionTime = CZMLRocket[2].point.pixelSize;
                         // Might have some optimization to do here, do we really need to plot all samples?
                         if (missionTime > 0) {
-//                    var missionTimeSeconds = parseFloat(missionTime.substring(1,3))*60*60 + parseFloat(missionTime.substring(4,6))*60 + parseFloat(missionTime.substring(7,9));
-                            streamCSV.write(0 + ',' + JSON.stringify(missionTime) + '\n');
+                            //                    var missionTimeSeconds = parseFloat(missionTime.substring(1,3))*60*60 + parseFloat(missionTime.substring(4,6))*60 + parseFloat(missionTime.substring(7,9));
+                            streamCSV.write(JSON.stringify(0) + ',' + JSON.stringify(missionTime) + '\n');
+
                         }
                     }
                 }
@@ -333,8 +336,10 @@
             fs.truncateSync("backlog.czml");
             fs.writeFileSync("backlog.czml", JSON.stringify(czmlString));
 
-            fs.truncateSync(rocketName);
-            fs.writeFileSync(rocketName, JSON.stringify(recordedCZML));
+            if (loggValues) {
+                fs.truncateSync(rocketName);
+                fs.writeFileSync(rocketName, JSON.stringify(recordedCZML));
+            }
 
 
             if (postInterval === undefined) {
@@ -350,7 +355,7 @@
                         streamSpeedsCSV.close();
                         streaming = false;
                         console.log("Connection closed, stream closed");
-//                        CZMLHeader = undefined;
+                        //                        CZMLHeader = undefined;
                         CZMLRocket = undefined;
                         postReq = undefined;
                         postResp = undefined;
@@ -400,9 +405,9 @@
     // Keeping the heroku app alive
     setInterval(function () {
         httpGet.get("http://sscflightdata.herokuapp.com");
-    }, 290000); 
+    }, 290000);
 
-//--------------------------------------
+    //--------------------------------------
 
     function getRemoteUrlFromParam(req) {
         var remoteUrl = req.params[0];

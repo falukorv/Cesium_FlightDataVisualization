@@ -1,996 +1,164 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-        <title>Flight data visualization</title>
-        <script src="../Build/Cesium/Cesium.js"></script>
-        <script src="../Build/EventSource.js"></script>
-        <script src="../Build/AngleIntegrator.js"></script>
-        <script src="../Build/odometer.min.js"></script>
-        <script src="../Build/ElementQueries.js"></script>
-        <script src="../Build/ResizeSensor.js"></script>
-        <script src="https://d3js.org/d3.v4.min.js"></script>
-        <script src="../ThirdParty/jquery/dist/jquery.min.js"></script>
-        <script src="../ThirdParty/jqueryui/jquery-ui.min.js"></script>
-        <script src="../ThirdParty/togeojson/togeojson.js"></script>
-        <style>
-            @import url(../ThirdParty/jqueryui/jquery-ui.css);
-            @import url(../Build/MainCSS.css);
-            @import url(../Build/Cesium/Widgets/widgets.css);
-        </style>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Flight data visualization</title>
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <script src="../Build/EventSource.js"></script>
+    <script src="../Build/AngleIntegrator.js"></script>
+    <script src="../Build/odometer.min.js"></script>
+    <script src="../Build/ElementQueries.js"></script>
+    <script src="../Build/ResizeSensor.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="../ThirdParty/jquery/dist/jquery.min.js"></script>
+    <script src="../ThirdParty/jqueryui/jquery-ui.min.js"></script>
+    <script src="../ThirdParty/togeojson/togeojson.js"></script>
+    <style>
+        @import url(../ThirdParty/jqueryui/jquery-ui.css);
+        @import url(../Build/MainCSS.css);
+        @import url(../Build/Cesium/Widgets/widgets.css);
+    </style>
 
-    </head>
+</head>
 
-    <body>
-        <div id="cesiumContainer"></div>
-        <div id="orientation-warning">
-            Some data can only be visualized in landscape orientation. Please change the orientation of your device in order to see all data.
+<body>
+    <div id="cesiumContainer"></div>
+    <div id="orientation-warning">
+        Some data can only be visualized in landscape orientation. Please change the orientation of your device in order to see all data.
+    </div>
+    <div id="sideContainer">
+        <span class="missionTimeLabel">Mission time</span>
+        <span class="missionTimeValue">T- xx:xx:xx</span>
+
+        <div id="groundTrackDiv">
+            <div id="cesiumContainerGroundTrack"></div>
+            <span class="latitude">Latitude:</span>
+            <span class="latitudeValue">0</span>
+            <span class="longitude">Longitude:</span>
+            <span class="longitudeValue">0</span>
         </div>
-        <div id="sideContainer">
-            <span class="missionTimeLabel">Mission time</span>
-            <span class="missionTimeValue">T- xx:xx:xx</span>
-
-            <div id="groundTrackDiv">
-                <div id="cesiumContainerGroundTrack"></div>
-                <span class="latitude">Latitude:</span>
-                <span class="latitudeValue">0</span>
-                <span class="longitude">Longitude:</span>
-                <span class="longitudeValue">0</span>
-            </div>
 
 
-            <div id="chart"></div>
-            <div id="gaugeBase">
-                <span class="gaugeUnitLabel">[km/h]</span>
-                <span class="gaugeSpeedLabel">Speed</span>
-                <div id="odometer" class="odometer gaugeOdometer">100000</div> <!-- The first number in the odometer is hidden in order to always showing four digits -->
-            </div>
-            <div id="gLoadMeter">
-                <div id="gLoadMeterY">
-
-                </div>
-                <div id="gLoadMeterYValue">
-                    <span class ="someMeterYValueInner">0</span>
-                </div>
-                <div id="gLoadMeterZ">
-                </div>
-                <div id="gLoadMeterZValue">
-                    <span class ="someMeterZValueInner">0</span>
-                </div>
-                <div id="gLoadMeterX">
-                </div>
-                <div id="gLoadMeterXValue">
-                    <span class ="someMeterXValueInner">0</span>
-                </div>
-                <span class="someMeterMainLabel">G-Loads [G]</span>
-                <span class="someMeterXLabel">G<sub>x</sub></span>
-                <span class="someMeterYLabel">G<sub>y</sub></span>
-                <span class="someMeterZLabel">G<sub>z</sub></span>
-                <div id="gLoadMeterOverlay"><span id="gLoadMeterOverlayText">G-Load data unavailable</span></div>
-            </div>
+        <div id="chart"></div>
+        <div id="gaugeBase">
+            <span class="gaugeUnitLabel">[km/h]</span>
+            <span class="gaugeSpeedLabel">Speed</span>
+            <div id="odometer" class="odometer gaugeOdometer">100000</div> <!-- The first number in the odometer is hidden in order to always showing four digits -->
         </div>
-        <div id="sideContainerRight">
-            <div id="statusDiodesContainer">
-                <div id="syncContainer">
-                    <span class="diodeText">SYNC</span>
-                    <div id="syncDiode" class="led-red diode"></div>
-                </div>
-                <div id="tmContainer">
-                    <span class="diodeText">TM</span>
-                    <div id="tmDiode" class="led-red diode"></div>
-                </div>
-                <div id="gpsContainer">
-                    <span class="diodeText">GPS</span>
-                    <div id="gpsDiode" class="led-red diode"></div>
-                </div>
-            </div>
-            <div id="eventMessages">
-                <div id="horizontalSepLine"></div>
-                <span class="eventLabel">EVENTS</span>
-                <table id="eventTable" rules="rows"></table>
-            </div>
-            <div id="attitudeDiv">
-                <div id="cesiumContainerAttitude"></div>
-                <div id="aRateValueContainer"><div id="angleRateMeter">
-                        <div id="aRateMeterY">
+        <div id="gLoadMeter">
+            <div id="gLoadMeterY">
 
-                        </div>
-                        <div id="aRateMeterYValue">
-                            <span class ="someMeterYValueInner">0</span>
-                        </div>
-                        <div id="aRateMeterZ">
-                        </div>
-                        <div id="aRateMeterZValue">
-                            <span class ="someMeterZValueInner">0</span>
-                        </div>
-                        <div id="aRateMeterX">
-                        </div>
-                        <div id="aRateMeterXValue">
-                            <span class ="someMeterXValueInner">0</span>
-                        </div>
-                        <span class="someMeterMainLabel">Angular rates [°/s]</span>
-                        <span class="someMeterXLabel">&omega;<sub>x</sub></span>
-                        <span class="someMeterYLabel">&omega;<sub>y</sub></span>
-                        <span class="someMeterZLabel">&omega;<sub>z</sub></span>
-                    </div>
-                    <div id="aRateMeterOverlay"><span id="aRateMeterOverlayText">Data for angular rates unavailable</span></div>
-                </div>
+            </div>
+            <div id="gLoadMeterYValue">
+                <span class="someMeterYValueInner">0</span>
+            </div>
+            <div id="gLoadMeterZ">
+            </div>
+            <div id="gLoadMeterZValue">
+                <span class="someMeterZValueInner">0</span>
+            </div>
+            <div id="gLoadMeterX">
+            </div>
+            <div id="gLoadMeterXValue">
+                <span class="someMeterXValueInner">0</span>
+            </div>
+            <span class="someMeterMainLabel">G-Loads [G]</span>
+            <span class="someMeterXLabel">G<sub>x</sub></span>
+            <span class="someMeterYLabel">G<sub>y</sub></span>
+            <span class="someMeterZLabel">G<sub>z</sub></span>
+            <div id="gLoadMeterOverlay"><span id="gLoadMeterOverlayText">G-Load data unavailable</span></div>
+        </div>
+    </div>
+    <div id="sideContainerRight">
+        <div id="statusDiodesContainer">
+            <div id="syncContainer">
+                <span class="diodeText">SYNC</span>
+                <div id="syncDiode" class="led-red diode"></div>
+            </div>
+            <div id="tmContainer">
+                <span class="diodeText">TM</span>
+                <div id="tmDiode" class="led-red diode"></div>
+            </div>
+            <div id="gpsContainer">
+                <span class="diodeText">GPS</span>
+                <div id="gpsDiode" class="led-red diode"></div>
             </div>
         </div>
-        <div id="creditDiv"></div>
+        <div id="eventMessages">
+            <div id="horizontalSepLine"></div>
+            <span class="eventLabel">EVENTS</span>
+            <table id="eventTable" rules="rows"></table>
+        </div>
+        <div id="attitudeDiv">
+            <div id="cesiumContainerAttitude"></div>
+            <div id="aRateValueContainer">
+                <div id="angleRateMeter">
+                    <div id="aRateMeterY">
 
-        <!--        <div id="controlPanel">
-                    <p>
-                        <button class="cesium-button" onclick="showAttitude()">Show attitude</button>
-                        <button class="cesium-button" onclick="showTrajectory()">Show trajectory</button>
-                    </p>
-                </div>-->
-        <!--        <div id="dashboard">
-                    <div id="separationLine1"></div>
-                    <div id="missionTimeContainer">
-                        <span class="missionTimeLabel">Mission time</span>
-                        <span class="missionTimeValue">T- 0s</span>
                     </div>
-                    <div id="separationLine2"></div>
-                    <div id="speedContainer">
-                        <span class="speedLabel">Speed</span>
-                        <span class="speedValue">0 m/s</span>
+                    <div id="aRateMeterYValue">
+                        <span class="someMeterYValueInner">0</span>
                     </div>
-                    <div id="separationLine3"></div>
-                    <div id="gLoadContainer">
-                        <span class="gLoadLabel">G-loads</span>
-                        <span class="gLoadValueX">G<sub>X</sub>: 0g</span>
-                        <span class="gLoadValueY">G<sub>Y</sub>: 0g</span>
-                        <span class="gLoadValueZ">G<sub>Z</sub>: 0g</span>
+                    <div id="aRateMeterZ">
                     </div>
-                    <span class="speed">Speed [m/s]</span>
-                </div>-->
-
-        <!--        <div id="speedValueBox">
-                    <span class="speedValue">1000</span>
-                </div>-->
-
-
-
-        <script>
-
-            Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
-
-            $('#gLoadMeterOverlay').css('display', 'none');
-            $('#aRateMeterOverlay').css('display', 'none');
-
-            var eventTable = $('#eventTable')[0];
-
-//            Cesium.Camera.DEFAULT_VIEW_RECTANGLE = new Cesium.Rectangle.fromDegrees(19, 67.8, 21.5, 69);
-//            Cesium.Camera.DEFAULT_VIEW_FACTOR = 0.1;
-            //            Cesium.RequestScheduler.prioritize = false;
-            var viewerGroundTrack = new Cesium.Viewer('cesiumContainerGroundTrack', {
-                timeline: false,
-                animation: false,
-                selectionIndicator: false,
-                infoBox: false,
-                homeButton: false,
-                sceneModePicker: false,
-                navigationHelpButton: false,
-                geocoder: false,
-                navigationInstructionsInitiallyVisible: false,
-                baseLayerPicker: false,
-                //            automaticallyTrackDataSourceClocks: true,
-                sceneMode: Cesium.SceneMode.SCENE2D,
-                imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
-                    url: 'https://a.tile.openstreetmap.org'
-                })
-            });
-
-            var viewerAttitude = new Cesium.Viewer('cesiumContainerAttitude', {
-                timeline: false,
-                animation: false,
-                selectionIndicator: false,
-                infoBox: false,
-                homeButton: false,
-                sceneModePicker: false,
-                navigationHelpButton: false,
-                geocoder: false,
-                navigationInstructionsInitiallyVisible: false,
-                baseLayerPicker: false
-            });
-
-            var viewer = new Cesium.Viewer('cesiumContainer', {
-                timeline: false,
-                animation: false,
-                selectionIndicator: false,
-                infoBox: false,
-                homeButton: false,
-                sceneModePicker: false,
-                automaticallyTrackDataSourceClocks: false,
-                navigationHelpButton: false,
-                geocoder: false,
-                navigationInstructionsInitiallyVisible: false,
-                baseLayerPicker: false
-            });
-
-            var impactZoneColor = Cesium.Color.ORANGE;
-            var impactZoneOutlineColor = Cesium.Color.BLACK;
-            var impactZoneLineWidth = 2;
-
-            var mainZone = {name: 'MainZone',
-                polyline: {
-                    positions: Cesium.Cartesian3.fromDegreesArray([
-                        21.038845, 67.872331,
-                        21.027198, 67.899614,
-                        20.989309, 67.916980,
-                        20.066374, 68.322429,
-                        20.121491, 68.384787,
-                        20.070978, 68.427238,
-                        20.226522, 68.490848,
-                        20.025872, 68.530847,
-                        19.937453, 68.557972,
-                        20.052217, 68.591073,
-                        20.202836, 68.665927,
-                        20.335797, 68.802324,
-                        20.306572, 68.926159,
-                        20.653400, 68.929312,
-                        21.801814, 68.492774,
-                        21.868759, 68.413162,
-                        21.768979, 68.297819,
-                        21.162791, 67.886996,
-                        21.159137, 67.887818,
-                        21.159052, 67.882453,
-                        21.143173, 67.872297,
-                        21.038845, 67.872331
-                    ]),
-                    width: 3,
-                    material: new Cesium.PolylineOutlineMaterialProperty({
-                        color: impactZoneColor,
-                        outlineWidth: impactZoneLineWidth,
-                        outlineColor: impactZoneOutlineColor
-                    })
-                }
-            };
-
-            viewer.entities.add(mainZone);
-            viewerGroundTrack.entities.add(mainZone);
-
-            var zoneA = {
-                name: 'ZoneA',
-                polyline: {
-                    positions: Cesium.Cartesian3.fromDegreesArray([
-                        20.989352, 67.916960,
-                        20.990226, 67.975712,
-                        21.197833, 67.953046,
-                        21.196634, 67.910613
-                    ]),
-                    width: 3,
-                    material: new Cesium.PolylineOutlineMaterialProperty({
-                        color: impactZoneColor,
-                        outlineWidth: impactZoneLineWidth,
-                        outlineColor: impactZoneOutlineColor
-                    })
-                }
-            };
-
-            viewer.entities.add(zoneA);
-            viewerGroundTrack.entities.add(zoneA);
-
-            var zoneB = {
-                name: 'ZoneB',
-                polyline: {
-                    positions: Cesium.Cartesian3.fromDegreesArray([
-                        20.121584, 68.384766,
-                        20.613829, 68.678881,
-                        20.900231, 68.722465,
-                        21.322100, 68.676831
-                    ]),
-                    width: 3,
-                    material: new Cesium.PolylineOutlineMaterialProperty({
-                        color: impactZoneColor,
-                        outlineWidth: impactZoneLineWidth,
-                        outlineColor: impactZoneOutlineColor
-                    })
-                }
-            };
-
-            viewer.entities.add(zoneB);
-            viewerGroundTrack.entities.add(zoneB);
-
-
-            // Clean the attitude view up.
-            var attitudeScene = viewerAttitude.scene;
-            attitudeScene.globe.show = false;
-            attitudeScene.skyBox = undefined;
-            attitudeScene.skyAtmosphere = undefined;
-            attitudeScene.sun = undefined;
-            attitudeScene.moon = undefined;
-
-            // Disabling the possibility to change the view of the attitude window
-            attitudeScene.screenSpaceCameraController.enableInputs = false;
-
-            document.getElementsByClassName("cesium-viewer")[1].removeChild(viewerGroundTrack.bottomContainer);
-            document.getElementsByClassName("cesium-viewer")[2].removeChild(viewerAttitude.bottomContainer);
-            document.getElementsByClassName("cesium-viewer")[0].removeChild(viewer.bottomContainer);
-            document.getElementsByClassName("cesium-viewer")[1].removeChild($('.cesium-viewer-fullscreenContainer')[1]);
-            document.getElementsByClassName("cesium-viewer")[2].removeChild($('.cesium-viewer-fullscreenContainer')[1]);
-
-            $('.cesium-viewer-fullscreenContainer')[0].style.zIndex = 999;
-            $('.cesium-viewer-fullscreenContainer')[0].style.top = "1.25%";
-            $('.cesium-viewer-fullscreenContainer')[0].style.right = "20.2%";
-
-            var creditDiv = $('#creditDiv')[0];
-
-
-            var scene = viewer.scene;
-            var groundTrackScene = viewerGroundTrack.scene;
-            scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
-            //            scene.globe.tileCacheSize = 1000;
-            //            groundTrackScene.globe.tileCacheSize = 1000;
-
-            viewer.scene.frameState.creditDisplay.addDefaultCredit(new Cesium.Credit('Cesium', 'Documentation/images/cesium_logo.png', 'http://cesiumjs.org/'));
-            
-            //Cesium.JulianDate.addSeconds(viewer.clock.currentTime, -10, viewer.clock.currentTime);
-            //viewerAttitude.clock.currentTime = viewer.clock.currentTime;
-
-            var scene = viewer.scene;
-
-            // Get the camera
-            var camera = viewer.camera;
-            var groundTrackCamera = viewerGroundTrack.scene.camera;
-            var viewRectangle = new Cesium.Rectangle.fromDegrees(19.7, 67.8, 22, 69);
-            camera.flyTo({
-                destination: viewRectangle
-            });
-            groundTrackCamera.zoomIn();
-            groundTrackCamera.flyTo({
-                destination: new Cesium.Cartesian3(2294925.383103221, 873305.9902726595, 6166275.118281682)
-            });
-
-            // The position of Esrange, which will be the initial position of the rocket.
-            esrangeLong = 21.1068944441480;
-            esrangeLat = 67.8932469830635;
-
-
-            var groundTrackMarker = viewerGroundTrack.entities.add({
-                "name": 'marker',
-                "position": Cesium.Cartesian3.fromDegrees(esrangeLong, esrangeLat, 0),
-                "show": false,
-                "point": {
-                    "pixelSize": 10,
-                    "color": Cesium.Color.BLUE,
-                    "outlineColor": Cesium.Color.BLUE
-                }
-            });
-            
-            groundTrackLine = viewerGroundTrack.entities.add({
-                id: '2D-line',
-                polyline: {
-                    width: 4,
-                    material: new Cesium.PolylineOutlineMaterialProperty({
-                        color: Cesium.Color.RED,
-                        outlineWidth: 1,
-                        outlineColor: Cesium.Color.BLACK
-                    })
-                }
-            });
-
-            var IIPMarker = viewerGroundTrack.entities.add({
-                "name": 'IIPmarker',
-                "position": Cesium.Cartesian3.fromDegrees(0, 0, 0),
-                "show": false,
-                "billboard": {
-                    "image": '../Source/Assets/Textures/crosshair3.png',
-                    "scale": 0.025
-                }
-            });
-
-            // Create a billbord that will serve as background if it is desirable to only view the attitude
-            bbBackgroundPos = new Cesium.Cartesian3.fromDegrees(esrangeLong, esrangeLat, 1000);
-            var bbBackground = viewerAttitude.entities.add({
-                name: 'Billboard',
-                position: bbBackgroundPos,
-                billboard: {
-                    image: '../Source/Assets/Textures/bb-background.png', // default: undefined
-                    show: true, // default
-                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
-                    verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
-                    scale: 2, // default: 1.0
-                    alignedAxis: Cesium.Cartesian3.ZERO, // default
-                    //                width : 50*16, // default: undefined
-                    //                height : 50*9 // default: undefined
-                }
-            });
-
-            var flameBillboard;
-            var attitudeCZML;
-
-            
-
-//            var rocketFlameGif = new Cesium.BillboardAnimator.fromGif({
-//                url: '../Source/Assets/Textures/rocketFlame.gif'
-//            }).then(function (gif) {
-//
-//
-//                flameBillboard = viewer.entities.add({
-//                    name: 'Bill',
-//                    position: bbBackgroundPos,
-//                    billboard: {
-//                        image: gif.image, // default: undefined
-//                        imageSubRegion: gif.imageSubRegion,
-//                        show: true, // default
-//                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
-//                        verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
-//                        scale: 1, // default: 1.0
-//                    }
-//                });
-//                viewer.trackedEntity = flameBillboard;
-//            });
-
-
-//                flameBillboard = viewer.entities.add({
-//                    name: 'glow',
-//                    position: bbBackgroundPos,
-//                    billboard: {
-//                        image: '../Source/Assets/Textures/glow2.png', // default: undefined
-//                        show: true, // default
-//                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
-//                        verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
-//                        scale: 1, // default: 1.0,
-//                        color: new Cesium.Color(1.0, 1.0, 1.0, 1)
-//                    }
-//                });
-//                viewer.trackedEntity = flameBillboard;
-
-
-
-
-            attitudeCZML = [
-                {
-                    "id": "document",
-                    "name": "CZML Path",
-                    "version": "1.0"
-                }, {
-                    "id": "attitudeRocket",
-                    "position": {
-                        "cartographicDegrees": [esrangeLong - 0.001, esrangeLat, 1000]
-                    },
-                    "model": {
-//                        "show": false,
-                        "gltf": "3Dmodels/maxus_mockup.glb",
-                        "minimumPixelSize": 128,
-                        "scale": 0.001
-                    }
-                }
-            ];
-
-            var margin = {top: 19.5, right: 19.5, bottom: 19.5, left: 39.5};
-
-            var miniWidth = d3.select("body").node().getBoundingClientRect().width * 0.5 - margin.right;
-            var miniHeight = d3.select("body").node().getBoundingClientRect().height * 0.5 - margin.top - margin.bottom;
-            miniWidth = miniHeight * 2;
-
-            // Accessing the status diodes, used in order to change them.
-            var syncDiode = $('#syncDiode');
-            var syncStatus = false;
-            var tmDiode = $('#tmDiode');
-            var tmStatus = false;
-            var gpsDiode = $('#gpsDiode');
-            var gpsStatus = false;
-
-            // Check when the messages are recieved
-            var timeOfLastMessage = new Date().getTime();
-            var timeOfLastGPSMessage = new Date().getTime();
-            var timeOfLastAttitudeMessage = new Date().getTime();
-            var timeOfLastGLoadMessage = new Date().getTime();
-            var timeOfLastARateMessage = new Date().getTime();
-            var timeOfLastIIPMessage = new Date().getTime();
-
-            var backlogLoaded = false;
-
-            //        // STREAMING CODE
-            var czmlStream = new Cesium.CzmlDataSource();
-            var czmlBackTrack = new Cesium.CzmlDataSource();
-            
-
-            var czmlAttitudeSource = new Cesium.CzmlDataSource();
-
-            var attitudeProcess = viewerAttitude.dataSources.add(czmlAttitudeSource);
-
-            viewerAttitude.dataSources.get(0).load(attitudeCZML);
-
-            var attitudeEntity = viewerAttitude.dataSources.get(0).entities.getById("attitudeRocket");
-            viewerAttitude.trackedEntity = attitudeEntity;
-            var attitudeCameraOffset = new Cesium.HeadingPitchRange(90, 0, 10);
-            var viewFrom = new Cesium.Cartesian3(-30, 0, 0);
-
-            cameraPos = new Cesium.Cartesian3.fromDegrees(esrangeLong - 0.0017, esrangeLat, 1000);
-            var counter = 0;
-            var attitudeDone = false;
-            $(document).ready(function () {
-                var startTrackingInterval = setInterval(function () {
-                    viewerAttitude.camera.setView({
-                        destination: cameraPos,
-                        orientation: {
-                            heading: Cesium.Math.toRadians(90.0), // east, default value is 0.0 (north)
-                            pitch: Cesium.Math.toRadians(0), // default value (looking down)
-                            roll: 0.0                             // default value
-                        }
-                    });
-                    //console.log(counter);
-                    if (counter > 1 && Math.abs(viewerAttitude.camera.right.y) > 0.99) {
-                        //console.log("clearing");
-                        clearInterval(startTrackingInterval);
-                        attitudeDone = true;
-                    }
-                    counter++;
-                }, 1000);
-            });
-
-
-            var czmlStreamUrl = "/czml";
-            var recordedCZMLUrl = "../Maxus9.czml";
-
-            // Setup EventSource
-            var czmlEventSource = new EventSource(czmlStreamUrl);
-
-            // Put the datasources into Cesium
-            viewer.dataSources.add(czmlStream);
-            var recordedCZML = viewer.dataSources.add(czmlBackTrack);
-
-            czmlEventSource.onopen = function () {
-                console.log('Connection open');
-            };
-
-            czmlEventSource.onerror = function (event) {
-                console.log(event.error);
-            };
-
-            var czmlData;
-            // Listen for EventSource data coming
-
-            // lastPos used to keep track on last position in order to draw a polyline that corresponds to the groundtrack
-            var lastPos;
-            var firstDocumentDataReceived = false;
-            var firstRocketDataReceived = false;
-            var apogee = 0;
-            var tracked = false;
-            var messageCounter = 0;
-            var eventsLoaded = false;
-            var lastEvent;
-            var gpsNotUpdatedCounter = 0; // Counting how many packets since we last received gps data
-            var lastAttitude;
-            var counterTime = 0;
-
-            //viewer.clock.onTick.addEventListener(function (clock) {
-            //    console.log(viewer.camera.upWC);
-            //});
-
-            czmlEventSource.onmessage = function (event) {
-                counter++;
-                var t0 = performance.now();
-                czmlData = JSON.parse(event.data);
-                czmlStream.process(czmlData);
-                
-                //console.log("Time since last message: " + (new Date().getTime() - timeOfLastMessage).toString());
-
-                if (czmlData[0].id === "document") {
-                    camera.cancelFlight();
-                    timeOfLastMessage = new Date().getTime();
-                    if (!syncStatus) {
-                        syncDiode.toggleClass('led-red led-green');
-                        syncStatus = true;
-                    }
-
-                    if (!firstDocumentDataReceived) {
-                        // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
-                        viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
-                        viewerGroundTrack.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
-                        // Adding the events that has already occured;
-                        d3.csv('../events.csv', function (error, data) {
-                            var eventDataSet = data;
-                            eventDataSet.forEach(function (da) {
-                                var tableRow = eventTable.insertRow(0);
-                                var cell1 = tableRow.insertCell(0);
-                                var cell2 = tableRow.insertCell(1);
-                                var eventTimeTemp = da.time.toString();
-                                var eventTime;
-                                if (eventTimeTemp.slice(-1) === "C" || eventTimeTemp.slice(-1) === "H") {
-                                    eventTime = eventTimeTemp.slice(0, -1);
-                                }
-                                else {
-                                    eventTime = eventTimeTemp;
-                                }
-                                cell1.innerHTML = eventTime;
-                                cell2.innerHTML = da.event;
-                                cell2.style.color = 'Thistle';
-                                lastEvent = da.event;
-                            });
-                            firstDocumentDataReceived = true;
-                        });
-                    }
-                }
-
-
-                if (czmlData[0].id === "rocket") {
-                    timeOfLastMessage = new Date().getTime();
-
-                    // If stream has been interupted, but now is resumed, set
-                    // SYNC to green
-                    if (!syncStatus) {
-                        syncDiode.toggleClass('led-red led-green');
-                        syncStatus = true;
-                    }
-
-                    //console.log(czmlData[0]);
-                    if (czmlData[0].name === "!GPS_updated") {
-                        console.log("!GPS_updated")
-                        gpsNotUpdatedCounter++;
-                        if (gpsStatus && gpsNotUpdatedCounter > 4) {
-                            gpsDiode.toggleClass('led-red led-green');
-                            gpsStatus = false;
-                            
-                        }
-                    } else {
-                        gpsNotUpdatedCounter = 0;
-                        timeOfLastGPSMessage = new Date().getTime();
-                        if (!gpsStatus) {
-                            gpsDiode.toggleClass('led-green led-red');
-                            gpsStatus = true;
-                        }
-                        if (!tmStatus) {
-                            tmDiode.toggleClass('led-green led-red');
-                            tmStatus = true;
-                        }
-                    }
-
-                    ////
-                    if (typeof czmlData[0].position !== 'undefined') {
-                        
-                        var position = czmlData[0].position.cartographicDegrees;
-
-                        //var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                        //Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-                        //viewer.clock.currentTime = startTime;
-                        //viewerAttitude.clock.currentTime = startTime;
-
-
-                        //if (!tmStatus) {
-                        //    tmDiode.toggleClass('led-green led-red');
-                        //    tmStatus = true;
-                        //}
-                        // Checking if the position data is recieved correctly
-                        //if (!gpsStatus) {
-                        //    gpsDiode.toggleClass('led-red led-green');
-                        //    gpsStatus = true;
-                        //}
-
-                        var longitude = position[1];
-                        var latitude = position[2];
-                        var altitude = position[position.length - 1];
-
-                        if (!firstRocketDataReceived) {
-                            viewer.clock.onTick.addEventListener(function (clock) {
-                                viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
-                            });
-                            lastPos = [longitude, latitude];
-                            groundTrackMarker.show = true;
-                            groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
-                            firstRocketDataReceived = true;
-
-                            var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                            Cesium.JulianDate.addSeconds(startTime, -0.7, startTime);
-                            viewer.clock.currentTime = startTime;
-                            viewerAttitude.clock.currentTime = startTime;
-
-                            //$(document).ready(function () {
-                            //    var startTimeSettingInterval = setInterval(function () {
-                            //        var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                            //        Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-                            //        viewer.clock.currentTime = startTime;
-                            //        viewerAttitude.clock.currentTime = startTime;
-                            //        if (counterTime > 4) {
-                            //            clearInterval(startTimeSettingInterval);
-                            //        }
-                            //        counterTime++;
-                            //    }, 500);
-                            //});
-                        }
-
-                        document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude+330) + "m";
-                        document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
-                        document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
-
-                        viewerGroundTrack.entities.add({
-                            name: '2D-line',
-                            polyline: {
-                                positions: Cesium.Cartesian3.fromDegreesArray([longitude, latitude,
-                                    lastPos[0], lastPos[1]]),
-                                width: 2,
-                                material: new Cesium.PolylineOutlineMaterialProperty({
-                                    color: Cesium.Color.RED,
-                                    outlineWidth: 1,
-                                    outlineColor: Cesium.Color.RED
-                                })
-                            }
-                        });
-
-                        groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
-
-                        lastPos = [longitude, latitude];
-
-                        groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, groundTrackCamera.positionCartographic.height));
-
-                        try {
-                            if (czmlData[2].point.pixelSize >= 0) {
-                                updateGraph();
-                            }
-                        } catch (err) {
-                            console.log(err.message);
-                        }
-                    } else {
-                        // Setting the gps diode to red
-                        if (gpsStatus) {
-                            gpsDiode.toggleClass('led-red led-green');
-                            gpsStatus = false;
-                        }
-                    }
-
-                    if (typeof czmlData[0].orientation !== 'undefined') {
-                        var tempOrientation = czmlData[0].orientation.unitQuaternion;
-                        var tempQ0 = tempOrientation[1];
-                        
-                        if (lastAttitude !== tempQ0) {
-                            timeOfLastAttitudeMessage = new Date().getTime();
-                            if (!tmStatus) {
-                                tmDiode.toggleClass('led-green led-red');
-                                tmStatus = true;
-                            }
-                        }
-
-                        lastAttitude = tempQ0;
-                        
-                        //if (typeof czmlData[0].position === 'undefined') {
-                        //    var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-                        //    czmlData[0].orientation.epoch = czmlData[0].position.epoch;
-                        //    Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-                        //    viewer.clock.currentTime = startTime;
-                        //    viewerAttitude.clock.currentTime = startTime;
-                        //}
-
-                        viewerAttitude.clock.currentTime = viewer.clock.currentTime;
-
-                        var orientation = czmlData[0].orientation;
-                        if (attitudeDone) {
-                            attitudeCZML[1].orientation = orientation;
-                        }
-                        
-                        czmlAttitudeSource.process(attitudeCZML);
-                    }
-
-                    // Trying to access the G-load data
-                    if (typeof czmlData[1].point.position !== 'undefined') {
-                        timeOfLastGLoadMessage = new Date().getTime();
-
-                        if (!tmStatus) {
-                            tmDiode.toggleClass('led-green led-red');
-                            tmStatus = true;
-                        }
-
-                        var gLoadX = parseFloat(czmlData[1].point.position.cartesian[0]).toFixed(2);
-                        var gLoadY = parseFloat(czmlData[1].point.position.cartesian[1]).toFixed(2);
-                        var gLoadZ = parseFloat(czmlData[1].point.position.cartesian[2]).toFixed(2);
-
-                        document.getElementsByClassName("someMeterYValueInner")[0].innerHTML = gLoadY;
-                        document.getElementsByClassName("someMeterZValueInner")[0].innerHTML = gLoadZ;
-                        document.getElementsByClassName("someMeterXValueInner")[0].innerHTML = gLoadX;
-                        setgLoadIndicatorLength(gLoadX, gLoadY, gLoadZ);
-                        $('#gLoadMeterOverlay').css('display', 'none');
-                    } else {
-                        //$('#gLoadMeterOverlay').css('display', 'block');
-                    }
-
-                    if (typeof czmlData[1].point.pixelSize !== 'undefined') {
-                        var speed = czmlData[1].point.pixelSize;
-                        document.getElementsByClassName("odometer")[0].innerHTML = Math.round(100000 + speed * 3.6); // Note that the term "10000" is just used to make the odometer look good. 
-                        setGaugeIndicatorLength(speed*3.6);
-                    }
-
-                    try {
-                        var missionTime = czmlData[2].name;
-                        document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
-
-                        if (czmlData[1].name !== lastEvent && firstDocumentDataReceived) {
-                            var tableRow = eventTable.insertRow(0);
-                            var cell1 = tableRow.insertCell(0);
-                            var cell2 = tableRow.insertCell(1);
-                            var eventTimeTemp = missionTime.toString();
-                            var eventTime;
-                            if (eventTimeTemp.slice(-1) === "C" || eventTimeTemp.slice(-1) === "H") {
-                                eventTime = eventTimeTemp.slice(0, -1);
-                            }
-                            else {
-                                eventTime = eventTimeTemp;
-                            }
-                            cell1.innerHTML = eventTime;
-                            cell2.innerHTML = czmlData[1].name;
-                            cell2.style.color = 'Thistle';
-                            lastEvent = czmlData[1].name;
-                        }
-
-                    } catch (err) {
-                        console.log(err.message);
-                    }
-
-                    // Trying to access the angular rate data
-                    // Trying to access the G-load data
-                    if (typeof czmlData[2].point.position !== 'undefined') {
-                        timeOfLastARateMessage = new Date().getTime();
-
-                        if (!tmStatus) {
-                            tmDiode.toggleClass('led-green led-red');
-                            tmStatus = true;
-                        }
-                        
-                        var aRateX = parseFloat(czmlData[2].point.position.cartesian[0]).toFixed(2);
-                        var aRateY = parseFloat(czmlData[2].point.position.cartesian[1]).toFixed(2);
-                        var aRateZ = parseFloat(czmlData[2].point.position.cartesian[2]).toFixed(2);
-
-                        document.getElementsByClassName("someMeterXValueInner")[1].innerHTML = aRateX;
-                        document.getElementsByClassName("someMeterYValueInner")[1].innerHTML = aRateY;
-                        document.getElementsByClassName("someMeterZValueInner")[1].innerHTML = aRateZ;
-                        setAngleRateIndicatorLength(aRateX, aRateY, aRateZ);
-                        $('#aRateMeterOverlay').css('display', 'none');
-                    } 
-
-                    if (typeof czmlData[3].point.position !== 'undefined') {
-                        timeOfLastIIPMessage = new Date().getTime();
-                        IIPMarker.position = new Cesium.Cartesian3.fromDegrees(czmlData[3].point.position.cartographicDegrees[0], czmlData[3].point.position.cartographicDegrees[1], czmlData[3].point.position.cartographicDegrees[2]);
-                        IIPMarker.show = true;
-                        
-                        //if (!tmStatus) {
-                        //    tmDiode.toggleClass('led-green led-red');
-                        //    tmStatus = true;
-                        //}
-                    }
-                }
-
-                if (typeof czmlData[1] !== 'undefined') {
-                    if (czmlData[1].id === "pingTimePacket") {
-                        try {
-                            var missionTime = czmlData[1].name;
-                            document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
-                        } catch (err) {
-                            console.log(err.message);
-                        }
-                    }
-                }
-
-                
-
-                var t1 = performance.now();
-//                console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
-            };
-
-
-            //------------------------------------------------------
-
-            //var tjo = viewer.dataSources.get(1).load('../Maxus9.czml').then(function (czmlVar) {
-            //    console.log(czmlVar.entities.values);
-            //    var times = viewer.dataSources.get(1).entities.getById("rocket").position._property._times[0];
-                
-            //    var startTime = times;
-            //    Cesium.JulianDate.addSeconds(startTime, -0.7, startTime);
-            //    viewer.clock.currentTime = startTime;
-            //    viewer.dataSources.get(1).entities.getById("rocket");
-            //});
-
-            //------------------------------------------------------
-
-
-            // Checking if the stream is interrupted for some reason, then set 
-            // the sync diode to red.
-
-            function round2FourDecimals(number) {
-                return Math.round((number + 0.0000001) * 10000) / 10000;
-            }
-
-            // Start the routine for checing the diode status
-            setInterval(
-                function () {
-                    var threshold = 2500;
-
-                    var timeSinceLastMessage = new Date().getTime() - timeOfLastMessage;
-                    var timeSinceLastGPSMessage = new Date().getTime() - timeOfLastGPSMessage;
-                    var timeSinceLastAttitudeMessage = new Date().getTime() - timeOfLastAttitudeMessage;
-                    var timeSinceLastGLoadMessage = new Date().getTime() - timeOfLastGLoadMessage;
-                    var timeSinceLastARateMessage = new Date().getTime() - timeOfLastARateMessage;
-                    var timeSinceLastIIPMessage = new Date().getTime() - timeOfLastIIPMessage;
-
-                    //console.log(timeSinceLastMessage);
-                    //console.log(timeSinceLastGPSMessage);
-                    //console.log(timeSinceLastAttitudeMessage);
-                    //console.log(timeSinceLastGLoadMessage);
-                    //console.log(timeSinceLastARateMessage);
-                    //console.log(timeSinceLastIIPMessage);
-
-
-
-                    // If the streaming is ongoing, but the time since last message 
-                    // is above a certain threshold, assume that streaming is 
-                    // interrupted and set SYNC to red.
-                    if (timeSinceLastMessage > threshold) {
-                        if (syncStatus) {
-                            syncDiode.toggleClass('led-green led-red');
-                            syncStatus = false;
-                        }
-                        if (gpsStatus) {
-                            gpsDiode.toggleClass('led-green led-red');
-                            gpsStatus = false;
-                        }
-                        if (tmStatus) {
-                            tmDiode.toggleClass('led-green led-red');
-                            tmStatus = false;
-                        }
-                    }
-
-                    if (timeSinceLastGPSMessage > threshold) {
-                        if (gpsStatus) {
-                            gpsDiode.toggleClass('led-green led-red');
-                            gpsStatus = false;
-                        }
-                    }
-
-                    if (timeSinceLastGLoadMessage > threshold) {
-                        $('#gLoadMeterOverlay').css('display', 'block');
-                    }
-
-                    if (timeSinceLastARateMessage > threshold) {
-                        $('#aRateMeterOverlay').css('display', 'block');
-                    }
-
-                    if (timeSinceLastIIPMessage > threshold) {
-                        IIPMarker.show = false;
-                    }
-
-                    if (timeSinceLastGLoadMessage < threshold || timeSinceLastARateMessage < threshold || timeSinceLastGPSMessage < threshold || timeSinceLastAttitudeMessage < threshold) {
-                        if (!tmStatus) {
-                            tmDiode.toggleClass('led-green led-red');
-                            tmStatus = true;
-                        }
-                    }
-                    else {
-                        if (tmStatus) {
-                            tmDiode.toggleClass('led-green led-red');
-                            tmStatus = false;
-                        }
-                    }
-                }, 4871);
-
-
-            
-
-
-            //        var clockStarted = false;
-            //
-            //        var clockstarter = setInterval(function () {
-            //            if (clockStarted = false) {
-            //                viewer.clock.startTime = viewer.dataSources.get(0).entities.getById("rocket").position._property._times[0].addSeconds(-0.5);
-            //                clearInterval(clockStarter);
-            //            }
-            //        }, 10);
-
-            // IE loading tiles extremely slowly, if IE detected, send warning
-            if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > 0) {
-                alert("You are using Internet Explorer: 3D rendering will be very slow. Please use latest Version of Microsoft EDGE, Firefox or Chrome to experience maximum performance.");
-            }
-
-
-        </script>
-        <script type="text/javascript" src="SideDiv.js"></script>
-        <script type="text/javascript" src="d3chartAltPlot.js"></script>
-        <script type="text/javascript" src="gauge.js"></script>
-        <script type="text/javascript" src="gLoadMeter.js"></script>
-        <script type="text/javascript" src="angleRateMeter.js"></script>
-    </body>
+                    <div id="aRateMeterZValue">
+                        <span class="someMeterZValueInner">0</span>
+                    </div>
+                    <div id="aRateMeterX">
+                    </div>
+                    <div id="aRateMeterXValue">
+                        <span class="someMeterXValueInner">0</span>
+                    </div>
+                    <span class="someMeterMainLabel">Angular rates [°/s]</span>
+                    <span class="someMeterXLabel">&omega;<sub>x</sub></span>
+                    <span class="someMeterYLabel">&omega;<sub>y</sub></span>
+                    <span class="someMeterZLabel">&omega;<sub>z</sub></span>
+                </div>
+                <div id="aRateMeterOverlay"><span id="aRateMeterOverlayText">Data for angular rates unavailable</span></div>
+            </div>
+        </div>
+    </div>
+    <div id="creditDiv"></div>
+
+    <!--        <div id="controlPanel">
+                <p>
+                    <button class="cesium-button" onclick="showAttitude()">Show attitude</button>
+                    <button class="cesium-button" onclick="showTrajectory()">Show trajectory</button>
+                </p>
+            </div>-->
+    <!--        <div id="dashboard">
+                <div id="separationLine1"></div>
+                <div id="missionTimeContainer">
+                    <span class="missionTimeLabel">Mission time</span>
+                    <span class="missionTimeValue">T- 0s</span>
+                </div>
+                <div id="separationLine2"></div>
+                <div id="speedContainer">
+                    <span class="speedLabel">Speed</span>
+                    <span class="speedValue">0 m/s</span>
+                </div>
+                <div id="separationLine3"></div>
+                <div id="gLoadContainer">
+                    <span class="gLoadLabel">G-loads</span>
+                    <span class="gLoadValueX">G<sub>X</sub>: 0g</span>
+                    <span class="gLoadValueY">G<sub>Y</sub>: 0g</span>
+                    <span class="gLoadValueZ">G<sub>Z</sub>: 0g</span>
+                </div>
+                <span class="speed">Speed [m/s]</span>
+            </div>-->
+    <!--        <div id="speedValueBox">
+                <span class="speedValue">1000</span>
+            </div>-->
+
+    <script type="text/javascript" src="mainScript.js"></script>
+    <script type="text/javascript" src="SideDiv.js"></script>
+    <script type="text/javascript" src="d3chartAltPlot.js"></script>
+    <script type="text/javascript" src="gauge.js"></script>
+    <script type="text/javascript" src="gLoadMeter.js"></script>
+    <script type="text/javascript" src="angleRateMeter.js"></script>
+</body>
 
 </html>
