@@ -133,14 +133,6 @@ body {
     text-align: center;
 }
 
-/*@media only screen and (min-width: 1920px) {
-    #chart {
-        -webkit-transform: scale(0.75);
-        -moz-transform: scale(0.75);
-        transform: scale(0.75);
-    }
-}*/
-
 #chart:hover, #gaugeBase:hover, #gLoadMeter:hover, #groundTrackDiv:hover {
     -webkit-transform: scale(0.75);
     -moz-transform: scale(0.75);
@@ -278,8 +270,6 @@ body {
     top: 0;
     width: 100%;
     height: 5%;
-    /*    width: 270px;
-    height: 60px;*/
 }
 
 #syncContainer, #tmContainer, #gpsContainer{
@@ -288,8 +278,6 @@ body {
     bottom:0;
     height: 60%;
     width: 20%;
-/*height: 35px;
-    width: 60px;*/
     margin-top:auto;
     margin-bottom: auto;
     background: rgba(30,30,30,1);
@@ -311,14 +299,11 @@ body {
 .diodeText{
     text-align: center;
     font-size: 0.7vw;
-/*font-size: 16px;*/
     color: #fff;
 }
 
 .diode{
     bottom: 8%;
-/*    width: 8px;
-    height:8px;*/
     width: 0.8vh;
     height: 0.8vh;
     border-radius: 50%;
@@ -398,88 +383,12 @@ body {
     border-color: rgba(100,100,100,0.8);
 }
 
-table { 
-/*    border-spacing: 10px;
-    border-collapse: separate;*/
-}
-
 td { 
     padding: 5px;
 }
 
-
 /*------------------------------------*/
 
-
-
-#dashboard {
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
-    background: rgba(42, 42, 42, 0.8);
-    padding: 0px 0px;
-    border-radius: 0px;
-    height: 10%;
-    /*text-align: center;*/
-}
-
-/*Speration lines, used in the dashboard to separate the different properties*/
-
-#separationLine1, #separationLine2, #separationLine3, #separationLine4{
-    position: absolute;
-    background: #fff;
-    left: 2.5%;
-    height: 90%;
-    width: 1px;
-    top: 0;
-    bottom: 0;
-    margin-bottom: auto;
-    margin-top: auto;
-    background: -moz-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 5%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 95%, rgba(255,255,255,0) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0)), color-stop(5%,rgba(255,255,255,0)), color-stop(50%,rgba(255,255,255,0.8)), color-stop(95%,rgba(255,255,255,0)), color-stop(100%,rgba(255,255,255,0)));
-    background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 5%,rgba(255,255,255,0.8) 50%,rgba(255,255,255,0) 95%,rgba(255,255,255,0) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 5%,rgba(255,255,255,0.8) 50%,rgba(255,255,255,0) 95%,rgba(255,255,255,0) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 5%,rgba(255,255,255,0.8) 50%,rgba(255,255,255,0) 95%,rgba(255,255,255,0) 100%); /* IE10+ */
-    background: linear-gradient(top, rgba(255,255,255,0) 0%,rgba(255,255,255,0) 5%,rgba(255,255,255,0.8) 50%,rgba(255,255,255,0) 95%,rgba(255,255,255,0) 100%); /* W3C */
-}
-
-#separationLine1{
-    left: 4%;
-}
-
-#separationLine2{
-    left: 19%;
-}
-
-#separationLine3{
-    left: 34%;
-}
-
-#missionTimeContainer, #speedContainer, #gLoadContainer{
-    position: absolute;
-    bottom: 0px;
-    top: 0px;
-    margin-bottom: auto;
-    margin-top: auto;
-    background: rgba(42, 42, 42, 0);
-    padding: 0px 0px;
-    border-radius: 0px;
-    width: 15%;
-    height: 90%;
-    /*text-align: center;*/
-}
-
-#missionTimeContainer{
-    left: 5%;
-}
-#speedContainer{
-    left: 20%;
-}
-
-#gLoadContainer{
-    left: 35%;
-}
 
 .speedLabel, .gLoadLabel{
     position: absolute;
@@ -487,10 +396,8 @@ td {
     top: 0.5%;
     left: 5%;
     color: #fff;
-    /*background: rgba(42, 42, 42, 0.5);*/
     font-size: 150%;
     font-size: 1.6vw;
-    /*text-align: center;*/
 }
 .missionTimeLabel {
     position: absolute;
@@ -498,10 +405,8 @@ td {
     top: 0.5%;
     left: 5%;
     color: #fff;
-    /*background: rgba(42, 42, 42, 0.5);*/
     font-size: 150%;
     font-size: 1.5vw;
-    /*text-align: center;*/
 }
 
 .gLoadValueX{
@@ -539,10 +444,8 @@ td {
     top: 0.5%;
     left: 55%;
     color: #fff;
-    /*background: rgba(42, 42, 42, 0.5);*/
     font-size: 200%;
     font-size: 1.5vw;
-    /*text-align: center;*/
 }
 
 .missionTimeValue {
@@ -550,12 +453,11 @@ td {
     top: 0.5%;
     left: 50%;
     color: #fff;
-    /*background: rgba(42, 42, 42, 0.5);*/
     font-size: 200%;
     font-size: 1.4vw;
-    /*text-align: center;*/
 }
 
+/* -------------GAUGE------------- */
 .arcStationary{
     fill: #fff;
 }
@@ -590,6 +492,8 @@ td {
 .gaugeUnitLabel{
     top: 55%;
 }
+
+/* -------------ANGULAR RATES&G-Loads-------------*/
 
 #aRateValueContainer{
     position: absolute;
@@ -659,7 +563,6 @@ td {
 
 #gLoadMeterYValue, #gLoadMeterZValue, #gLoadMeterXValue, #aRateMeterYValue, #aRateMeterZValue, #aRateMeterXValue{
     position: absolute;
-    /*vertical-align: middle;*/
     left:0;
     right:0;
     width: 22.5%;
@@ -688,7 +591,6 @@ td {
 }
 
 /*------SCROLLBAR------*/
-
 ::-webkit-scrollbar {
     width: 3%;
 }
@@ -710,11 +612,7 @@ scrollbar-track-color: rgba(100,100,100,0.8);
 scrollbar-arrow-color: rgba(100,100,100,0.8);
 }
 
-/*---------------------*/
-
-
-
-
+/* -------------FONTS------------- */
 @font-face{
     font-family:"digital-7";
     src: url("../Build/Fonts/digital-7.ttf");
@@ -753,31 +651,11 @@ scrollbar-arrow-color: rgba(100,100,100,0.8);
              url(../Build/Fonts/Amble-Regular.svg) format('svg');
 }
 
-/*---SETTING FONTS---*/
-
-/*.speedLabel, .gLoadLabel, .missionTimeLabel, .altitude, .apogee, .longitude, .latitude, .label, .gaugeSpeedLabel, .gLoadMeterYLabel, .gLoadMeterZLabel, .gLoadMeterXLabel, .gLoadMainLabel, .xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gLoadValueX, .gLoadValueY, .gLoadValueZ, .speedValue, .missionTimeValue {
-    font-family: "amble";
-}
-
-.xaxis, .yaxis, .odometer, .gaugeUnitLabel, .tickValues, .altitudeValue, .apogeeValue, .longitudeValue, .latitudeValue, .gLoadValueX, .gLoadValueY, .gLoadValueZ, .speedValue, .missionTimeValue{
-    font-family: "amble";
-}*/
-
 *{
     font-family: "amble";
 }
 
-/*NEON GLOW*/ 
-
-/*@keyframes neon {
-  from {
-    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #FF1177, 0 0 70px #FF1177, 0 0 80px #FF1177, 0 0 100px #FF1177, 0 0 150px #FF1177;
-  }
-  to {
-    text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #FF1177, 0 0 35px #FF1177, 0 0 40px #FF1177, 0 0 50px #FF1177, 0 0 75px #FF1177;
-  }
-}*/
-
+/* -------------CREDITS------------- */
 #creditDiv{
     vertical-align: bottom;
     position: absolute;
@@ -792,8 +670,7 @@ scrollbar-arrow-color: rgba(100,100,100,0.8);
 }
 
 
-/*---ODOMETER---*/
-
+/* -------------ODOMETER------------- */
 .odometer.odometer-auto-theme.gaugeOdometer, .odometer.odometer-theme-car.gaugeOdometer, .odometer.odometer-auto-theme.gLoadOdometer {
     display: inline-block;
     vertical-align: middle;
@@ -918,14 +795,6 @@ scrollbar-arrow-color: rgba(100,100,100,0.8);
     -moz-border-radius: 0 0.2em 0.2em 0;
     -webkit-border-radius: 0;
     border-radius: 0 0.2em 0.2em 0;
-    /* background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4gPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiBncmFkaWVudFVuaXRzPSJvYmplY3RCb3VuZGluZ0JveCIgeDE9IjAuNSIgeTE9IjAuMCIgeDI9IjAuNSIgeTI9IjEuMCI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2VlZTBkMyIvPjxzdG9wIG9mZnNldD0iNDAlIiBzdG9wLWNvbG9yPSIjZWVlMGQzIi8+PHN0b3Agb2Zmc2V0PSI2MCUiIHN0b3AtY29sb3I9IiNiYmFhOWEiLz48c3RvcCBvZmZzZXQ9IjgwJSIgc3RvcC1jb2xvcj0iI2VlZTBkMyIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2VlZTBkMyIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JhZCkiIC8+PC9zdmc+IA==');
-     background-size: 100%;
-     background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #eee0d3), color-stop(40%, #eee0d3), color-stop(60%, #bbaa9a), color-stop(80%, #eee0d3), color-stop(100%, #eee0d3));
-     background-image: -moz-linear-gradient(top, #eee0d3 0%, #eee0d3 40%, #bbaa9a 60%, #eee0d3 80%, #eee0d3 100%);
-     background-image: -webkit-linear-gradient(top, #eee0d3 0%, #eee0d3 40%, #bbaa9a 60%, #eee0d3 80%, #eee0d3 100%);
-     background-image: linear-gradient(to bottom, #eee0d3 0%, #eee0d3 40%, #bbaa9a 60%, #eee0d3 80%, #eee0d3 100%);
-     background-color: #eee0d3;
-     color: #000;*/
 }
 
 .odometer.odometer-auto-theme .odometer-digit .odometer-digit-inner, .odometer.odometer-theme-car .odometer-digit .odometer-digit-inner {
@@ -939,10 +808,3 @@ scrollbar-arrow-color: rgba(100,100,100,0.8);
     -o-transition-timing-function: linear;
     transition-timing-function: linear;
 }
-
-/*.odometer{
-    left:0%;
-    right:0%;
-    margin-left: auto;
-    margin-right: auto;
-}*/

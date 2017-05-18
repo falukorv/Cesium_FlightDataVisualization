@@ -1,16 +1,11 @@
 /*global Cesium*/
 
-var x;
-var y;
-var z;
-var w;
-
 function forwardEuler(w1,w2,w3,orientation,T){
     // Quaternion components
-    x = orientation.x; 
-    y = orientation.y;
-    z = orientation.z;
-    w = orientation.w;
+    var x = orientation.x; 
+    var y = orientation.y;
+    var z = orientation.z;
+    var w = orientation.w;
 
     w = w + 0.5*(-w1*x-w2*y-w3*z)*T;
     x = x + 0.5*(w1*w+w3*y-w2*z)*T;
@@ -23,10 +18,10 @@ function forwardEuler(w1,w2,w3,orientation,T){
 }
 
 function RK4(omega1,omega2,omega3,orientation,T){
-    x = orientation.x; 
-    y = orientation.y;
-    z = orientation.z;
-    w = orientation.w;
+    var x = orientation.x; 
+    var y = orientation.y;
+    var z = orientation.z;
+    var w = orientation.w;
 
     var w1 = 0.5*(-omega1*x-omega2*y-omega3*z);
     var x1 = 0.5*(omega1*w+omega3*y-omega2*z);

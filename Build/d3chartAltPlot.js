@@ -6,10 +6,6 @@
 var graphWidth = document.getElementById("chart").offsetWidth;
 var graphHeight = document.getElementById("chart").offsetHeight;
 
-
-
-
-
 // Adding the data into new arrays, since the converted ones are quite messy
 var graphAltitude = [];
 var graphCoords = [];
@@ -17,7 +13,6 @@ var graphTime = [];
 var allTextLines;
 var distance = [];
 var dataSet = [];
-
 
 // Various scales.
 var xScale = d3.scaleLinear().range([0.1 * graphWidth, 0.95*graphWidth]),
@@ -30,14 +25,10 @@ yScale.domain([0, 0]);
 var xAxis = d3.axisBottom(xScale);
 var yAxis = d3.axisLeft(yScale);
 
-
-
 // Create the SVG container and set the origin.
 var svgBase = d3.select("#chart").append("svg")
         .attr("width", graphWidth)
         .attr("height", graphHeight);
-//
-//$(svgBase).css({position:'absolute'});
 
 var svg = svgBase
         .append("g")
@@ -49,7 +40,6 @@ var xAxisElement = svg.append("g")
         .attr("transform", "translate(" + 0 * graphWidth + "," + 0.90 * graphHeight + ")")
         .call(xAxis);
 
-
 // Add the y-axis.
 var yAxisElement = svg.append("g")
         .attr("class", "yaxis")
@@ -60,7 +50,7 @@ var yAxisElement = svg.append("g")
 var xAxisLabel = svg.append("text")
         .attr("class", "label")
         .attr("text-anchor", "end")
-        .attr("x", 0.94 * graphWidth)
+        .attr("x", 0.92 * graphWidth)
         .attr("font-size", "2vh")
         .attr("y", 0.88*graphHeight)
         .text("Time");
@@ -72,7 +62,7 @@ var yAxisLabel = svg.append("text")
         .attr("font-size", "1.4vw")
         .attr("x", 0.05 * graphHeight)
         .attr("transform", "rotate(90)")// translate(0," + 0.04*graphWidth + ")")
-        .text("Altitude");
+        .text("Altitude [m]");
 
 // Add the altitude label; the value is set on transition.
 var altitudeLabel = svg.append("text")
@@ -86,8 +76,8 @@ var altitudeValueLabel = svg.append("text")
         .attr("class", "altitudeValue label")
         .attr("text-anchor", "start")
         .attr("y", 0.07 * graphHeight)
-        .attr("x", 0.38 * graphWidth)
-        .text('0m');
+        .attr("x", 0.32 * graphWidth)
+        .text('0km');
 
 // Add the apogege label
 var graphApogee = 0;
@@ -104,8 +94,9 @@ var apogeeValueLabel = svg.append("text")
         .attr("text-anchor", "start")
         .attr("x", 0.77 * graphWidth)
         .attr("y", 0.07 * graphHeight)
-        .text(0 + "m");
+        .text(0 + "km");
 
+// Define line function
 var line = d3.line()
         .x(function (d) {
             return xScale(d.time);
@@ -114,6 +105,7 @@ var line = d3.line()
             return yScale(d.altitude);
         });
 
+// Define area function
 var area = d3.area()
         .x(function (d) {
             return xScale(d.time);
@@ -123,27 +115,27 @@ var area = d3.area()
             return yScale(d.altitude);
         });
 
+// Add line
 var path = svg.append("path")
         .attr("d", line(dataSet))
         .attr("stroke", "#fff")
         .attr("stroke-width", "2px")
         .attr("fill", "none");
 
+// Add area
 var appendArea = svg.append("path")
         .attr("d", area(dataSet))
         .attr("class", "area");
 
 function updateGraph() {
-    // Chart dimensions.
 
-//        d3.csv('https://flight-data-visualization.herokuapp.com/back_log.csv', function (error, data) {
+    // Load data set
     d3.csv('../backlog.csv', function (error, data) {
         dataSet = data;
         dataSet.forEach(function (d) {
             d.altitude = parseFloat(d.altitude);
             d.time = parseFloat(d.time);
         });
-//        console.log(dataSet)
         
         var maxTime = d3.max(dataSet, function (d) {
             return d.time;
@@ -152,22 +144,23 @@ function updateGraph() {
             return d.altitude;
         });
 
+        // Update apogee if new altitude is greater than the apogee
         if (maxAltitude > graphApogee) {
             graphApogee = maxAltitude;
-            document.getElementsByClassName("apogeeValue")[0].innerHTML = Math.round(graphApogee) + "m";
+            document.getElementsByClassName("apogeeValue")[0].innerHTML = parseFloat(graphApogee / 1000).toFixed(1) + "km";
         }
 
+        // Update domain
         xScale.domain([0, maxTime + 0.1 * maxTime]);
-        
         yScale.domain([0, maxAltitude + 0.1 * maxAltitude]);
-
 
         // The x & y axes.
         xAxis = d3.axisBottom(xScale);
         yAxis = d3.axisLeft(yScale);
         xAxisElement
                 .transition()
-                .call(xAxis);
+            .call(xAxis);
+
         // Add the y-axis.
         yAxisElement
                 .transition()
@@ -202,7 +195,6 @@ new ResizeSensor(document.getElementById("chart"), function () {
             .attr("transform", "translate(" + 0 * graphWidth + "," + 0.90 * graphHeight + ")")
             .call(xAxis);
 
-
     // Add the y-axis.
     yAxisElement
             .attr("transform", "translate(" + 0.1 * graphWidth + "," + 0 + ")")
@@ -226,7 +218,7 @@ new ResizeSensor(document.getElementById("chart"), function () {
 
     altitudeValueLabel
             .attr("y", 0.07 * graphHeight)
-            .attr("x", 0.38 * graphWidth)
+            .attr("x", 0.32 * graphWidth)
 
     apogeeLabel.attr("x", 0.75 * graphWidth)
             .attr("y", 0.07 * graphHeight);

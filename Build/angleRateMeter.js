@@ -7,8 +7,6 @@ var aRateMeterHeight;
 
 var aRateAxisLength; // Length of the axis in one direction
 
-var maxGForce;
-
 var pathMaximumX;
 var pathMinimumX;
 
@@ -26,29 +24,23 @@ var aRateAXPath;
 
 var pathWidth;
 
-//
-//
-// Create the SVG container and set the origin.
 var aRateSvgBase;
-
 var aRateSvg;
 
 var positiveAScale,
-        negativeAScale;
+    negativeAScale;
 
-var positiveAAxis;
-var negativeAAxis;
+var positiveAAxis,
+    negativeAAxis;
 
 var positiveAaxisElement;
-
-
 var negativeAaxisElement;
 
 var aRatePathAY;
-
 var aRatePathAZ;
-
 var aRatePathAX;
+
+var maxARate;
 
 
 $(document).ready(function () {
@@ -57,7 +49,7 @@ $(document).ready(function () {
 
     aRateAxisLength = aRateMeterWidth * 0.35; // Length of the axis in one direction
 
-    maxGForce = 10;
+    maxARate = 10;
     pathMaximumX = 0.95 * aRateMeterWidth;
     pathMinimumX = 0.05 * aRateMeterWidth;
 
@@ -69,8 +61,6 @@ $(document).ready(function () {
 
     pathWidth = 0.1 * aRateMeterHeight;
 
-//
-//
 // Create the SVG container and set the origin.
     aRateSvgBase = d3.select("#aRateValueContainer").append("svg")
             .attr("width", aRateMeterWidth)
@@ -102,19 +92,15 @@ $(document).ready(function () {
 
     aRatePathAY = aRateSvg.append("path")
             .attr("stroke-width", pathWidth)
-//        .attr("stroke-linecap","round")
             .attr("stroke", "rgba(150, 0, 0, 0.8)");
 
     aRatePathAZ = aRateSvg.append("path")
             .attr("stroke-width", pathWidth)
-//        .attr("stroke-linecap","round")
             .attr("stroke", "rgba(150, 0, 0, 0.8)");
 
     aRatePathAX = aRateSvg.append("path")
             .attr("stroke-width", pathWidth)
-//        .attr("stroke-linecap","round")
             .attr("stroke", "rgba(150, 0, 0, 0.8)");
-
 });
 
 new ResizeSensor(document.getElementById("aRateValueContainer"), function () {
@@ -166,20 +152,20 @@ new ResizeSensor(document.getElementById("aRateValueContainer"), function () {
 function setAngleRateIndicatorLength(aRateX, aRateY, aRateZ) {
     
     if (aRateX > 0) {
-        var pathEndPositiveX = pathStartPositiveX + (aRateX / maxGForce) * (pathMaximumX - pathStartPositiveX);
+        var pathEndPositiveX = pathStartPositiveX + (aRateX / maxARate) * (pathMaximumX - pathStartPositiveX);
         aRateAXPath = "M" + pathStartPositiveX + "," + pathYAX + "L" + positiveAScale(aRateX) + "," + pathYAX;
     } else if (aRateX < 0) {
-        var pathEndNegativeX = pathStartNegativeX - (aRateX / maxGForce) * (-pathMaximumX + pathStartNegativeX);
+        var pathEndNegativeX = pathStartNegativeX - (aRateX / maxARate) * (-pathMaximumX + pathStartNegativeX);
         aRateAXPath = "M" + pathStartNegativeX + "," + pathYAX + "L" + negativeAScale(aRateX) + "," + pathYAX;
     } else {
         aRateAXPath = "M" + pathStartNegativeX + "," + pathYAX + "L" + pathStartNegativeX + "," + pathYAX;
     }
 
     if (aRateY > 0) {
-        var pathEndPositiveX = pathStartPositiveX + (aRateY / maxGForce) * (pathMaximumX - pathStartPositiveX);
+        var pathEndPositiveX = pathStartPositiveX + (aRateY / maxARate) * (pathMaximumX - pathStartPositiveX);
         aRateAYPath = "M" + pathStartPositiveX + "," + pathYAY + "L" + positiveAScale(aRateY) + "," + pathYAY;
     } else if (aRateY < 0) {
-        var pathEndNegativeX = pathStartNegativeX - (aRateY / maxGForce) * (-pathMaximumX + pathStartNegativeX);
+        var pathEndNegativeX = pathStartNegativeX - (aRateY / maxARate) * (-pathMaximumX + pathStartNegativeX);
         aRateAYPath = "M" + pathStartNegativeX + "," + pathYAY + "L" + negativeAScale(aRateY) + "," + pathYAY;
     } else {
         aRateAYPath = "M" + pathStartNegativeX + "," + pathYAY + "L" + pathStartNegativeX + "," + pathYAY;
@@ -187,10 +173,10 @@ function setAngleRateIndicatorLength(aRateX, aRateY, aRateZ) {
 
 
     if (aRateZ > 0) {
-        var pathEndPositiveX = pathStartPositiveX + (aRateZ / maxGForce) * (pathMaximumX - pathStartPositiveX);
+        var pathEndPositiveX = pathStartPositiveX + (aRateZ / maxARate) * (pathMaximumX - pathStartPositiveX);
         aRateAZPath = "M" + pathStartPositiveX + "," + pathYAZ + "L" + positiveAScale(aRateZ) + "," + pathYAZ;
     } else if (aRateZ < 0) {
-        var pathEndNegativeX = pathStartNegativeX - (aRateZ / maxGForce) * (-pathMaximumX + pathStartNegativeX);
+        var pathEndNegativeX = pathStartNegativeX - (aRateZ / maxARate) * (-pathMaximumX + pathStartNegativeX);
         aRateAZPath = "M" + pathStartNegativeX + "," + pathYAZ + "L" + negativeAScale(aRateZ) + "," + pathYAZ;
     } else {
         aRateAZPath = "M" + pathStartNegativeX + "," + pathYAZ + "L" + pathStartNegativeX + "," + pathYAZ;

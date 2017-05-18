@@ -17,12 +17,10 @@
 
 var windowWidth = document.getElementById("cesiumContainer").offsetWidth;
 var windowHeight = document.getElementById("cesiumContainer").offsetHeight;
-
 var gaugeWidth = document.getElementById("gaugeBase").offsetWidth;
 var gaugeHeight = gaugeWidth;
 
 var gaugeOdometer = $('.odometer');
-
 
 // Adding the data into new arrays, since the converted ones are quite messy
 var gaugeAltitude = [];
@@ -35,8 +33,8 @@ var gaugeSvgBase = d3.select("#gaugeBase").append("svg")
 
 var gaugeSvg = gaugeSvgBase.append("g")
         .attr("transform", "translate(" + gaugeWidth / 2 + "," + gaugeWidth / 2 + ")");
-//        .attr("transform", "translate(" + 0.025 * graphHeight + "," + 0.025 * graphHeight + ")");
 
+// Gauge properties
 var gaugeRadius = gaugeWidth / 2;
 var gaugeStartAngle = -4 * Math.PI / 5;
 var gaugeEndAngle = 4 * Math.PI / 5;
@@ -108,10 +106,12 @@ function drawGaugeSvg() {
     }
 }
 
+// Add gauge ticks
 var gaugeTicks = gaugeSvg.append("path")
         .attr("class", "gaugeTicks")
         .attr("d", gaugeTicksPath);
 
+// Add gauge indicator
 var gaugeIndicatorArc = gaugeSvg.append("path")
         .datum(gaugeStartAngle)
         .attr("class", "arcDynamic")
@@ -150,17 +150,12 @@ function arcTween(d) {
         return indicator(i(t));
     };
 }
-;
-
 
 function setGaugeIndicatorLength(speedValue) {
     speedValue = speedValue;
     var indicatorEndAngle = gaugeStartAngle + speedValue / gaugeMaxValue * (gaugeEndAngle - gaugeStartAngle);
-    //indicator.endAngle(indicatorEndAngle);
-    //console.log(indicator.toString())
     gaugeIndicatorArc.datum(indicatorEndAngle);
     gaugeIndicatorArc.transition().attrTween("d", arcTween).duration(500);
-    //gaugeValueText.text(Math.round(10000 + speedValue));
 }
 
 new ResizeSensor(document.getElementById("gaugeBase"), function () {

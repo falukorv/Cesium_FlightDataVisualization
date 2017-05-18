@@ -1,14 +1,13 @@
-
+// Bing maps key
 Cesium.BingMapsApi.defaultKey = 'AHktyWLXKe49Xq430Pnj~WpOSHCXoZA8C1sTcoYYfdA~AnGtg5pHMlY-dPZ7oCLACK3lDCAxuNDdWr69TuOLy2Ila2BNsKfWBAdixg12lWwR';
 
+// Do not show overlay as default
 $('#gLoadMeterOverlay').css('display', 'none');
 $('#aRateMeterOverlay').css('display', 'none');
 
 var eventTable = $('#eventTable')[0];
 
-//            Cesium.Camera.DEFAULT_VIEW_RECTANGLE = new Cesium.Rectangle.fromDegrees(19, 67.8, 21.5, 69);
-//            Cesium.Camera.DEFAULT_VIEW_FACTOR = 0.1;
-//            Cesium.RequestScheduler.prioritize = false;
+// Initialize the ground track viewer
 var viewerGroundTrack = new Cesium.Viewer('cesiumContainerGroundTrack', {
     timeline: false,
     animation: false,
@@ -20,13 +19,13 @@ var viewerGroundTrack = new Cesium.Viewer('cesiumContainerGroundTrack', {
     geocoder: false,
     navigationInstructionsInitiallyVisible: false,
     baseLayerPicker: false,
-    //            automaticallyTrackDataSourceClocks: true,
     sceneMode: Cesium.SceneMode.SCENE2D,
     imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
         url: 'https://a.tile.openstreetmap.org'
     })
 });
 
+// Initialize the attitude viewer
 var viewerAttitude = new Cesium.Viewer('cesiumContainerAttitude', {
     timeline: false,
     animation: false,
@@ -40,6 +39,7 @@ var viewerAttitude = new Cesium.Viewer('cesiumContainerAttitude', {
     baseLayerPicker: false
 });
 
+// INitialize the main viewer
 var viewer = new Cesium.Viewer('cesiumContainer', {
     timeline: false,
     animation: false,
@@ -54,23 +54,19 @@ var viewer = new Cesium.Viewer('cesiumContainer', {
     baseLayerPicker: false
 });
 
-
-// New user inputs, for smoother movement.
 var scene = viewer.scene;
 var canvas = viewer.canvas;
-var scene = viewer.scene;
-
-// Get the camera
+var ellipsoid = scene.globe.ellipsoid;
 var camera = viewer.camera;
 var groundTrackCamera = viewerGroundTrack.camera;
+var groundTrackScene = viewerGroundTrack.scene;
 
-var ellipsoid = scene.globe.ellipsoid;
-
-
+// New user inputs, for smoother movement.
 var cameraXVelocity = 0;
 var cameraYVelocity = 0;
 var zoomedDistance = 0;
 
+// Keyboard controls, not yet implemented
 function getFlagForKeyCode(keyCode) {
     switch (keyCode) {
         case 'W'.charCodeAt(0):
@@ -90,6 +86,7 @@ function getFlagForKeyCode(keyCode) {
     }
 }
 
+// Nicer user controls
 function  changeUserControls() {
     canvas.setAttribute('tabindex', '0'); // Put focus on the canvas
     canvas.onclick = function () {
@@ -121,28 +118,34 @@ function  changeUserControls() {
 
     var handler = new Cesium.ScreenSpaceEventHandler(canvas);
 
+    // When pressing left mouse button
     handler.setInputAction(function (movement) {
         flags.looking = true;
         mousePosition = startMousePosition = Cesium.Cartesian3.clone(movement.position);
     }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
 
+    // When pressing right mouse button
     handler.setInputAction(function (movement) {
         flags.zooming = true;
         mousePosition = startZoomPosition = Cesium.Cartesian3.clone(movement.position);
     }, Cesium.ScreenSpaceEventType.RIGHT_DOWN);
 
+    // When not pressing left mouse button
     handler.setInputAction(function (movement) {
         flags.looking = false;
     }, Cesium.ScreenSpaceEventType.LEFT_UP);
 
+    // When not pressing right mouse button
     handler.setInputAction(function (movement) {
         flags.zooming = false;
     }, Cesium.ScreenSpaceEventType.RIGHT_UP);
 
+    // When moving the mouse
     handler.setInputAction(function (movement) {
         mousePosition = movement.endPosition;
     }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
+    // When scrolling
     handler.setInputAction(function (delta) {
         var zoomAmount;
         var scaleFactor = 0.1
@@ -152,9 +155,12 @@ function  changeUserControls() {
             zoomAmount = -(1 + zoomedDistance) * scaleFactor;
         }
         camera.moveBackward(zoomAmount);
+
+        // Keep track of the zoom amount, want to zoom more on greater distances
         zoomedDistance += zoomAmount;
     }, Cesium.ScreenSpaceEventType.WHEEL);
 
+    // For key press
     document.addEventListener('keydown', function (e) {
         var flagName = getFlagForKeyCode(e.keyCode);
         if (typeof flagName !== 'undefined') {
@@ -169,6 +175,7 @@ function  changeUserControls() {
         }
     }, false);
 
+    // Listener for user events
     viewer.clock.onTick.addEventListener(function (clock) {
         var nextFrameTime = new Date().getTime();
         var frameTime = nextFrameTime - currentFrameTime;
@@ -177,12 +184,13 @@ function  changeUserControls() {
             var clientWidth = canvas.clientWidth;
             var clientHeight = canvas.clientHeight;
 
+            // Set rotation velocity of camera
             var scaleFactor = 0.01;
             var cameraTargetXVelocity = -(mousePosition.x - startMousePosition.x) * scaleFactor / clientWidth;
             var cameraTargetYVelocity = (mousePosition.y - startMousePosition.y) * scaleFactor / clientHeight;
 
+            // Accelerate the camera movement to the target velocity
             var generalAccFactor = 0.000001;
-
             if (Math.abs(cameraXVelocity) < Math.abs(cameraTargetXVelocity)) {
                 cameraXVelocity += (cameraTargetXVelocity / Math.abs(cameraTargetXVelocity)) * generalAccFactor * frameTime;
             }
@@ -194,10 +202,14 @@ function  changeUserControls() {
             } else {
                 cameraYVelocity = cameraTargetYVelocity;
             }
+
+            // Update camera position
             camera.rotateRight(cameraXVelocity * frameTime);
             camera.rotateDown(cameraYVelocity * frameTime);
         }
         else {
+
+            // Break the camera movement
             var breakFactor = 0.0001;
             if (Math.abs(cameraXVelocity) > 0) {
                 cameraXVelocity += -(cameraXVelocity / Math.abs(cameraXVelocity)) * breakFactor
@@ -212,9 +224,9 @@ function  changeUserControls() {
                 }
             }
 
+            // Update camera position
             camera.rotateDown(cameraYVelocity * frameTime);
             camera.rotateRight(cameraXVelocity * frameTime);
-
         }
 
         if (flags.zooming) {
@@ -223,16 +235,18 @@ function  changeUserControls() {
 
             var scaleFactor = (1 + zoomedDistance * 0.05) * 0.1;
 
+            // Zooming speed
             var cameraYZoomFactor = (mousePosition.y - startZoomPosition.y) * scaleFactor / clientHeight;
 
             var zoomAmount = cameraYZoomFactor * frameTime;
 
+            // Update camera position
             camera.moveBackward(cameraYZoomFactor * frameTime);
 
             zoomedDistance += zoomAmount;
-
         }
 
+        //To zoom with the keys
         if (flags.zoomOut) {
             var zoomFactor = 1 + zoomedDistance * 0.05;
             console.log('zoom')
@@ -247,13 +261,11 @@ function  changeUserControls() {
             zoomedDistance -= zoomFactor;
         }
 
+        // Keep track of time between frames in order to accurately integrate the camera speed
         currentFrameTime = nextFrameTime;
     })
 
 }
-//viewer.scene.fxaa = false;
-//viewer.scene.debugShowFramesPerSecond = true;
-//viewer.scene.globe.maximumScreenSpaceError = 100;
 
 // Draw impact zone 
 var impactZoneColor = Cesium.Color.ORANGE;
@@ -342,7 +354,7 @@ viewer.entities.add(zoneB);
 viewerGroundTrack.entities.add(zoneB);
 
 
-// Clean the attitude view up.
+// Clean the attitude view up, remove unused entities.
 var attitudeScene = viewerAttitude.scene;
 attitudeScene.globe.show = false;
 attitudeScene.skyBox = undefined;
@@ -353,32 +365,31 @@ attitudeScene.moon = undefined;
 // Disabling the possibility to change the view of the attitude window
 attitudeScene.screenSpaceCameraController.enableInputs = false;
 
+// Remove credits from the viewers
 document.getElementsByClassName("cesium-viewer")[1].removeChild(viewerGroundTrack.bottomContainer);
 document.getElementsByClassName("cesium-viewer")[2].removeChild(viewerAttitude.bottomContainer);
 document.getElementsByClassName("cesium-viewer")[0].removeChild(viewer.bottomContainer);
+
+// Remove all fullscreen buttons except for the main windown
 document.getElementsByClassName("cesium-viewer")[1].removeChild($('.cesium-viewer-fullscreenContainer')[1]);
 document.getElementsByClassName("cesium-viewer")[2].removeChild($('.cesium-viewer-fullscreenContainer')[1]);
 
+// Move the remaining fullscreen button
 $('.cesium-viewer-fullscreenContainer')[0].style.zIndex = 999;
 $('.cesium-viewer-fullscreenContainer')[0].style.top = "1.25%";
 $('.cesium-viewer-fullscreenContainer')[0].style.right = "20.2%";
 
+// Add custom credit div
 var creditDiv = $('#creditDiv')[0];
-
-
-var groundTrackScene = viewerGroundTrack.scene;
 scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
-//            scene.globe.tileCacheSize = 1000;
-//            groundTrackScene.globe.tileCacheSize = 1000;
-
 viewer.scene.frameState.creditDisplay.addDefaultCredit(new Cesium.Credit('Cesium', 'Documentation/images/cesium_logo.png', 'http://cesiumjs.org/'));
 
-
-
+// Set inital views
 var viewRectangle = new Cesium.Rectangle.fromDegrees(19.7, 67.8, 22, 69);
 camera.flyTo({
     destination: viewRectangle
 });
+
 groundTrackCamera.zoomIn();
 groundTrackCamera.flyTo({
     destination: new Cesium.Cartesian3(2294925.383103221, 873305.9902726595, 6166275.118281682)
@@ -388,7 +399,7 @@ groundTrackCamera.flyTo({
 esrangeLong = 21.1068944441480;
 esrangeLat = 67.8932469830635;
 
-
+// Define a ground track marker
 var groundTrackMarker = viewerGroundTrack.entities.add({
     "name": 'marker',
     "position": Cesium.Cartesian3.fromDegrees(esrangeLong, esrangeLat, 0),
@@ -400,6 +411,7 @@ var groundTrackMarker = viewerGroundTrack.entities.add({
     }
 });
 
+// Define properties for the groundtrack line
 groundTrackLine = viewerGroundTrack.entities.add({
     id: '2D-line',
     polyline: {
@@ -412,6 +424,7 @@ groundTrackLine = viewerGroundTrack.entities.add({
     }
 });
 
+// Define properties for the IIP marker
 var IIPMarker = viewerGroundTrack.entities.add({
     "name": 'IIPmarker',
     "position": Cesium.Cartesian3.fromDegrees(0, 0, 0),
@@ -428,60 +441,12 @@ var bbBackground = viewerAttitude.entities.add({
     name: 'Billboard',
     position: bbBackgroundPos,
     billboard: {
-        image: '../Source/Assets/Textures/bb-background.png', // default: undefined
-        show: true, // default
-        horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
-        verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
-        scale: 2, // default: 1.0
-        alignedAxis: Cesium.Cartesian3.ZERO, // default
-        //                width : 50*16, // default: undefined
-        //                height : 50*9 // default: undefined
+        image: '../Source/Assets/Textures/bb-background.png',
+        scale: 2
     }
 });
 
-var flameBillboard;
-var attitudeCZML;
-
-
-
-//            var rocketFlameGif = new Cesium.BillboardAnimator.fromGif({
-//                url: '../Source/Assets/Textures/rocketFlame.gif'
-//            }).then(function (gif) {
-//
-//
-//                flameBillboard = viewer.entities.add({
-//                    name: 'Bill',
-//                    position: bbBackgroundPos,
-//                    billboard: {
-//                        image: gif.image, // default: undefined
-//                        imageSubRegion: gif.imageSubRegion,
-//                        show: true, // default
-//                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
-//                        verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
-//                        scale: 1, // default: 1.0
-//                    }
-//                });
-//                viewer.trackedEntity = flameBillboard;
-//            });
-
-
-//                flameBillboard = viewer.entities.add({
-//                    name: 'glow',
-//                    position: bbBackgroundPos,
-//                    billboard: {
-//                        image: '../Source/Assets/Textures/glow2.png', // default: undefined
-//                        show: true, // default
-//                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER, // default
-//                        verticalOrigin: Cesium.VerticalOrigin.CENTER, // default: CENTER
-//                        scale: 1, // default: 1.0,
-//                        color: new Cesium.Color(1.0, 1.0, 1.0, 1)
-//                    }
-//                });
-//                viewer.trackedEntity = flameBillboard;
-
-
-
-
+// Variable for the attitude visualization
 attitudeCZML = [
     {
         "id": "document",
@@ -501,12 +466,6 @@ attitudeCZML = [
     }
 ];
 
-var margin = { top: 19.5, right: 19.5, bottom: 19.5, left: 39.5 };
-
-var miniWidth = d3.select("body").node().getBoundingClientRect().width * 0.5 - margin.right;
-var miniHeight = d3.select("body").node().getBoundingClientRect().height * 0.5 - margin.top - margin.bottom;
-miniWidth = miniHeight * 2;
-
 // Accessing the status diodes, used in order to change them.
 var syncDiode = $('#syncDiode');
 var syncStatus = false;
@@ -524,7 +483,6 @@ var timeOfLastARateMessage = new Date().getTime();
 var timeOfLastIIPMessage = new Date().getTime();
 
 // Arrays to store the five latest values, used in order to minimize the delay between displayed time and simulated time
-
 var delayedPosition = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
 var delayedTime = [" ", " ", " ", " ", " "];
 var delayedEvent = [" ", " ", " ", " ", " "];
@@ -532,27 +490,33 @@ var delayedSpeed = [0, 0, 0, 0, 0];
 var delayedGLoads = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
 var delayedARates = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
 
+// Bool that will be true when the backlogs are loaded
 var backlogLoaded = false;
 
-//        // STREAMING CODE
+// STREAMING CODE-------------------
+
+// Data sources
 var czmlStream = new Cesium.CzmlDataSource();
+var czmlAttitudeSource = new Cesium.CzmlDataSource();
 var czmlBackTrack = new Cesium.CzmlDataSource();
 
+// Add data sources to the correct viewers
+viewer.dataSources.add(czmlStream);
+viewerAttitude.dataSources.add(czmlAttitudeSource);
 
-var czmlAttitudeSource = new Cesium.CzmlDataSource();
-
-var attitudeProcess = viewerAttitude.dataSources.add(czmlAttitudeSource);
-
+// Do an initial load on the attitude data
 viewerAttitude.dataSources.get(0).load(attitudeCZML);
 
+// Sett attitude view
 var attitudeEntity = viewerAttitude.dataSources.get(0).entities.getById("attitudeRocket");
 viewerAttitude.trackedEntity = attitudeEntity;
 var attitudeCameraOffset = new Cesium.HeadingPitchRange(90, 0, 10);
 var viewFrom = new Cesium.Cartesian3(-30, 0, 0);
-
 cameraPos = new Cesium.Cartesian3.fromDegrees(esrangeLong - 0.0017, esrangeLat, 1000);
 var counter = 0;
 var attitudeDone = false;
+
+// Attitude view can sometimes reset on start, so do it a few time to make sure it's correct
 $(document).ready(function () {
     var startTrackingInterval = setInterval(function () {
         viewerAttitude.camera.setView({
@@ -560,10 +524,9 @@ $(document).ready(function () {
             orientation: {
                 heading: Cesium.Math.toRadians(90.0), // east, default value is 0.0 (north)
                 pitch: Cesium.Math.toRadians(0), // default value (looking down)
-                roll: 0.0                             // default value
+                roll: 0.0
             }
         });
-        //console.log(counter);
         if (counter > 1 && Math.abs(viewerAttitude.camera.right.y) > 0.99) {
             //console.log("clearing");
             clearInterval(startTrackingInterval);
@@ -573,17 +536,13 @@ $(document).ready(function () {
     }, 1000);
 });
 
-
-
+// stream url
 var czmlStreamUrl = "/czml";
-var recordedCZMLUrl = "../Maxus9.czml";
 
-// Setup EventSource
+// Setup EventSource, used for the server sent events
 var czmlEventSource = new EventSource(czmlStreamUrl);
 
 // Put the datasources into Cesium
-viewer.dataSources.add(czmlStream);
-var recordedCZML = viewer.dataSources.add(czmlBackTrack);
 
 czmlEventSource.onopen = function () {
     console.log('Connection open');
@@ -594,13 +553,13 @@ czmlEventSource.onerror = function (event) {
 };
 
 var czmlData;
-// Listen for EventSource data coming
+
 
 // lastPos used to keep track on last position in order to draw a polyline that corresponds to the groundtrack
 var lastPos;
-var firstDocumentDataReceived = false;
-var firstRocketDataReceived = false;
-var apogee = 0;
+var firstDocumentDataReceived = false; // Set to true when first data is received
+var firstRocketDataReceived = false; // Set to true when first data is received
+var apogee = 0; // Keep track of the apogee
 var tracked = false;
 var messageCounter = 0;
 var eventsLoaded = false;
@@ -609,26 +568,30 @@ var gpsNotUpdatedCounter = 0; // Counting how many packets since we last receive
 var lastAttitude;
 var counterTime = 0;
 
-//viewer.clock.onTick.addEventListener(function (clock) {
-//    console.log(viewer.camera.upWC);
-//});
-
+// Listen for EventSource data coming
 czmlEventSource.onmessage = function (event) {
     counter++;
     var t0 = performance.now();
+
+    // Parse the incoming data, and process it
     czmlData = JSON.parse(event.data);
     czmlStream.process(czmlData);
 
-    //console.log("Time since last message: " + (new Date().getTime() - timeOfLastMessage).toString());
-
+    // Document packet
     if (czmlData[0].id === "document") {
+
+        // If camera is moving, cancel that
         camera.cancelFlight();
+
         timeOfLastMessage = new Date().getTime();
+
+        // Set sync diode green
         if (!syncStatus) {
             syncDiode.toggleClass('led-red led-green');
             syncStatus = true;
         }
 
+        // If this is the first packet received, load the backlogs
         if (!firstDocumentDataReceived) {
             // Adding the backlog data in the initialization of the stream. If the client connects in the middle of a stream, this should load data, otherwise an empty document.
             viewer.dataSources.add(Cesium.CzmlDataSource.load("/backlog.czml"));
@@ -662,21 +625,20 @@ czmlEventSource.onmessage = function (event) {
     if (czmlData[0].id === "rocket") {
         timeOfLastMessage = new Date().getTime();
 
-        // If stream has been interupted, but now is resumed, set
-        // SYNC to green
+        // If stream has been interupted, but is now resumed, set SYNC to green
         if (!syncStatus) {
             syncDiode.toggleClass('led-red led-green');
             syncStatus = true;
         }
 
-        //console.log(czmlData[0]);
+        // If the incoming GPS data is old data
         if (czmlData[0].name === "!GPS_updated") {
             console.log("!GPS_updated")
             gpsNotUpdatedCounter++;
+            // If GPS signal is considered lost, set GPS diode red
             if (gpsStatus && gpsNotUpdatedCounter > 4) {
                 gpsDiode.toggleClass('led-red led-green');
                 gpsStatus = false;
-
             }
         } else {
             gpsNotUpdatedCounter = 0;
@@ -691,60 +653,50 @@ czmlEventSource.onmessage = function (event) {
             }
         }
 
-        ////
+        // If position data is available
         if (typeof czmlData[0].position !== 'undefined') {
             var position = czmlData[0].position.cartographicDegrees;
 
+            // Add to the delay-arrays for later use
             delayedPosition.splice(0, 1);
             delayedPosition[4] = [position[1], position[2], position[position.length - 1]];
 
-            //var longitude = position[1];
-            //var latitude = position[2];
-            //var altitude = position[3];
-
+            // Use the values that were added two samples ago
             var longitude = delayedPosition[2][0];
             var latitude = delayedPosition[2][1];
             var altitude = delayedPosition[2][2];
 
+            // If this is the first rocket data
             if (!firstRocketDataReceived) {
-                viewer.clock.onTick.addEventListener(function (clock) {
-                    viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
-                });
+
+                // Track the different entities
+                viewer.trackedEntity = viewer.dataSources.get(0).entities.getById("rocket");
                 lastPos = [delayedPosition[4][0], delayedPosition[4][1]];
                 groundTrackMarker.show = true;
                 groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, 100000));
                 firstRocketDataReceived = true;
 
+                // Set the time corresponding to the data set
                 var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
                 Cesium.JulianDate.addSeconds(startTime, -1, startTime);
                 viewer.clock.currentTime = startTime;
                 viewerAttitude.clock.currentTime = startTime;
 
+                // Change to the smoother user controls
                 changeUserControls();
             }
             else {
-                //var syncTime = viewerAttitude.clock.currentTime;
-                //viewer.clock.currentTime = syncTime;
+                // Make sure that the time between the main and attitude viewer is synced
                 var syncTime = viewer.clock.currentTime;
                 viewerAttitude.clock.currentTime = syncTime;
             }
 
-            //setTimeout(function () {
-
-            //if (!tmStatus) {
-            //    tmDiode.toggleClass('led-green led-red');
-            //    tmStatus = true;
-            //}
-            // Checking if the position data is recieved correctly
-            //if (!gpsStatus) {
-            //    gpsDiode.toggleClass('led-red led-green');
-            //    gpsStatus = true;
-            //}
-
+            // Print position values
             document.getElementsByClassName("longitudeValue")[0].innerHTML = parseFloat(longitude).toFixed(4);
             document.getElementsByClassName("latitudeValue")[0].innerHTML = parseFloat(latitude).toFixed(4);
-            document.getElementsByClassName("altitudeValue")[0].innerHTML = Math.round(altitude + 330) + "m";
+            document.getElementsByClassName("altitudeValue")[0].innerHTML = parseFloat((altitude + 330) / 1000).toFixed(1) + "km";
 
+            // Add an increment to the ground track
             if (longitude !== 0) {
                 viewerGroundTrack.entities.add({
                     name: '2D-line',
@@ -760,13 +712,15 @@ czmlEventSource.onmessage = function (event) {
                     }
                 });
 
+                // Update ground track marker position
                 groundTrackMarker.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, 0);
-
                 lastPos = [longitude, latitude];
             }
 
+            // Manually track it with the camera
             groundTrackCamera.lookAt(new Cesium.Cartesian3.fromDegrees(longitude, latitude, 0), new Cesium.HeadingPitchRange(0, 0, groundTrackCamera.positionCartographic.height));
-            //}, 1000);
+
+            // Update the height curve
             try {
                 if (czmlData[2].point.pixelSize >= 0) {
                     updateGraph();
@@ -774,19 +728,14 @@ czmlEventSource.onmessage = function (event) {
             } catch (err) {
                 console.log(err.message);
             }
-
-        } else {
-            // Setting the gps diode to red
-            //if (gpsStatus) {
-            //    gpsDiode.toggleClass('led-red led-green');
-            //    gpsStatus = false;
-            //}
         }
 
+        // If attitude data is available
         if (typeof czmlData[0].orientation !== 'undefined') {
             var tempOrientation = czmlData[0].orientation.unitQuaternion;
             var tempQ0 = tempOrientation[1];
 
+            // Can the attitude be considered updated?
             if (lastAttitude !== tempQ0) {
                 timeOfLastAttitudeMessage = new Date().getTime();
                 if (!tmStatus) {
@@ -794,124 +743,81 @@ czmlEventSource.onmessage = function (event) {
                     tmStatus = true;
                 }
             }
-
             lastAttitude = tempQ0;
 
-            //if (typeof czmlData[0].position === 'undefined') {
-            //    var startTime = Cesium.JulianDate.fromIso8601(czmlData[0].position.epoch);
-            //    czmlData[0].orientation.epoch = czmlData[0].position.epoch;
-            //    Cesium.JulianDate.addSeconds(startTime, -0.5, startTime);
-            //    viewer.clock.currentTime = startTime;
-            //    viewerAttitude.clock.currentTime = startTime;
-            //}
-
-            //viewerAttitude.clock.currentTime = viewer.clock.currentTime;
-
+            // Copy the attitude packet revceived to the attitudeCZML used in the attitudeViewer
             var orientation = czmlData[0].orientation;
             if (attitudeDone) {
                 attitudeCZML[1].orientation = orientation;
             }
 
+            // Process the new attitude data
             czmlAttitudeSource.process(attitudeCZML);
         }
 
-        // Trying to access the G-load data
+        // G-Load data
         if (typeof czmlData[1].point.position !== 'undefined') {
             timeOfLastGLoadMessage = new Date().getTime();
 
+            // TM-diode set to green
             if (!tmStatus) {
                 tmDiode.toggleClass('led-green led-red');
                 tmStatus = true;
             }
 
+            // Add to the delay-array
             delayedGLoads.splice(0, 1);
             delayedGLoads[4] = [parseFloat(czmlData[1].point.position.cartesian[0]).toFixed(2), parseFloat(czmlData[1].point.position.cartesian[1]).toFixed(2), parseFloat(czmlData[1].point.position.cartesian[2]).toFixed(2)];
 
-            //var gLoadX = parseFloat(czmlData[1].point.position.cartesian[0]).toFixed(2);
-            //var gLoadY = parseFloat(czmlData[1].point.position.cartesian[1]).toFixed(2);
-            //var gLoadZ = parseFloat(czmlData[1].point.position.cartesian[2]).toFixed(2);
-
+            // Choose the previous values from the delay-array
             var gLoadX = delayedGLoads[2][0];
             var gLoadY = delayedGLoads[2][1];
             var gLoadZ = delayedGLoads[2][2];
-            //setTimeout(function () {
 
+            // Update the G-Load indicator
             document.getElementsByClassName("someMeterXValueInner")[0].innerHTML = gLoadX;
             document.getElementsByClassName("someMeterYValueInner")[0].innerHTML = gLoadY;
             document.getElementsByClassName("someMeterZValueInner")[0].innerHTML = gLoadZ;
-
             setgLoadIndicatorLength(gLoadX, gLoadY, gLoadZ);
             $('#gLoadMeterOverlay').css('display', 'none');
-            //}, 1000);
-        } else {
-            //$('#gLoadMeterOverlay').css('display', 'block');
         }
 
+        // Speed data
         if (typeof czmlData[1].point.pixelSize !== 'undefined') {
 
+            // Add to the delay-arrays
             delayedSpeed.splice(0, 1);
             delayedSpeed[4] = czmlData[1].point.pixelSize;
 
-            //var speed = czmlData[1].point.pixelSize;
+            // Choose the delayed value
             var speed = delayedSpeed[2];
-            //setTimeout(function () {
 
+            // Update speed gauge
             document.getElementsByClassName("odometer")[0].innerHTML = Math.round(100000 + speed * 3.6); // Note that the term "10000" is just used to make the odometer look good.
             setGaugeIndicatorLength(speed * 3.6);
-            //}, 1000);
         }
 
+        // Time
         try {
-
+            // Add to delay-array
             delayedTime.splice(0, 1);
             delayedTime[4] = czmlData[2].name;
-            //var missionTime = czmlData[2].name;
+
+            // Choose the delayed vaue
             var missionTime = delayedTime[2];
-            //setTimeout(function () {
             var realMissionTime;
-            //console.log(missionTime.substr(0, 1))
 
-            //Correcting the one second delay so that the mission time corresponds to the simulated time
-            //if (missionTime.substr(1, 8) == "00:00:00") {
-            //    realMissionTime = "-00:00:01" + missionTime.substr(9, 2);
-            //}
-            //else if (missionTime.substr(0, 1) == "+") {
-            //    if (missionTime.substr(8, 1) == "0") {
-            //        var char = missionTime.substr(7, 1);
-            //        var secondInt = parseInt(char);
-            //        var replacementStr = (secondInt - 1).toString();
-            //        realMissionTime = missionTime.substr(0, 7) + replacementStr + "9" + missionTime.substr(9, 2);
-            //    }
-            //    else {
-            //        var char = missionTime.substr(8, 1);
-            //        var secondInt = parseInt(char);
-            //        var replacementStr = (secondInt - 1).toString();
-            //        var realMissionTime = missionTime.substr(0, 8) + replacementStr + missionTime.substr(9, 2);
-            //    }
-            //} else {
-            //    if (missionTime.substr(8, 1) == "9") {
-
-            //        realMissionTime = missionTime.substr(0, 7) + "10" + missionTime.substr(9, 2);
-            //    }
-            //    else {
-            //        var char = missionTime.substr(8, 1);
-            //        var secondInt = parseInt(char);
-            //        var replacementStr = (secondInt + 1).toString();
-            //        var realMissionTime = missionTime.substr(0, 8) + replacementStr + missionTime.substr(9, 2);
-            //    }
-            //}
-
-
+            // Update mission time
             document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
 
-            //}, 1000);
-
+            // Add event to a delay-array
             delayedEvent.splice(0, 1);
             delayedEvent[4] = czmlData[1].name
-            //var eventName = czmlData[1].name;
+
+            // CHoose delayed event
             var eventName = delayedEvent[2]
 
-            //setTimeout(function () {
+            // If it is a new event, update the event table
             if (eventName !== lastEvent && firstDocumentDataReceived && eventName !== " ") {
                 var tableRow = eventTable.insertRow(0);
                 var cell1 = tableRow.insertCell(0);
@@ -929,93 +835,47 @@ czmlEventSource.onmessage = function (event) {
                 cell2.style.color = 'Thistle';
                 lastEvent = eventName;
             }
-            //}, 1000);
-
         } catch (err) {
             console.log(err.message);
         }
 
-        // Trying to access the angular rate data
+        // Angular rate data
         if (typeof czmlData[2].point.position !== 'undefined') {
             timeOfLastARateMessage = new Date().getTime();
 
+            // Set TM to green
             if (!tmStatus) {
                 tmDiode.toggleClass('led-green led-red');
                 tmStatus = true;
             }
 
+            // Add to delay-array
             delayedARates.splice(0, 1);
             delayedARates[4] = [parseFloat(czmlData[2].point.position.cartesian[0]).toFixed(2), parseFloat(czmlData[2].point.position.cartesian[1]).toFixed(2), parseFloat(czmlData[2].point.position.cartesian[2]).toFixed(2)];
 
-            //var aRateX = parseFloat(czmlData[2].point.position.cartesian[0]).toFixed(2);
-            //var aRateY = parseFloat(czmlData[2].point.position.cartesian[1]).toFixed(2);
-            //var aRateZ = parseFloat(czmlData[2].point.position.cartesian[2]).toFixed(2);
-
+            // Choose delayed values
             var aRateX = delayedARates[2][0];
             var aRateY = delayedARates[2][1];
             var aRateZ = delayedARates[2][2];
 
-            //setTimeout(function () {
-
+            // Update indicator for anguar rates
             document.getElementsByClassName("someMeterXValueInner")[1].innerHTML = aRateX;
             document.getElementsByClassName("someMeterYValueInner")[1].innerHTML = aRateY;
             document.getElementsByClassName("someMeterZValueInner")[1].innerHTML = aRateZ;
             setAngleRateIndicatorLength(aRateX, aRateY, aRateZ);
             $('#aRateMeterOverlay').css('display', 'none');
-            //}, 1000);
         }
 
+        // Update IIP marker if available
         if (typeof czmlData[3].point.position !== 'undefined') {
             timeOfLastIIPMessage = new Date().getTime();
             IIPMarker.position = new Cesium.Cartesian3.fromDegrees(czmlData[3].point.position.cartographicDegrees[0], czmlData[3].point.position.cartographicDegrees[1], czmlData[3].point.position.cartographicDegrees[2]);
             IIPMarker.show = true;
-
-            //if (!tmStatus) {
-            //    tmDiode.toggleClass('led-green led-red');
-            //    tmStatus = true;
-            //}
         }
     }
-
-    //if (typeof czmlData[1] !== 'undefined') {
-    //    if (czmlData[1].id === "pingTimePacket") {
-    //        try {
-    //            var missionTime = czmlData[1].name;
-    //            document.getElementsByClassName("missionTimeValue")[0].innerHTML = "T " + missionTime;
-    //        } catch (err) {
-    //            console.log(err.message);
-    //        }
-    //    }
-    //}
-
-
-
     var t1 = performance.now();
-    //                console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
+    // console.log("Call to visualize data took " + (t1 - t0) + " milliseconds.")
 };
-
-
-//------------------------------------------------------
-
-//var tjo = viewer.dataSources.get(1).load('../Maxus9.czml').then(function (czmlVar) {
-//    console.log(czmlVar.entities.values);
-//    var times = viewer.dataSources.get(1).entities.getById("rocket").position._property._times[0];
-
-//    var startTime = times;
-//    Cesium.JulianDate.addSeconds(startTime, -0.7, startTime);
-//    viewer.clock.currentTime = startTime;
-//    viewer.dataSources.get(1).entities.getById("rocket");
-//});
-
-//------------------------------------------------------
-
-
-// Checking if the stream is interrupted for some reason, then set
-// the sync diode to red.
-
-function round2FourDecimals(number) {
-    return Math.round((number + 0.0000001) * 10000) / 10000;
-}
 
 // Start the routine for checing the diode status
 setInterval(
@@ -1028,15 +888,6 @@ setInterval(
         var timeSinceLastGLoadMessage = new Date().getTime() - timeOfLastGLoadMessage;
         var timeSinceLastARateMessage = new Date().getTime() - timeOfLastARateMessage;
         var timeSinceLastIIPMessage = new Date().getTime() - timeOfLastIIPMessage;
-
-        //console.log(timeSinceLastMessage);
-        //console.log(timeSinceLastGPSMessage);
-        //console.log(timeSinceLastAttitudeMessage);
-        //console.log(timeSinceLastGLoadMessage);
-        //console.log(timeSinceLastARateMessage);
-        //console.log(timeSinceLastIIPMessage);
-
-
 
         // If the streaming is ongoing, but the time since last message
         // is above a certain threshold, assume that streaming is
@@ -1063,14 +914,17 @@ setInterval(
             }
         }
 
+        // Show overlay if data not available
         if (timeSinceLastGLoadMessage > threshold) {
             $('#gLoadMeterOverlay').css('display', 'block');
         }
 
+        // Show overlay if data not available
         if (timeSinceLastARateMessage > threshold) {
             $('#aRateMeterOverlay').css('display', 'block');
         }
 
+        // Remove IIP marker if it is not available
         if (timeSinceLastIIPMessage > threshold) {
             IIPMarker.show = false;
         }
@@ -1087,20 +941,7 @@ setInterval(
                 tmStatus = false;
             }
         }
-    }, 4871);
-
-
-
-
-
-//        var clockStarted = false;
-//
-//        var clockstarter = setInterval(function () {
-//            if (clockStarted = false) {
-//                viewer.clock.startTime = viewer.dataSources.get(0).entities.getById("rocket").position._property._times[0].addSeconds(-0.5);
-//                clearInterval(clockStarter);
-//            }
-//        }, 10);
+    }, 4871); // Uneven interval to avoid several routines coinciding, might do something for performance
 
 // IE loading tiles extremely slowly, if IE detected, send warning
 if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > 0) {

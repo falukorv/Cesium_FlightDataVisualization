@@ -2,124 +2,117 @@
 
 "use strict";
 
+// Size of G-Load meter
 var gLoadMeterWidth;
 var gLoadMeterHeight;
 
 var gLoadAxisLength; // Length of the axis in one direction
-var gGX;
-var gGY;
-var gWest;
 
-var maxGLoad;
+var maxGLoad; // Axis limit
 
 var pathMaximumX;
 var pathMinimumX;
 
 var pathStartPositiveX; //Start x-position if G>0
 var pathStartNegativeX; //Start x-position if G<0
+
+// SVG path y coordinate
 var pathYGY;
 var pathYGZ;
 var pathYGX;
 
-var pathEndPositiveX;
-
+// Variable containing the path string
+var gLoadGXPath;
 var gLoadGYPath;
 var gLoadGZPath;
-var gLoadGXPath;
 
+// SVG path thickness
 var pathWidth;
 
-//
-//
-// Create the SVG container and set the origin.
+// SVG container
 var gLoadSvgBase;
-
 var gLoadSvg;
 
+// 
 var positiveGYScale,
         negativeGYScale;
 
 // The x & y axes.
 var positiveGaxis;
 var negativeGaxis;
-
 var positiveGaxisElement;
-
-
 var negativeGaxisElement;
 
-var gLoadPathGY;
-
-var gLoadPathGZ;
-
+// SVG path properties
+var gLoadPathGY
+var gLoadPathGZ
 var gLoadPathGX;
 
 
 $(document).ready(function () {
+    // Get the size
     gLoadMeterWidth = document.getElementById("gLoadMeter").offsetWidth;
     gLoadMeterHeight = document.getElementById("gLoadMeter").offsetHeight;
 
-    gLoadAxisLength = gLoadMeterWidth * 0.35; // Length of the axis in one direction
-    gGX = 4;
-    gGY = 0;
-    gWest = 0;
-
+    gLoadAxisLength = gLoadMeterWidth * 0.35; // Length of the axis in one direction, in pixels
     maxGLoad = 10;
+
+    // Set the maximumm pixel coordinate
     pathMaximumX = 0.95 * gLoadMeterWidth;
     pathMinimumX = 0.05 * gLoadMeterWidth;
 
     pathStartPositiveX = (0.5 + 0.25 * 0.9 / 2) * gLoadMeterWidth; //Start x-position if G>0
     pathStartNegativeX = (0.5 - 0.25 * 0.9 / 2) * gLoadMeterWidth; //Start x-position if G<0
+
+    // Set the y coordinate in pixels
     pathYGX = (0.35 - 0.05) * gLoadMeterHeight;
     pathYGY = (0.6 - 0.05) * gLoadMeterHeight;
     pathYGZ = (0.85 - 0.05) * gLoadMeterHeight;
 
+    // Set the width
     pathWidth = 0.1 * gLoadMeterHeight;
 
-//
-//
-// Create the SVG container and set the origin.
+    // Create the SVG container and set the origin.
     gLoadSvgBase = d3.select("#gLoadMeter").append("svg")
             .attr("width", gLoadMeterWidth)
             .attr("height", gLoadMeterHeight);
-
     gLoadSvg = gLoadSvgBase.append("g")
             .attr("transform", "translate(" + 0 + "," + 0 + ")");
 
+    // Set the scale, logarithmic
     positiveGYScale = d3.scaleLog().range([pathStartPositiveX, pathMaximumX]);
     negativeGYScale = d3.scaleLog().range([pathMinimumX, pathStartNegativeX]);
 
+    // Set the domain
     positiveGYScale.domain([0.01, 100]);
     negativeGYScale.domain([-100, -0.01]);
 
-// The x & y axes.
+    // Initiate the x & y axes.
     positiveGaxis = d3.axisBottom(positiveGYScale).ticks(4);
     negativeGaxis = d3.axisBottom(negativeGYScale).ticks(4);
 
+    // Axis properties
     positiveGaxisElement = gLoadSvg.append("g")
             .attr("class", "positiveLogAxis")
             .attr("transform", "translate(" + 0 + "," + gLoadMeterHeight * 0.85 + ")")
             .call(positiveGaxis);
-
 
     negativeGaxisElement = gLoadSvg.append("g")
             .attr("class", "negativeLogAxis")
             .attr("transform", "translate(" + 0 + "," + gLoadMeterHeight * 0.85 + ")")
             .call(negativeGaxis);
 
+    // Path properties
     gLoadPathGY = gLoadSvg.append("path")
             .attr("stroke-width", pathWidth)
-//        .attr("stroke-linecap","round")
             .attr("stroke", "rgba(255, 0, 0, 0.5)");
 
     gLoadPathGZ = gLoadSvg.append("path")
             .attr("stroke-width", pathWidth)
-//        .attr("stroke-linecap","round")
             .attr("stroke", "rgba(255, 0, 0, 0.5)");
 
     gLoadPathGX = gLoadSvg.append("path")
             .attr("stroke-width", pathWidth)
-//        .attr("stroke-linecap","round")
             .attr("stroke", "rgba(255, 0, 0, 0.5)");
 
 });
@@ -146,7 +139,6 @@ new ResizeSensor(document.getElementById("gLoadMeter"), function () {
     gLoadPathGZ.attr("stroke-width", pathWidth);
 
     gLoadPathGX.attr("stroke-width", pathWidth);
-
     
     pathStartPositiveX = (0.5 + 0.25 * 0.9 / 2) * gLoadMeterWidth; //Start x-position if G>0
     pathStartNegativeX = (0.5 - 0.25 * 0.9 / 2) * gLoadMeterWidth; //Start x-position if G<0
@@ -172,6 +164,17 @@ new ResizeSensor(document.getElementById("gLoadMeter"), function () {
 
 function setgLoadIndicatorLength(Gx, Gy, Gz) {
 
+    // Calculate path coordinates and construct the path strings
+    if (Gx > 0) {
+        var pathEndPositiveX = pathStartPositiveX + (Gx / maxGLoad) * (pathMaximumX - pathStartPositiveX);
+        gLoadGXPath = "M" + pathStartPositiveX + "," + pathYGX + "L" + positiveGYScale(Gx) + "," + pathYGX;
+    } else if (Gx < 0) {
+        var pathEndNegativeX = pathStartNegativeX - (Gx / maxGLoad) * (-pathMaximumX + pathStartNegativeX);
+        gLoadGXPath = "M" + pathStartNegativeX + "," + pathYGX + "L" + negativeGYScale(Gx) + "," + pathYGX;
+    } else {
+        gLoadGXPath = "M" + pathStartNegativeX + "," + pathYGX + "L" + pathStartNegativeX + "," + pathYGX;
+    }
+
     if (Gy > 0) {
         var pathEndPositiveX = pathStartPositiveX + (Gy / maxGLoad) * (pathMaximumX - pathStartPositiveX);
         gLoadGYPath = "M" + pathStartPositiveX + "," + pathYGY + "L" + positiveGYScale(Gy) + "," + pathYGY;
@@ -181,7 +184,6 @@ function setgLoadIndicatorLength(Gx, Gy, Gz) {
     } else {
         gLoadGYPath = "M" + pathStartNegativeX + "," + pathYGY + "L" + pathStartNegativeX + "," + pathYGY;
     }
-
 
     if (Gz > 0) {
         var pathEndPositiveX = pathStartPositiveX + (Gz / maxGLoad) * (pathMaximumX - pathStartPositiveX);
@@ -193,16 +195,7 @@ function setgLoadIndicatorLength(Gx, Gy, Gz) {
         gLoadGZPath = "M" + pathStartNegativeX + "," + pathYGZ + "L" + pathStartNegativeX + "," + pathYGZ;
     }
 
-    if (Gx > 0) {
-        var pathEndPositiveX = pathStartPositiveX + (Gx / maxGLoad) * (pathMaximumX - pathStartPositiveX);
-        gLoadGXPath = "M" + pathStartPositiveX + "," + pathYGX + "L" + positiveGYScale(Gx) + "," + pathYGX;
-    } else if (Gx < 0) {
-        var pathEndNegativeX = pathStartNegativeX - (Gx / maxGLoad) * (-pathMaximumX + pathStartNegativeX);
-        gLoadGXPath = "M" + pathStartNegativeX + "," + pathYGX + "L" + negativeGYScale(Gx) + "," + pathYGX;
-    } else {
-        gLoadGXPath = "M" + pathStartNegativeX + "," + pathYGX + "L" + pathStartNegativeX + "," + pathYGX;
-    }
-
+    // Interpolating transition
     gLoadPathGY.transition().attr("d", gLoadGYPath).duration(500);
     gLoadPathGZ.transition().attr("d", gLoadGZPath).duration(500);
     gLoadPathGX.transition().attr("d", gLoadGXPath).duration(500);
