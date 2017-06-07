@@ -417,10 +417,10 @@
         }
     });
 
-    // Keeping the heroku app alive
-    setInterval(function () {
-        httpGet.get("http://sscflightdata.herokuapp.com");
-    }, 290000);
+    //// Keeping the heroku app alive
+    //setInterval(function () {
+    //    httpGet.get("http://sscflightdata.herokuapp.com");
+    //}, 290000);
 
     //--------------------------------------
 
