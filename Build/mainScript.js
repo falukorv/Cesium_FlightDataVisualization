@@ -382,6 +382,8 @@ $('.cesium-viewer-fullscreenContainer')[0].style.right = "20.2%";
 // Add custom credit div
 var creditDiv = $('#creditDiv')[0];
 scene.frameState.creditDisplay = new Cesium.CreditDisplay(creditDiv);
+viewer.scene.frameState.creditDisplay.addDefaultCredit(new Cesium.Credit('SSC', 'Documentation/images/ssc_logo.png', 'http://www.sscspace.com/'));
+
 viewer.scene.frameState.creditDisplay.addDefaultCredit(new Cesium.Credit('Cesium', 'Documentation/images/cesium_logo.png', 'http://cesiumjs.org/'));
 
 // Set inital views
@@ -767,7 +769,7 @@ czmlEventSource.onmessage = function (event) {
 
             // Add to the delay-array
             delayedGLoads.splice(0, 1);
-            delayedGLoads[4] = [parseFloat(czmlData[1].point.position.cartesian[0]).toFixed(2), parseFloat(czmlData[1].point.position.cartesian[1]).toFixed(2), parseFloat(czmlData[1].point.position.cartesian[2]).toFixed(2)];
+            delayedGLoads[4] = [parseFloat(czmlData[1].point.position.cartesian[0]).toFixed(1), parseFloat(czmlData[1].point.position.cartesian[1]).toFixed(1), parseFloat(czmlData[1].point.position.cartesian[2]).toFixed(1)];
 
             // Choose the previous values from the delay-array
             var gLoadX = delayedGLoads[2][0];

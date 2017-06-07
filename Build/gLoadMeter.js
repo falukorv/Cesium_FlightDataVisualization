@@ -84,8 +84,8 @@ $(document).ready(function () {
     negativeGYScale = d3.scaleLog().range([pathMinimumX, pathStartNegativeX]);
 
     // Set the domain
-    positiveGYScale.domain([0.01, 100]);
-    negativeGYScale.domain([-100, -0.01]);
+    positiveGYScale.domain([0.1, 100]);
+    negativeGYScale.domain([-100, -0.1]);
 
     // Initiate the x & y axes.
     positiveGaxis = d3.axisBottom(positiveGYScale).ticks(4);
